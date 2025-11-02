@@ -1,0 +1,28 @@
+{
+  "name": "recipe_almanac",
+  "version": "1.0.0",
+  "description": "This is the Recipe Almanac, a place to write, share, and browse through recipes\r the will be a home page to browse the most viewed recipe, the highest rated recipes",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moayed-abdalla/Recipe_Almanac.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moayed-abdalla/Recipe_Almanac/issues"
+  },
+  "homepage": "https://github.com/moayed-abdalla/Recipe_Almanac#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
