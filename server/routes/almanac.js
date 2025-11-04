@@ -8,12 +8,13 @@
  * - GET /api/almanac/:username/check/:owner/:recipe - Check if recipe is saved
  */
 
-const express = require('express');
-const router = express.Router();
-const { query } = require('../database/pool');
-const { authenticateToken } = require('./auth');
-const { param, body, validationResult } = require('express-validator');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { query } from '../database/pool.js';
+import { body, validationResult } from 'express-validator';
 
+const router = express.Router();
 // ========================================
 // GET USER'S SAVED RECIPES
 // ========================================

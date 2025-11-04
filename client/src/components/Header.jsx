@@ -18,7 +18,7 @@
  * - onLogout: function - Logout handler
  */
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useState, useRef, useEffect } from 'react';
 
 const Header = ({ theme, toggleTheme, isAuthenticated, currentUser, onLogout }) => {

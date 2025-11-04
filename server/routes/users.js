@@ -8,11 +8,13 @@
  * - GET /api/users/:username/stats - Get user statistics
  */
 
-const express = require('express');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { query } from '../database/pool.js';
+import { body, validationResult } from 'express-validator';
+
 const router = express.Router();
-const { query } = require('../database/pool');
-const { authenticateToken } = require('./Auth');
-const { param, body, validationResult } = require('express-validator');
 
 // ========================================
 // GET USER PROFILE

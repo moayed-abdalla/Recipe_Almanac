@@ -11,7 +11,7 @@
  * - Responsive layout
  */
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

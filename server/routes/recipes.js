@@ -9,11 +9,13 @@
  * - DELETE /api/recipes/:username/:recipeName - Delete recipe (auth required, owner only)
  */
 
-const express = require('express');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { query } from '../database/pool.js';
+import { body, validationResult } from 'express-validator';
+
 const router = express.Router();
-const { query } = require('../database/pool');
-const { authenticateToken } = require('../middleware/auth');
-const { body, param, validationResult } = require('express-validator');
 
 // ========================================
 // GET ALL RECIPES

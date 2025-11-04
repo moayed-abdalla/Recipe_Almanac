@@ -9,13 +9,13 @@
  * Also exports the authenticateToken middleware for use in other routes.
  */
 
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { query } = require('../database/pool');
-const { body, validationResult } = require('express-validator');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { query } from '../database/pool.js';
+import { body, validationResult } from 'express-validator';
 
+const router = express.Router();
 // ========================================
 // JWT MIDDLEWARE
 // ========================================
@@ -33,7 +33,7 @@ const { body, validationResult } = require('express-validator');
  * @param {Response} res - Express response object
  * @param {Function} next - Express next middleware function
  */
-const authenticateToken = (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
   // Get token from Authorization header
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' '); // Format: "Bearer TOKEN"
@@ -336,3 +336,4 @@ router.get('/me', authenticateToken, async (req, res) => {
 // Export router and middleware
 module.exports = router;
 module.exports.authenticateToken = authenticateToken;
+export default router;
