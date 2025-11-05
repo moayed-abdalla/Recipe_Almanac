@@ -92,3 +92,71 @@ dark mode color pallete
     dk_font: #d7d9ea `dark mode font color`
     dk_light_accent: #F2E2CE `dark mode light accent color`
     dk_dark_accent: #E6C59E `dark mode dark accent color`
+
+## project structure ##
+Recipe_Almanac/
+├── server/
+│   ├── controllers/
+│   ├── database/
+│      ├── init.js
+│      └── pool.js
+│   ├── middleware/
+│      ├── auth.js
+│      └──rateLimit.js
+│   ├── models/
+│   ├── node_modules/
+│   ├── routes/
+│       ├── almanac.js
+│       ├── auth.js
+│       ├── recipes.js
+│       └── users.js
+│   ├── uploads/
+│   ├── package.json 
+│   ├── package-lock.json 
+│   ├── server.js 
+│   └── vercel.json
+│
+├── client/
+│   ├── .vite/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│       ├── assets/
+│           ├── logo.png
+│           └── react.svg
+│       ├── components/
+│           ├── Footer.jsx
+│           ├── Header.jsx
+│           ├── RecipeCard.jsx
+│           └── SearchBar.jsx
+│       ├── pages/
+│           ├── AlmanacPage.jsx
+│           ├── Home.jsx
+│           ├── LoginPage.jsx
+│           ├── ProfilePage.jsx
+│           ├── RecipeCreate.jsx
+│           ├── RecipeEdit.jsx
+│           ├── RecipePage.jsx
+│           └── RegisterPage.jsx
+│       ├── services/
+│           └── api.js
+│       ├── utils/
+│           └── unitConverter.js
+│       ├── App.jsx
+│       ├── index.css
+│       └── main.jsx
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── vercel.json
+│   └── vite.config.js
+│ 
+├── package.json
+├── package-lock.json
+├── Readme.md
+└── .gitignore
