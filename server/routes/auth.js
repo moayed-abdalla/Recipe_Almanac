@@ -334,6 +334,5 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // Export router and middleware
-module.exports = router;
 module.exports.authenticateToken = authenticateToken;
-export default router;
+module.exports = router;
