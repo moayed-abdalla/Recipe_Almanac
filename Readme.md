@@ -159,4 +159,4 @@ Recipe_Almanac/
 ├── package.json
 ├── package-lock.json
 ├── Readme.md
-└── .gitignore
+└── .gitignore 
