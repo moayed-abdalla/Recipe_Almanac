@@ -12,7 +12,7 @@ the backend uses node.js and sql for Database management and connects to Postgre
 ## Global ##
 `Header`
     Home button as the website logo *logo.png* 
-    My profile page round icon (if a profile picture is not added or user not logged in daisy img is used <img src="https://img.daisyui.com/images/profile/demo/batperson@192.webp" />)
+    My profile page round icon (if a profile picture is not added or user not logged in daisy img is used <img src="" />)
     My almanac page / or a Log IN button if the user is not logged on
     A moon icon to change the page to dark mode or sun icon to change to light mode if already on dark mode (should take browser default setting) using daisy theme controller component
     github logo (page link to https://github.com/moayed-abdalla/Recipe_Almanac/) 
