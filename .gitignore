@@ -41,3 +41,10 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+
+# Old client/server folders (keep for reference but ignore in builds)
+/client/node_modules
+/server/node_modules
+/client/.vite
+/client/dist
+/server/uploads

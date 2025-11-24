@@ -37,11 +37,20 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <div className="card-body">
             <div className="flex items-center gap-4">
               <div className="avatar">
-                <div className="w-24 rounded-full">
-                  <img
-                    src={profile.avatar_url || '/default-avatar.png'}
-                    alt={profile.username}
-                  />
+                <div className="w-24 rounded-full bg-base-300">
+                  {profile.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.username}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-base-300 flex items-center justify-center">
+                      <span className="text-2xl font-bold">
+                        {profile.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
