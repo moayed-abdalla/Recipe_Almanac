@@ -7,6 +7,31 @@ interface RecipePageProps {
   };
 }
 
+interface Recipe {
+  id: string;
+  user_id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  tags: string[];
+  method_steps: string[];
+  notes: string[];
+  view_count: number;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Profile {
+  username: string;
+  avatar_url: string | null;
+}
+
+interface RecipeWithProfile extends Recipe {
+  profiles: Profile | Profile[] | null;
+}
+
 export default async function RecipePage({ params }: RecipePageProps) {
   const supabase = await createServerClient();
   
@@ -33,6 +58,22 @@ export default async function RecipePage({ params }: RecipePageProps) {
     );
   }
 
+  // Type assertion
+  const typedRecipe = recipe as RecipeWithProfile;
+  const owner = Array.isArray(typedRecipe.profiles) 
+    ? typedRecipe.profiles[0] 
+    : typedRecipe.profiles;
+
+  if (!owner) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="alert alert-error">
+          <span>Recipe owner not found</span>
+        </div>
+      </div>
+    );
+  }
+
   // Fetch ingredients
   const { data: ingredients } = await supabase
     .from('ingredients')
@@ -41,13 +82,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
     .order('order_index');
 
   // Increment view count (fire and forget)
-  supabase.rpc('increment_recipe_views', { recipe_uuid: params.id });
+  supabase.rpc('increment_recipe_views', { recipe_uuid: params.id }).catch(() => {
+    // Silently fail if RPC doesn't exist yet
+  });
 
   return (
     <RecipePageClient
-      recipe={recipe}
+      recipe={typedRecipe}
       ingredients={ingredients || []}
-      owner={recipe.profiles}
+      owner={owner}
     />
   );
 }

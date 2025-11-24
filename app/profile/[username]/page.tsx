@@ -7,6 +7,15 @@ interface ProfilePageProps {
   };
 }
 
+interface Profile {
+  id: string;
+  username: string;
+  profile_description: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const supabase = await createServerClient();
 
@@ -21,11 +30,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
+  // Type assertion to help TypeScript
+  const typedProfile = profile as Profile;
+
   // Fetch user's recipes
   const { data: recipes } = await supabase
     .from('recipes')
     .select('*')
-    .eq('user_id', profile.id)
+    .eq('user_id', typedProfile.id)
     .eq('is_public', true)
     .order('created_at', { ascending: false });
 
@@ -38,25 +50,25 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <div className="flex items-center gap-4">
               <div className="avatar">
                 <div className="w-24 rounded-full bg-base-300">
-                  {profile.avatar_url ? (
+                  {typedProfile.avatar_url ? (
                     <img
-                      src={profile.avatar_url}
-                      alt={profile.username}
+                      src={typedProfile.avatar_url}
+                      alt={typedProfile.username}
                       className="rounded-full"
                     />
                   ) : (
                     <div className="w-full h-full rounded-full bg-base-300 flex items-center justify-center">
                       <span className="text-2xl font-bold">
-                        {profile.username.charAt(0).toUpperCase()}
+                        {typedProfile.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold">{profile.username}</h1>
-                {profile.profile_description && (
-                  <p className="mt-2">{profile.profile_description}</p>
+                <h1 className="text-3xl font-bold">{typedProfile.username}</h1>
+                {typedProfile.profile_description && (
+                  <p className="mt-2">{typedProfile.profile_description}</p>
                 )}
               </div>
             </div>
