@@ -23,13 +23,19 @@ export default function RecipeCard({
   return (
     <Link href={`/recipe/${id}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
       <figure>
-        <Image
-          src={imageUrl || '/placeholder-recipe.jpg'}
-          alt={title}
-          width={400}
-          height={300}
-          className="w-full h-48 object-cover"
-        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={title}
+            width={400}
+            height={300}
+            className="w-full h-48 object-cover"
+          />
+        ) : (
+          <div className="w-full h-48 bg-base-300 flex items-center justify-center">
+            <span className="text-base-content opacity-50">No Image</span>
+          </div>
+        )}
       </figure>
       <div className="card-body">
         <h2 className="card-title">{title}</h2>

@@ -61,8 +61,8 @@ export default function RecipePageClient({
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Recipe Image */}
-      {recipe.image_url && (
-        <div className="mb-8">
+      <div className="mb-8">
+        {recipe.image_url ? (
           <Image
             src={recipe.image_url}
             alt={recipe.title}
@@ -70,8 +70,12 @@ export default function RecipePageClient({
             height={600}
             className="w-full h-96 object-cover rounded-lg"
           />
-        </div>
-      )}
+        ) : (
+          <div className="w-full h-96 bg-base-300 rounded-lg flex items-center justify-center">
+            <span className="text-base-content opacity-50 text-xl">No Image</span>
+          </div>
+        )}
+      </div>
 
       {/* Recipe Title and Owner */}
       <div className="mb-6">
