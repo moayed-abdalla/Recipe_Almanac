@@ -82,7 +82,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
     .order('order_index');
 
   // Increment view count (fire and forget)
-  supabase.rpc('increment_recipe_views', { recipe_uuid: params.id }).catch(() => {
+  // Using type assertion since RPC function might not be in Database type yet
+  (supabase.rpc as any)('increment_recipe_views', { recipe_uuid: params.id }).catch(() => {
     // Silently fail if RPC doesn't exist yet
   });
 
