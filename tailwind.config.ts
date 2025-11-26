@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'typewriter': ['Courier Prime', 'Special Elite', 'monospace'],
+      },
       colors: {
         // Light mode color palette
         'lg-bg': '#E6C59E',
@@ -21,6 +24,10 @@ const config: Config = {
         'dk-font': '#d7d9ea',
         'dk-light-accent': '#F2E2CE',
         'dk-dark-accent': '#E6C59E',
+        // Steampunk/Alchemist accents
+        'brass': '#D4AF37',
+        'copper': '#B87333',
+        'bronze': '#8B7355',
       },
     },
   },

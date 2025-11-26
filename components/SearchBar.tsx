@@ -14,11 +14,11 @@ export default function SearchBar() {
   return (
     <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto">
       <div className="form-control">
-        <div className="input-group">
+        <div className="input-group flex">
           <input
             type="text"
             placeholder="Search recipes by name or tags..."
-            className="input input-bordered w-full"
+            className="input input-bordered flex-1"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
