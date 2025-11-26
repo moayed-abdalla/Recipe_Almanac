@@ -2,18 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+
 :root {
   --foreground-rgb: 25, 21, 16;
   --background-start-rgb: 230, 197, 158;
   --background-end-rgb: 242, 226, 206;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 215, 217, 234;
-    --background-start-rgb: 14, 16, 27;
-    --background-end-rgb: 53, 55, 69;
-  }
+[data-theme="dark"] {
+  --foreground-rgb: 215, 217, 234;
+  --background-start-rgb: 14, 16, 27;
+  --background-end-rgb: 53, 55, 69;
 }
 
 body {
@@ -25,5 +25,25 @@ body {
     )
     rgb(var(--background-start-rgb));
   min-height: 100vh;
+  font-family: 'Courier Prime', 'Special Elite', monospace;
+}
+
+* {
+  font-family: 'Courier Prime', 'Special Elite', monospace;
+}
+
+/* Steampunk/Alchemist decorative elements */
+.steampunk-border {
+  border: 2px solid;
+  border-image: linear-gradient(45deg, #8B7355, #D4AF37, #8B7355) 1;
+  box-shadow: 
+    inset 0 0 10px rgba(212, 175, 55, 0.3),
+    0 0 20px rgba(139, 115, 85, 0.2);
+}
+
+.alchemist-accent {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(139, 115, 85, 0.1));
+  border-left: 3px solid #D4AF37;
+  padding-left: 1rem;
 }
 
