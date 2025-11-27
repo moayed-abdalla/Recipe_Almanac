@@ -9,7 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        'typewriter': ['Courier Prime', 'Special Elite', 'monospace'],
+        'typewriter': ['Special Elite', 'system-ui', 'monospace'],
+        'sans': ['Special Elite', 'system-ui', 'monospace'],
       },
       colors: {
         // Orange theme colors

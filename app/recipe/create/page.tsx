@@ -1,3 +1,26 @@
+/**
+ * Recipe Creation Page Component
+ * 
+ * Allows authenticated users to create new recipes with:
+ * - Title, description, and tags
+ * - Recipe image upload
+ * - Dynamic ingredient list (amount, unit, name)
+ * - Dynamic method steps
+ * - Optional notes
+ * 
+ * Features:
+ * - Automatic slug generation from title
+ * - Image upload to Supabase Storage
+ * - Unit conversion (volume to weight) for ingredients
+ * - Form validation
+ * - Error handling
+ * 
+ * This is a Client Component because it needs to:
+ * - Handle form state and user interactions
+ * - Upload files to Supabase Storage
+ * - Navigate after successful creation
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -7,60 +30,82 @@ import { volumeToWeight } from '@/utils/unitConverter';
 
 export default function RecipeCreatePage() {
   const router = useRouter();
+  
+  // Loading state for form submission
   const [loading, setLoading] = useState(false);
+  
+  // Error message state
   const [error, setError] = useState('');
   
-  // Form state
+  // Form state - recipe metadata
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  
+  // Form state - recipe content
   const [methodSteps, setMethodSteps] = useState<string[]>(['']);
   const [notes, setNotes] = useState<string[]>(['']);
+  
+  // Form state - ingredients (array of ingredient objects)
   const [ingredients, setIngredients] = useState<Array<{
     name: string;
     amount: number;
     unit: string;
   }>>([{ name: '', amount: 0, unit: 'cup' }]);
+  
+  // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  /**
+   * Handle form submission
+   * Creates a new recipe in the database with all provided information
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Get current user
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
+      // Step 1: Verify user is authenticated
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+      if (userError || !user) {
         throw new Error('You must be logged in to create a recipe');
       }
 
-      // Create slug from title
+      // Step 2: Generate URL-friendly slug from title
+      // Converts to lowercase, replaces spaces/special chars with hyphens
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
 
-      // Upload image if provided
+      // Step 3: Upload image to Supabase Storage if provided
       let imageUrl = null;
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabaseClient.storage
-          .from('recipe-images')
-          .upload(fileName, imageFile);
+        try {
+          const fileExt = imageFile.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabaseClient.storage
+            .from('recipe-images')
+            .upload(fileName, imageFile);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) {
+            throw new Error(`Image upload failed: ${uploadError.message}`);
+          }
 
-        const { data: { publicUrl } } = supabaseClient.storage
-          .from('recipe-images')
-          .getPublicUrl(fileName);
-        
-        imageUrl = publicUrl;
+          // Get public URL for the uploaded image
+          const { data: { publicUrl } } = supabaseClient.storage
+            .from('recipe-images')
+            .getPublicUrl(fileName);
+          
+          imageUrl = publicUrl;
+        } catch (uploadErr: any) {
+          throw new Error(`Failed to upload image: ${uploadErr.message}`);
+        }
       }
 
-      // Create recipe
+      // Step 4: Create recipe record in database
       const { data: recipe, error: recipeError } = await supabaseClient
         .from('recipes')
         .insert({
@@ -69,20 +114,28 @@ export default function RecipeCreatePage() {
           slug,
           description: description || null,
           image_url: imageUrl,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          method_steps: methodSteps.filter(Boolean),
-          notes: notes.filter(Boolean),
-          is_public: true,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean), // Parse comma-separated tags
+          method_steps: methodSteps.filter(Boolean), // Remove empty steps
+          notes: notes.filter(Boolean), // Remove empty notes
+          is_public: true, // New recipes are public by default
         })
         .select()
         .single();
 
-      if (recipeError) throw recipeError;
+      if (recipeError) {
+        throw new Error(`Failed to create recipe: ${recipeError.message}`);
+      }
 
-      // Create ingredients
+      if (!recipe) {
+        throw new Error('Recipe was created but no data was returned');
+      }
+
+      // Step 5: Create ingredient records
+      // Filter out empty ingredients and convert volumes to weights
       const ingredientsData = ingredients
         .filter(ing => ing.name && ing.amount > 0)
         .map((ing, index) => {
+          // Convert volume measurements to weight (grams) for consistency
           const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
           return {
             recipe_id: recipe.id,
@@ -94,18 +147,23 @@ export default function RecipeCreatePage() {
           };
         });
 
+      // Insert ingredients if any were provided
       if (ingredientsData.length > 0) {
         const { error: ingredientsError } = await supabaseClient
           .from('ingredients')
           .insert(ingredientsData);
 
-        if (ingredientsError) throw ingredientsError;
+        if (ingredientsError) {
+          throw new Error(`Failed to save ingredients: ${ingredientsError.message}`);
+        }
       }
 
-      // Redirect to recipe page
+      // Step 6: Redirect to the newly created recipe page
       router.push(`/recipe/${recipe.id}`);
     } catch (err: any) {
-      setError(err.message || 'Failed to create recipe');
+      // Display error message to user
+      setError(err.message || 'Failed to create recipe. Please try again.');
+      console.error('Error creating recipe:', err);
     } finally {
       setLoading(false);
     }

@@ -1,13 +1,45 @@
+/**
+ * Search Bar Component
+ * 
+ * Provides a search input for finding recipes by name or tags.
+ * Currently displays search term in console - search functionality
+ * can be implemented by navigating to a search results page or
+ * filtering the homepage recipes.
+ * 
+ * This is a Client Component because it needs to:
+ * - Handle form submission
+ * - Manage search input state
+ */
+
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SearchBar() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
 
+  /**
+   * Handle search form submission
+   * TODO: Implement full search functionality
+   * For now, this could navigate to a search results page
+   * or filter recipes on the homepage
+   */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement search functionality with Supabase
+    
+    if (!searchTerm.trim()) {
+      return; // Don't search if input is empty
+    }
+    
+    // TODO: Implement search functionality
+    // Option 1: Navigate to search results page
+    // router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    
+    // Option 2: Filter recipes on current page
+    // This would require passing search term to parent component
+    
     console.log('Searching for:', searchTerm);
   };
 
