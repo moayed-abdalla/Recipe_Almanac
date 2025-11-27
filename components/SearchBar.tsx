@@ -18,7 +18,7 @@ export default function SearchBar() {
           <input
             type="text"
             placeholder="Search recipes by name or tags..."
-            className="input input-bordered flex-1"
+            className="input input-bordered flex-1 typewriter"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
