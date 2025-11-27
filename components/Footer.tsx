@@ -20,7 +20,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="footer bg-base-200 p-10 text-base-content border-t-2 border-base-300">
+    <footer className="footer bg-base-100 p-10 text-base-content border-t border-base-300">
       <div className="container mx-auto">
         <div className="footer-content flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
