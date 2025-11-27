@@ -143,11 +143,18 @@ export type Database = {
 };
 
 // Get environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// During build, these might not be available, so we'll validate at runtime
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// Validate environment variables at runtime (not during build)
+// This prevents build failures while still catching configuration issues
+function validateEnvVars() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    );
+  }
 }
 
 /**
@@ -155,7 +162,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * Use this in React components that run in the browser ('use client')
  */
 export function createBrowserClient() {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  validateEnvVars();
+  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -168,9 +176,10 @@ export function createBrowserClient() {
  * Use this in Server Components, API routes, and Server Actions
  */
 export async function createServerClient() {
+  validateEnvVars();
   const cookieStore = await cookies();
   
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -189,7 +198,8 @@ export async function createServerClient() {
  * Only use this in secure server contexts (API routes with proper authentication)
  */
 export function createAdminClient() {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  validateEnvVars();
+  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -200,6 +210,12 @@ export function createAdminClient() {
 /**
  * Simple client for non-authenticated operations
  * Use this when you don't need user context
+ * Note: This will throw an error if env vars are missing when called
+ * 
+ * @deprecated Prefer using createServerClient() or createBrowserClient() instead
  */
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export function getSupabaseClient() {
+  validateEnvVars();
+  return createClient<Database>(supabaseUrl!, supabaseAnonKey!);
+}
 
