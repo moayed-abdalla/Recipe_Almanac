@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Recipe Almanac',
-  description: 'A digital recipe book you can share, browse and write your own. No ads, no subscriptions, just recipes.',
+  description: 'Your digital recipe book you can share, browse and write your own. No ads, no subscriptions, just recipes.',
 };
 
 export default function RootLayout({
