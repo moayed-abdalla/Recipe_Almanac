@@ -15,9 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-theme="light">
-      <body>
+      <body className="bg-base-100 text-base-content">
         <Header />
-        <main className="min-h-screen bg-base-100 text-base-content">
+        <main className="min-h-screen relative z-10">
           {children}
         </main>
         <Footer />

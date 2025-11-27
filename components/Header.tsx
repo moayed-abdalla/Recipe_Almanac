@@ -11,10 +11,9 @@ export default function Header() {
   const supabase = supabaseClient;
 
   useEffect(() => {
-    // Get initial theme from localStorage or system preference
+    // Get initial theme from localStorage, default to light mode
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initialTheme = savedTheme || systemTheme;
+    const initialTheme = savedTheme || 'light';
     setTheme(initialTheme);
     document.documentElement.setAttribute('data-theme', initialTheme);
 
@@ -39,10 +38,10 @@ export default function Header() {
   };
 
   return (
-    <header className="navbar bg-base-200 shadow-lg">
+    <header className="navbar bg-base-100 shadow-lg border-b border-base-300">
       <div className="container mx-auto">
         <div className="flex-1">
-          <Link href="/" className="btn btn-ghost normal-case text-xl">
+          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter">
             <Image
               src="/logo.png"
               alt="Recipe Almanac"
