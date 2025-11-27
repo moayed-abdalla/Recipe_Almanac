@@ -1,162 +1,201 @@
-### Recipe Almanac ###
-'''
-This is the Recipe Almanac, a digital recipe book you can, share, browse and write your own.
-I am tired of recipe pages that just want your email to add you to mailing list or want you to pay for a subscription or just covered in ads.
-This page will never have any of those and is here to be every cook's and bakers recipe book
-'''
+# Recipe Almanac
 
-## Website details ##
-This website is built on A React framework and use DaisyUI components and plugins
-the backend uses node.js and sql for Database management and connects to PostgreSQL as the DBMS system for local testing the db is local though after launch the webapp will be connected to supabase or another opensource db
+A digital recipe book you can share, browse, and write your own. **No ads. No subscriptions. No marketing fluff. Just recipes.**
 
-## Global ##
-`Header`
-    Home button as the website logo *logo.png* 
-    My profile page round icon (if a profile picture is not added or user not logged in daisy img is used <img src="" />)
-    My almanac page / or a Log IN button if the user is not logged on
-    A moon icon to change the page to dark mode or sun icon to change to light mode if already on dark mode (should take browser default setting) using daisy theme controller component
-    github logo (page link to https://github.com/moayed-abdalla/Recipe_Almanac/) 
-    Coffee icon (leads to https://buymeacoffee.com/moayed_abdalla)
+## Why Recipe Almanac?
 
-`Footer`
-    Home button as the logo
-    My profile page 
-    My almanac page 
-    github logo (page link to https://github.com/moayed-abdalla/Recipe_Almanac/) 
+I created Recipe Almanac after growing frustrated with recipe websites that:
+- Clutter pages with ads and pop-ups
+- Require email signups and subscriptions
+- Fill pages with marketing copy instead of actual recipes
+- Make it difficult to convert between measurement units (cups to grams, etc.)
+- Prioritize SEO content over user experience
 
-## Pages ##
-`Home`
-    Search bar to be able to search for a recipe (should be able to find either similar names or tags associated with the recipe)
-    List of all public recipes in order of most viewed
-    side bar that opens when you click on the profile page icon (this side bar should only be accessible on the homepage)
+Recipe Almanac is my answer: a clean, ad-free platform focused solely on sharing great recipes with proper unit conversion tools.
 
-`Almanac page`
-    list of recipes, should have a 2 filter categories, first filter category is for My recipes or Saved recipes, the second category is the food category whic is just based on the tags that people have added to the recipe
+## What Makes It Different?
 
-`Recipe Page`
-    Recipe picture
-    Recipe title / Recipe owner (should link to owners page)
-    Tags associated with recipe (light grey for light mode and dark grey for dark mode)
-    Ingredients heading
-    Ingredients list (Check boxes) on the back 
-    Units change button there should be a dictionary that is the volume to grams conversion rate for a given ingredient for example {flour:0.5} meaning for this the weight per ml.
-    there should also be a volumetric dictionary for each unit {US cups:250, teaspoon:5,tablespoon:15} 
-    Method Heading
-    Method steps (numbered list)
-    Notes Heading
-    Notes (numbered list)
-    Recipe page should be found https://website_link/profile_name/recipe_name/
+✨ **Ad-Free Experience** - No ads, no pop-ups, no distractions  
+🔒 **Privacy-First** - No email harvesting or marketing campaigns  
+⚖️ **Smart Unit Conversion** - Easily switch between volume (cups, teaspoons) and weight (grams) measurements  
+📝 **Clean Interface** - Focus on the recipe, not the marketing  
+🌓 **Dark Mode** - Comfortable viewing in any lighting  
+🔍 **Powerful Search** - Find recipes by name or tags  
+📚 **Your Almanac** - Save and organize your favorite recipes  
 
-`Recipe Writing Page`
-    Recipe title
-    Insert Recipe picture
-    Tags (user is allowed to write multiple tags here)
-    Ingredients measurements (Must be either cups, teaspoon) / Ingredient unit selection dropdown / Ingredient description  
-    Method heading
-    Method numbered list
-    Notes Heading
-    Notes numbered list
-    Recipe editing page should be found https://website_link/profile_name/recipe_name/edit (must be logged in to edit, users can only edit their recipes)
+## How It Works
 
-`Profile page`
-    details and page views and ratings dashboard
-    link sharing profile in link as https://_____.______/U/profile/recipe____
+### Technology Stack
 
-`Profile creation page`
-    Username
-    Password
-    Confirm Password
-    Email (optional) meantion is optional and only used for sign in
+Recipe Almanac is built with modern web technologies:
 
-## Databases ##
-`user database with a Primary key for the DB is User's username`
-    Attributes (Username, user_mail, user_password, profile_description, profile_picture)
+- **Frontend**: Next.js 14 with React and TypeScript
+- **Styling**: Tailwind CSS with DaisyUI components
+- **Backend**: Supabase (PostgreSQL database + Authentication + Storage)
+- **Deployment**: Vercel (serverless hosting)
+- **Font**: Typewriter-style fonts (Courier Prime, Special Elite) for a classic alchemist aesthetic
 
-`Recipe database will have a composite key of the username and recipe_name`
-    Attributes (Username_of_owner, recipe_name, recipe_picture, recipe_description, recipe_ingredient_amount, recipe_ingredient_unit, view_count)
+### Authentication & Security
 
-`Almanac page` list of recipes a user owns or has saved
-    Attribute (Username, recipe_name, recipe_picture)
+**All user authentication is handled by Supabase Auth**, which means:
+- Secure password hashing (bcrypt)
+- Email verification (optional)
+- Session management
+- No need to handle passwords yourself
+- Industry-standard security practices
 
-## Page Colors ##
-light mode color pallete
-    lg_bg: #E6C59E `light mode background`
-    lg_secondary: #F2E2CE `light mode secondary background`
-    lg_font: #191510 `light mode font color`
-    lg_light_accent: #d7d9ea `light mode light accent color`
-    lg_dark_accent: #0e101b `light mode dark accent color`
+When you create an account:
+1. Supabase Auth creates your user account securely
+2. A profile is automatically created in the database
+3. Your session is managed securely
+4. You can log in from any device
 
-dark mode color pallete
-    dk_bg: #0E101B `dark mode background`
-    dk_secondary: #353745 `dark mode secondary background`
-    dk_font: #d7d9ea `dark mode font color`
-    dk_light_accent: #F2E2CE `dark mode light accent color`
-    dk_dark_accent: #E6C59E `dark mode dark accent color`
+### Database & Storage
 
-## project structure ##
+**Supabase PostgreSQL** powers the backend:
+- User profiles and recipes stored securely
+- Row Level Security (RLS) ensures users can only edit their own content
+- Full-text search for finding recipes quickly
+- Image storage via Supabase Storage (no local file system needed)
+
+### Unit Conversion
+
+One of Recipe Almanac's standout features is intelligent unit conversion:
+- Ingredients stored in grams (base unit)
+- Display in volume units (cups, teaspoons, tablespoons)
+- One-click toggle between volume and weight
+- Ingredient-specific density calculations for accuracy
+- Handles common ingredients like flour, sugar, butter, etc.
+
+## Features
+
+### For Recipe Creators
+- Create recipes with images
+- Add multiple tags for categorization
+- Write detailed method steps
+- Include helpful notes
+- Set recipes as public or private
+- Track view counts
+
+### For Recipe Browsers
+- Search recipes by name or tags
+- Filter by category
+- View recipes with beautiful formatting
+- Toggle between measurement units
+- Save recipes to your almanac
+- Follow recipe creators
+
+### For Everyone
+- Clean, distraction-free interface
+- Chemistry-themed design with subtle flask backgrounds
+- Responsive design (works on mobile, tablet, desktop)
+- Dark mode support
+- Fast loading times
+- No account required to browse public recipes
+
+## Project Structure
+
+```
 Recipe_Almanac/
-├── server/
-│   ├── controllers/
-│   ├── database/
-│      ├── init.js
-│      └── pool.js
-│   ├── middleware/
-│      ├── auth.js
-│      └──rateLimit.js
-│   ├── models/
-│   ├── node_modules/
-│   ├── routes/
-│       ├── almanac.js
-│       ├── auth.js
-│       ├── recipes.js
-│       └── users.js
-│   ├── uploads/
-│   ├── package.json 
-│   ├── package-lock.json 
-│   ├── server.js 
-│   └── vercel.json
-│
-├── client/
-│   ├── .vite/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│       ├── assets/
-│           ├── logo.png
-│           └── react.svg
-│       ├── components/
-│           ├── Footer.jsx
-│           ├── Header.jsx
-│           ├── RecipeCard.jsx
-│           └── SearchBar.jsx
-│       ├── pages/
-│           ├── AlmanacPage.jsx
-│           ├── Home.jsx
-│           ├── LoginPage.jsx
-│           ├── ProfilePage.jsx
-│           ├── RecipeCreate.jsx
-│           ├── RecipeEdit.jsx
-│           ├── RecipePage.jsx
-│           └── RegisterPage.jsx
-│       ├── services/
-│           └── api.js
-│       ├── utils/
-│           └── unitConverter.js
-│       ├── App.jsx
-│       ├── index.css
-│       └── main.jsx
-│   ├── .gitignore
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── pnpm-lock.yaml
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   ├── vercel.json
-│   └── vite.config.js
-│ 
-├── package.json
-├── package-lock.json
-├── Readme.md
-└── .gitignore 
+├── app/                    # Next.js App Router
+│   ├── api/                # API routes
+│   ├── almanac/            # User's saved recipes
+│   ├── login/              # Login page
+│   ├── register/           # Registration page
+│   ├── profile/            # User profiles
+│   ├── recipe/             # Recipe pages
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Homepage
+├── components/             # Reusable React components
+├── lib/                    # Supabase client configuration
+├── utils/                  # Utility functions (unit conversion, etc.)
+├── database/               # Database schema and setup files
+└── public/                 # Static assets (logo, images)
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18 or higher
+- A Supabase account (free tier works)
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/moayed-abdalla/Recipe_Almanac.git
+   cd Recipe_Almanac
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Supabase**
+   - Create a project at [supabase.com](https://supabase.com)
+   - Run the SQL schema from `database/schema.sql` in the Supabase SQL Editor
+   - Create storage buckets: `recipe-images` and `avatars` (both public)
+   - Get your API keys from Settings > API
+
+4. **Configure environment variables**
+   - Copy `.env.local.example` to `.env.local`
+   - Add your Supabase URL and anon key
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Open your browser**
+   - Visit `http://localhost:3000`
+
+## Deployment
+
+Recipe Almanac is designed to deploy seamlessly on Vercel:
+
+1. Push your code to GitHub
+2. Import your repository in [Vercel](https://vercel.com)
+3. Add environment variables (Supabase URL and key)
+4. Deploy!
+
+Vercel automatically:
+- Detects Next.js
+- Builds your app
+- Deploys to a global CDN
+- Sets up serverless functions for API routes
+
+## Color Theme
+
+Recipe Almanac uses a chemistry-inspired color palette:
+
+**Light Mode (Default)**:
+- Background: `#F7F7F7` (white-grey)
+- Text: `#CC5500` (dark orange)
+- Primary: `#FF8C00` (orange)
+- Accent: `#87CEEB` (light blue)
+
+**Dark Mode**:
+- Inverted colors for comfortable viewing
+- Dark background with orange text
+
+## Contributing
+
+Recipe Almanac is open source! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
+- Share recipes
+
+## License
+
+This project is open source and available for everyone to use and contribute to.
+
+## Support
+
+- **GitHub**: [https://github.com/moayed-abdalla/Recipe_Almanac](https://github.com/moayed-abdalla/Recipe_Almanac)
+- **Buy Me a Coffee**: [https://buymeacoffee.com/moayed_abdalla](https://buymeacoffee.com/moayed_abdalla)
+
+---
+
+**Built with ❤️ for chefs and bakers who just want great recipes without the hassle.**

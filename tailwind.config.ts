@@ -12,22 +12,11 @@ const config: Config = {
         'typewriter': ['Courier Prime', 'Special Elite', 'monospace'],
       },
       colors: {
-        // Light mode color palette
-        'lg-bg': '#E6C59E',
-        'lg-secondary': '#F2E2CE',
-        'lg-font': '#191510',
-        'lg-light-accent': '#d7d9ea',
-        'lg-dark-accent': '#0e101b',
-        // Dark mode color palette
-        'dk-bg': '#0E101B',
-        'dk-secondary': '#353745',
-        'dk-font': '#d7d9ea',
-        'dk-light-accent': '#F2E2CE',
-        'dk-dark-accent': '#E6C59E',
-        // Steampunk/Alchemist accents
-        'brass': '#D4AF37',
-        'copper': '#B87333',
-        'bronze': '#8B7355',
+        // Orange theme colors
+        'orange-dark': '#CC5500',
+        'orange-primary': '#FF8C00',
+        'orange-secondary': '#FFA500',
+        'blue-accent': '#87CEEB',
       },
     },
   },
@@ -36,22 +25,24 @@ const config: Config = {
     themes: [
       {
         light: {
-          'base-100': '#E6C59E', // lg_bg
-          'base-200': '#F2E2CE', // lg_secondary
-          'base-content': '#191510', // lg_font
-          'primary': '#0e101b', // lg_dark_accent
-          'secondary': '#d7d9ea', // lg_light_accent
-          'accent': '#0e101b',
-          'neutral': '#191510',
+          'base-100': '#F7F7F7', // White main background
+          'base-200': '#E8E8E8', // Light grey secondary
+          'base-300': '#D3D3D3', // Medium grey
+          'base-content': '#CC5500', // Dark orange text
+          'primary': '#FF8C00', // Orange primary
+          'secondary': '#FFA500', // Orange secondary
+          'accent': '#87CEEB', // Light blue accent
+          'neutral': '#808080', // Grey neutral
         },
         dark: {
-          'base-100': '#0E101B', // dk_bg
-          'base-200': '#353745', // dk_secondary
-          'base-content': '#d7d9ea', // dk_font
-          'primary': '#E6C59E', // dk_dark_accent
-          'secondary': '#F2E2CE', // dk_light_accent
-          'accent': '#E6C59E',
-          'neutral': '#353745',
+          'base-100': '#1A1A1A', // Dark background (inverse of white)
+          'base-200': '#2D2D2D', // Dark grey secondary
+          'base-300': '#404040', // Medium dark grey
+          'base-content': '#FFA500', // Orange text (inverse of dark orange)
+          'primary': '#FF8C00', // Orange primary
+          'secondary': '#FFA500', // Orange secondary
+          'accent': '#87CEEB', // Light blue accent
+          'neutral': '#666666', // Light grey neutral
         },
       },
     ],
