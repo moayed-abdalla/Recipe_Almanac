@@ -1,5 +1,21 @@
+/**
+ * Profile Page Component
+ * 
+ * Displays a user's public profile with:
+ * - Username and avatar
+ * - Profile description
+ * - List of all public recipes created by the user
+ * 
+ * This is a Server Component that fetches data from Supabase.
+ * Only public recipes are displayed on profile pages.
+ * Users can see their own private recipes in "My Almanac".
+ * 
+ * @param params - Route parameters containing the username
+ */
+
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import RecipeCard from '@/components/RecipeCard';
 
 interface ProfilePageProps {
   params: {
@@ -35,29 +51,38 @@ interface Recipe {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const supabase = await createServerClient();
 
-  // Fetch profile
+  // Step 1: Fetch user profile by username
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', params.username)
     .single();
 
+  // If profile not found, show 404 page
   if (profileError || !profile) {
+    console.error('Profile fetch error:', profileError);
     notFound();
   }
 
-  // Type assertion to help TypeScript
+  // Type assertion to help TypeScript understand the data structure
   const typedProfile = profile as Profile;
 
-  // Fetch user's recipes
+  // Step 2: Fetch user's public recipes
+  // Only public recipes are shown on profile pages
+  // Users can see their own private recipes in "My Almanac"
   const { data: recipes, error: recipesError } = await supabase
     .from('recipes')
     .select('*')
     .eq('user_id', typedProfile.id)
-    .eq('is_public', true)
-    .order('created_at', { ascending: false });
+    .eq('is_public', true) // Only show public recipes
+    .order('created_at', { ascending: false }); // Most recent first
 
-  // Type assertion for recipes
+  // Handle errors gracefully
+  if (recipesError) {
+    console.error('Error fetching recipes:', recipesError);
+  }
+
+  // Type assertion for recipes array
   const typedRecipes = (recipes || []) as Recipe[];
 
   return (
@@ -101,25 +126,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {typedRecipes.map((recipe) => (
-              <a
+              <RecipeCard
                 key={recipe.id}
-                href={`/recipe/${recipe.id}`}
-                className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow"
-              >
-                <div className="card-body">
-                  <h3 className="card-title">{recipe.title}</h3>
-                  {recipe.description && (
-                    <p className="text-sm opacity-70 line-clamp-2">
-                      {recipe.description}
-                    </p>
-                  )}
-                  <div className="card-actions justify-end mt-4">
-                    <span className="text-sm opacity-60">
-                      {recipe.view_count} views
-                    </span>
-                  </div>
-                </div>
-              </a>
+                id={recipe.id}
+                title={recipe.title}
+                imageUrl={recipe.image_url}
+                description={recipe.description}
+                username={typedProfile.username}
+                viewCount={recipe.view_count}
+                tags={recipe.tags}
+              />
             ))}
           </div>
         )}

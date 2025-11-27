@@ -1,3 +1,22 @@
+/**
+ * Header Component
+ * 
+ * Global navigation header that appears on all pages.
+ * Features:
+ * - Site logo and title (links to homepage)
+ * - User profile dropdown (when logged in) with:
+ *   - My Profile link
+ *   - My Almanac link
+ *   - Logout button
+ * - Login button (when not logged in)
+ * - Theme toggle (light/dark mode)
+ * 
+ * This is a Client Component because it needs to:
+ * - Access localStorage for theme persistence
+ * - Listen to auth state changes
+ * - Handle user interactions
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -6,35 +25,62 @@ import { useState, useEffect } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 
 export default function Header() {
+  // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  
+  // User state - current authenticated user
   const [user, setUser] = useState<any>(null);
+  
+  // Supabase client for authentication
   const supabase = supabaseClient;
 
+  /**
+   * Initialize theme and user session on component mount
+   */
   useEffect(() => {
-    // Get initial theme from localStorage, default to light mode
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const initialTheme = savedTheme || 'light';
-    setTheme(initialTheme);
-    document.documentElement.setAttribute('data-theme', initialTheme);
+    try {
+      // Get initial theme from localStorage, default to light mode
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+      const initialTheme = savedTheme || 'light';
+      setTheme(initialTheme);
+      document.documentElement.setAttribute('data-theme', initialTheme);
 
-    // Check for user session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+      // Check for existing user session
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('Error getting session:', error);
+        } else {
+          setUser(session?.user ?? null);
+        }
+      });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+      // Listen for authentication state changes (login, logout, etc.)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
 
-    return () => subscription.unsubscribe();
-  }, []);
+      // Cleanup: unsubscribe from auth state changes when component unmounts
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error initializing header:', error);
+    }
+  }, [supabase]);
 
+  /**
+   * Toggle between light and dark theme
+   * Saves preference to localStorage for persistence
+   */
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    try {
+      const newTheme = theme === 'light' ? 'dark' : 'light';
+      setTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.documentElement.setAttribute('data-theme', newTheme);
+    } catch (error) {
+      console.error('Error toggling theme:', error);
+    }
   };
 
   return (
@@ -76,15 +122,45 @@ export default function Header() {
                   )}
                 </div>
               </label>
-              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+              <ul 
+                tabIndex={0} 
+                className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+                onClick={(e) => {
+                  // Close dropdown when clicking on a link
+                  // This ensures the dropdown closes after navigation
+                  const target = e.target as HTMLElement;
+                  if (target.closest('a')) {
+                    // Small delay to allow navigation to start
+                    setTimeout(() => {
+                      const dropdown = document.activeElement as HTMLElement;
+                      if (dropdown && dropdown.blur) {
+                        dropdown.blur();
+                      }
+                    }, 100);
+                  }
+                }}
+              >
                 <li>
-                  <Link href="/profile">My Profile</Link>
+                  <Link href="/profile" className="block">My Profile</Link>
                 </li>
                 <li>
-                  <Link href="/almanac">My Almanac</Link>
+                  <Link href="/almanac" className="block">My Almanac</Link>
                 </li>
                 <li>
-                  <button onClick={() => supabase.auth.signOut()}>Logout</button>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase.auth.signOut();
+                        if (error) throw error;
+                        // Redirect to homepage after logout
+                        window.location.href = '/';
+                      } catch (error) {
+                        console.error('Error signing out:', error);
+                      }
+                    }}
+                  >
+                    Logout
+                  </button>
                 </li>
               </ul>
             </div>
