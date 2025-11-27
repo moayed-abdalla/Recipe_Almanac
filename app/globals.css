@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
 body {
   min-height: 100vh;
-  font-family: 'Courier Prime', 'Special Elite', monospace;
+  font-family: "Special Elite", system-ui, monospace;
+  font-weight: 400;
+  font-style: normal;
   background-color: #F7F7F7;
   position: relative;
   color: #CC5500;
@@ -17,7 +19,7 @@ body {
   color: #FFA500;
 }
 
-/* Chemistry flask background pattern */
+/* Chemistry flask background pattern - 8 flasks total */
 body::before {
   content: '';
   position: fixed;
@@ -25,14 +27,35 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.03;
+  opacity: 0.3;
   z-index: 0;
   background-image: 
     url('/flask_light.png'),
     url('/flask_light.png'),
+    url('/flask_light.png'),
+    url('/flask_light.png'),
+    url('/flask_light.png'),
+    url('/flask_light.png'),
+    url('/flask_light.png'),
     url('/flask_light.png');
-  background-position: 5% 15%, 50% 70%, 95% 30%;
-  background-size: 180px auto, 160px auto, 200px auto;
+  background-position: 
+    5% 15%, 
+    20% 60%, 
+    35% 25%, 
+    50% 70%, 
+    65% 40%, 
+    80% 10%, 
+    90% 55%, 
+    95% 30%;
+  background-size: 
+    120px auto, 
+    100px auto, 
+    140px auto, 
+    110px auto, 
+    130px auto, 
+    90px auto, 
+    150px auto, 
+    105px auto;
   background-repeat: no-repeat;
   pointer-events: none;
 }
@@ -45,17 +68,28 @@ body::before {
   background-image: 
     url('/flask_dark.png'),
     url('/flask_dark.png'),
+    url('/flask_dark.png'),
+    url('/flask_dark.png'),
+    url('/flask_dark.png'),
+    url('/flask_dark.png'),
+    url('/flask_dark.png'),
     url('/flask_dark.png');
-  opacity: 0.05;
+  opacity: 1.0;
 }
 
 * {
-  font-family: 'Courier Prime', 'Special Elite', monospace;
+  font-family: "Special Elite", system-ui, monospace;
+}
+
+/* Italic text uses default system font */
+i, em, .italic {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-style: italic;
 }
 
 /* Typewriter font for specific elements */
 .typewriter {
-  font-family: 'Courier Prime', 'Special Elite', monospace;
-  font-weight: 700;
+  font-family: "Special Elite", system-ui, monospace;
+  font-weight: 400;
 }
 
