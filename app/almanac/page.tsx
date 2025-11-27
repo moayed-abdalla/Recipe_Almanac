@@ -26,8 +26,26 @@ import RecipeCard from '@/components/RecipeCard';
 
 /**
  * Recipe interface matching the database schema
+ * Note: Supabase may return profiles as an array or single object depending on the query
  */
 interface Recipe {
+  id: string;
+  title: string;
+  image_url: string | null;
+  description: string | null;
+  view_count: number;
+  tags: string[];
+  profiles: {
+    username: string;
+  } | {
+    username: string;
+  }[] | null;
+}
+
+/**
+ * Normalized recipe interface with profiles as a single object
+ */
+interface NormalizedRecipe {
   id: string;
   title: string;
   image_url: string | null;
@@ -46,11 +64,46 @@ export default function AlmanacPage() {
   // Active filter tab: 'my-recipes' or 'favorites'
   const [filter, setFilter] = useState<'my-recipes' | 'favorites'>('my-recipes');
   
-  // User's own recipes
-  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  // User's own recipes (normalized with single profiles object)
+  const [myRecipes, setMyRecipes] = useState<NormalizedRecipe[]>([]);
   
-  // User's favorited recipes
-  const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([]);
+  // User's favorited recipes (normalized with single profiles object)
+  const [favoriteRecipes, setFavoriteRecipes] = useState<NormalizedRecipe[]>([]);
+  
+  /**
+   * Normalize recipe data from Supabase
+   * Converts profiles from array to single object if needed
+   */
+  const normalizeRecipe = (recipe: Recipe): NormalizedRecipe | null => {
+    if (!recipe) return null;
+    
+    // Handle profiles - Supabase may return it as an array or single object
+    let profiles: { username: string } | null = null;
+    
+    if (Array.isArray(recipe.profiles)) {
+      // If it's an array, take the first element
+      profiles = recipe.profiles[0] || null;
+    } else if (recipe.profiles) {
+      // If it's already a single object, use it directly
+      profiles = recipe.profiles;
+    }
+    
+    // If no profile found, skip this recipe (shouldn't happen, but safety check)
+    if (!profiles) {
+      console.warn('Recipe missing profile data:', recipe.id);
+      return null;
+    }
+    
+    return {
+      id: recipe.id,
+      title: recipe.title,
+      image_url: recipe.image_url,
+      description: recipe.description,
+      view_count: recipe.view_count,
+      tags: recipe.tags,
+      profiles,
+    };
+  };
   
   // Loading state for initial data fetch
   const [loading, setLoading] = useState(true);
@@ -146,8 +199,14 @@ export default function AlmanacPage() {
         return;
       }
 
-      // Type assertion and update state
-      setMyRecipes((data || []) as Recipe[]);
+      // Normalize recipes and filter out any null values
+      // Use 'unknown' first to safely convert from Supabase's return type
+      const recipes = (data || []) as unknown as Recipe[];
+      const normalizedRecipes = recipes
+        .map((recipe: Recipe) => normalizeRecipe(recipe))
+        .filter((recipe): recipe is NormalizedRecipe => recipe !== null);
+      
+      setMyRecipes(normalizedRecipes);
     } catch (err) {
       console.error('Unexpected error fetching my recipes:', err);
       setError('An unexpected error occurred while loading recipes');
@@ -180,7 +239,7 @@ export default function AlmanacPage() {
       }
 
       // Step 2: Fetch full recipe data for favorited recipes
-      const recipeIds = savedData.map(item => item.recipe_id);
+      const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
       const { data, error } = await supabaseClient
         .from('recipes')
         .select(`
@@ -203,8 +262,14 @@ export default function AlmanacPage() {
         return;
       }
 
-      // Type assertion and update state
-      setFavoriteRecipes((data || []) as Recipe[]);
+      // Normalize recipes and filter out any null values
+      // Use 'unknown' first to safely convert from Supabase's return type
+      const recipes = (data || []) as unknown as Recipe[];
+      const normalizedRecipes = recipes
+        .map((recipe: Recipe) => normalizeRecipe(recipe))
+        .filter((recipe): recipe is NormalizedRecipe => recipe !== null);
+      
+      setFavoriteRecipes(normalizedRecipes);
     } catch (err) {
       console.error('Unexpected error fetching favorite recipes:', err);
       setError('An unexpected error occurred while loading favorites');
@@ -308,7 +373,7 @@ export default function AlmanacPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentRecipes.map((recipe) => (
+          {currentRecipes.map((recipe: NormalizedRecipe) => (
             <RecipeCard
               key={recipe.id}
               id={recipe.id}
