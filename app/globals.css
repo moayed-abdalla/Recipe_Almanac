@@ -19,7 +19,7 @@ body {
   color: #FFA500;
 }
 
-/* Chemistry flask background pattern - 8 flasks total */
+/* Chemistry flask background pattern - Responsive based on screen size */
 body::before {
   content: '';
   position: fixed;
@@ -29,6 +29,7 @@ body::before {
   height: 100%;
   opacity: 0.3;
   z-index: 0;
+  /* Default: 8 flasks for large screens */
   background-image: 
     url('/flask_light.png'),
     url('/flask_light.png'),
@@ -60,11 +61,48 @@ body::before {
   pointer-events: none;
 }
 
+/* Medium screens: 4 flasks, smaller size */
+@media (max-width: 1024px) {
+  body::before {
+    background-image: 
+      url('/flask_light.png'),
+      url('/flask_light.png'),
+      url('/flask_light.png'),
+      url('/flask_light.png');
+    background-position: 
+      10% 20%, 
+      50% 60%, 
+      80% 30%, 
+      30% 80%;
+    background-size: 
+      80px auto, 
+      70px auto, 
+      90px auto, 
+      75px auto;
+  }
+}
+
+/* Small screens: 2 flasks, even smaller */
+@media (max-width: 768px) {
+  body::before {
+    background-image: 
+      url('/flask_light.png'),
+      url('/flask_light.png');
+    background-position: 
+      15% 25%, 
+      85% 75%;
+    background-size: 
+      60px auto, 
+      55px auto;
+  }
+}
+
 [data-theme="dark"] {
   background-color: #1A1A1A;
 }
 
 [data-theme="dark"] body::before {
+  /* Default: 8 flasks for large screens */
   background-image: 
     url('/flask_dark.png'),
     url('/flask_dark.png'),
@@ -75,6 +113,26 @@ body::before {
     url('/flask_dark.png'),
     url('/flask_dark.png');
   opacity: 1.0;
+}
+
+/* Medium screens: 4 flasks for dark mode */
+@media (max-width: 1024px) {
+  [data-theme="dark"] body::before {
+    background-image: 
+      url('/flask_dark.png'),
+      url('/flask_dark.png'),
+      url('/flask_dark.png'),
+      url('/flask_dark.png');
+  }
+}
+
+/* Small screens: 2 flasks for dark mode */
+@media (max-width: 768px) {
+  [data-theme="dark"] body::before {
+    background-image: 
+      url('/flask_dark.png'),
+      url('/flask_dark.png');
+  }
 }
 
 * {
