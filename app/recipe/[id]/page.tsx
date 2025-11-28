@@ -98,9 +98,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   // Increment view count (fire and forget)
   // Use direct update instead of RPC function for reliability
+  // Type assertion needed because Supabase's generated types may not match exactly
+  const updateData: { view_count: number } = { 
+    view_count: (typedRecipe.view_count || 0) + 1 
+  };
+  
   supabase
     .from('recipes')
-    .update({ view_count: (typedRecipe.view_count || 0) + 1 })
+    .update(updateData as any)
     .eq('id', params.id)
     .then(() => {
       // Success - view count updated
