@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase';
+import { createServerClient, Database } from '@/lib/supabase';
 import RecipePageClient from './RecipePageClient';
 
 interface RecipePageProps {
@@ -98,14 +98,14 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   // Increment view count (fire and forget)
   // Use direct update instead of RPC function for reliability
-  // Type assertion needed because Supabase's generated types may not match exactly
-  const updateData: { view_count: number } = { 
+  // Use proper Database type for the update
+  const updateData: Database['public']['Tables']['recipes']['Update'] = { 
     view_count: (typedRecipe.view_count || 0) + 1 
   };
   
   supabase
     .from('recipes')
-    .update(updateData as any)
+    .update(updateData)
     .eq('id', params.id)
     .then(() => {
       // Success - view count updated
