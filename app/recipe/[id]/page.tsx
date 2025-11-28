@@ -58,17 +58,32 @@ export default async function RecipePage({ params }: RecipePageProps) {
     );
   }
 
-  // Type assertion
+  // Type assertion and handle profiles (may be array or single object)
   const typedRecipe = recipe as RecipeWithProfile;
-  const owner = Array.isArray(typedRecipe.profiles) 
-    ? typedRecipe.profiles[0] 
-    : typedRecipe.profiles;
+  let owner: Profile | null = null;
+  
+  if (Array.isArray(typedRecipe.profiles)) {
+    owner = typedRecipe.profiles[0] || null;
+  } else {
+    owner = typedRecipe.profiles;
+  }
 
   if (!owner) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="alert alert-error">
           <span>Recipe owner not found</span>
+        </div>
+      </div>
+    );
+  }
+  
+  // Ensure owner has required fields
+  if (!owner.username) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="alert alert-error">
+          <span>Recipe owner information is incomplete</span>
         </div>
       </div>
     );
@@ -82,10 +97,18 @@ export default async function RecipePage({ params }: RecipePageProps) {
     .order('order_index');
 
   // Increment view count (fire and forget)
-  // Using type assertion since RPC function might not be in Database type yet
-  (supabase.rpc as any)('increment_recipe_views', { recipe_uuid: params.id }).catch(() => {
-    // Silently fail if RPC doesn't exist yet
-  });
+  // Use direct update instead of RPC function for reliability
+  supabase
+    .from('recipes')
+    .update({ view_count: (typedRecipe.view_count || 0) + 1 })
+    .eq('id', params.id)
+    .then(() => {
+      // Success - view count updated
+    })
+    .catch((err) => {
+      // Silently fail if update doesn't work
+      console.error('Error incrementing view count:', err);
+    });
 
   return (
     <RecipePageClient
