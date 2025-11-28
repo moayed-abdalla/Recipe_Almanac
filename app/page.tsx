@@ -4,15 +4,16 @@
  * Displays the main landing page with:
  * - Hero section with site title and description
  * - Search bar for finding recipes
- * - Grid of public recipes from the database
+ * - Paginated grid of public recipes from the database
  * 
  * This is a Server Component that fetches recipes from Supabase.
  * Only public recipes are displayed on the homepage.
+ * Recipes are ordered by view count (most viewed first).
  */
 
 import { createServerClient } from '@/lib/supabase';
 import SearchBar from '@/components/SearchBar';
-import RecipeCard from '@/components/RecipeCard';
+import RecipeListClient from '@/components/RecipeListClient';
 
 interface Recipe {
   id: string;
@@ -30,9 +31,9 @@ export default async function Home() {
   // Create Supabase client for server-side data fetching
   const supabase = await createServerClient();
 
-  // Fetch public recipes from the database
-  // Only fetch recipes that are marked as public
-  // Order by view count (most popular first) and limit to 20 recipes
+  // Fetch all public recipes from the database
+  // Order by view count (most popular first)
+  // We'll handle pagination on the client side
   const { data: recipes, error } = await supabase
     .from('recipes')
     .select(`
@@ -47,8 +48,7 @@ export default async function Home() {
       )
     `)
     .eq('is_public', true)
-    .order('view_count', { ascending: false })
-    .limit(20);
+    .order('view_count', { ascending: false });
 
   // Handle errors gracefully
   if (error) {
@@ -56,7 +56,17 @@ export default async function Home() {
   }
 
   // Type assertion for recipes data
-  const typedRecipes = (recipes || []) as Recipe[];
+  // Handle profiles as array or single object
+  const typedRecipes = (recipes || []).map((recipe: any) => {
+    const profile = Array.isArray(recipe.profiles) 
+      ? recipe.profiles[0] 
+      : recipe.profiles;
+    
+    return {
+      ...recipe,
+      profiles: profile || { username: 'Unknown' },
+    };
+  }) as Recipe[];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -85,29 +95,9 @@ export default async function Home() {
           <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent flex-1"></div>
         </div>
 
-        {/* Recipe cards grid */}
-        {typedRecipes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-lg opacity-70">No recipes found. Be the first to create one!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {typedRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                id={recipe.id}
-                title={recipe.title}
-                imageUrl={recipe.image_url}
-                description={recipe.description}
-                username={recipe.profiles.username}
-                viewCount={recipe.view_count}
-                tags={recipe.tags}
-              />
-            ))}
-          </div>
-        )}
+        {/* Recipe cards grid with pagination */}
+        <RecipeListClient recipes={typedRecipes} />
       </div>
     </div>
   );
 }
-

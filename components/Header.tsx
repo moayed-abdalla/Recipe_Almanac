@@ -124,13 +124,12 @@ export default function Header() {
               </label>
               <ul 
                 tabIndex={0} 
-                className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+                className="mt-3 z-[1] p-2 shadow-lg menu menu-sm dropdown-content bg-base-100/95 backdrop-blur-sm rounded-box w-52 border border-base-300"
                 onClick={(e) => {
                   // Close dropdown when clicking on a link
-                  // This ensures the dropdown closes after navigation
                   const target = e.target as HTMLElement;
-                  if (target.closest('a')) {
-                    // Small delay to allow navigation to start
+                  if (target.closest('a') || target.closest('button')) {
+                    // Small delay to allow navigation/action to start
                     setTimeout(() => {
                       const dropdown = document.activeElement as HTMLElement;
                       if (dropdown && dropdown.blur) {
