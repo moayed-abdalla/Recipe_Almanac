@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabaseClient } from '@/lib/supabase-client';
 import { useEffect, useState } from 'react';
 
 export default function Footer() {
   const [user, setUser] = useState<any>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
@@ -16,7 +18,28 @@ export default function Footer() {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    // Get initial theme from localStorage or document
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const initialTheme = savedTheme || (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 'light';
+    setTheme(initialTheme);
+
+    // Listen for theme changes
+    const observer = new MutationObserver(() => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' | null;
+      if (currentTheme) {
+        setTheme(currentTheme);
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      observer.disconnect();
+    };
   }, []);
 
   return (
@@ -51,13 +74,26 @@ export default function Footer() {
               href="https://buymeacoffee.com/moayed_abdalla"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost btn-circle"
+              className="btn btn-ghost btn-circle hover:opacity-80 transition-opacity"
               aria-label="Buy Me a Coffee"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 3v1H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-2V3c0-.55-.45-1-1-1H7c-.55 0-1 .45-1 1zm1 0h10v1H7V3zM4 6h14v12H4V6zm2 2v8h10V8H6zm2 2h6v4H8v-4z"/>
-                <path d="M18 19h2v1h-2z" opacity="0.3"/>
-              </svg>
+              {theme === 'light' ? (
+                <Image
+                  src="/BuyMeACoffee_Light.png"
+                  alt="Buy Me a Coffee"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+              ) : (
+                <Image
+                  src="/BuyMeACoffee_Dark.png"
+                  alt="Buy Me a Coffee"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+              )}
             </a>
           </nav>
         </div>
