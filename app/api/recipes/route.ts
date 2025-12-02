@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq('is_public', true)
-      .order('view_count', { ascending: false })
+      .order('created_at', { ascending: false }) // COMMENTED OUT: Changed from view_count to created_at
       .range(offset, offset + limit - 1);
 
     // If search term provided, use text search
