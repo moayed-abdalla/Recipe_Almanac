@@ -1,4 +1,4 @@
-import { createServerClient, Database } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase';
 import RecipePageClient from './RecipePageClient';
 
 interface RecipePageProps {

@@ -22,6 +22,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
+import type { Session } from '@supabase/supabase-js';
 import RecipeCard from '@/components/RecipeCard';
 
 /**
@@ -59,7 +60,7 @@ interface NormalizedRecipe {
 
 export default function AlmanacPage() {
   // Current authenticated user
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   
   // Active filter tab: 'my-recipes' or 'favorites'
   const [filter, setFilter] = useState<'my-recipes' | 'favorites'>('my-recipes');
@@ -148,7 +149,7 @@ export default function AlmanacPage() {
     fetchUser();
 
     // Listen for authentication state changes (login, logout, etc.)
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         // Refresh recipes when user logs in
