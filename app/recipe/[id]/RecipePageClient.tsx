@@ -467,9 +467,10 @@ export default function RecipePageClient({
             {owner.username}
           </Link>
         </div>
-        <div className="mt-2 text-sm opacity-60">
+        {/* COMMENTED OUT: View count display disabled */}
+        {/* <div className="mt-2 text-sm opacity-60">
           {recipe.view_count} views
-        </div>
+        </div> */}
       </div>
 
       {/* Tags */}

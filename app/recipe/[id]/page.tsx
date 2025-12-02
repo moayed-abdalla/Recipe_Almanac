@@ -99,21 +99,22 @@ export default async function RecipePage({ params }: RecipePageProps) {
   // Increment view count (fire and forget)
   // Use direct update instead of RPC function for reliability
   // Use proper Database type for the update
-  const updateData: Database['public']['Tables']['recipes']['Update'] = { 
-    view_count: (typedRecipe.view_count || 0) + 1 
-  };
+  // COMMENTED OUT: View count feature disabled
+  // const updateData: Database['public']['Tables']['recipes']['Update'] = { 
+  //   view_count: (typedRecipe.view_count || 0) + 1 
+  // };
   
-  supabase
-    .from('recipes')
-    //.update(updateData)
-    .eq('id', params.id)
-    .then(() => {
-      // Success - view count updated
-    })
-    .catch((err) => {
-      // Silently fail if update doesn't work
-      console.error('Error incrementing view count:', err);
-    });
+  // supabase
+  //   .from('recipes')
+  //   //.update(updateData)
+  //   .eq('id', params.id)
+  //   .then(() => {
+  //     // Success - view count updated
+  //   })
+  //   .catch((err) => {
+  //     // Silently fail if update doesn't work
+  //     console.error('Error incrementing view count:', err);
+  //   });
 
   return (
     <RecipePageClient

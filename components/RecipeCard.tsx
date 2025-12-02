@@ -65,8 +65,9 @@ export default function RecipeCard({
         <div className="card-actions justify-between items-center mt-4">
           <div className="flex items-center gap-2">
             <span className="text-sm opacity-60">by {username}</span>
-            <span className="text-sm opacity-60">•</span>
-            <span className="text-sm opacity-60">{viewCount} views</span>
+            {/* COMMENTED OUT: View count display disabled */}
+            {/* <span className="text-sm opacity-60">•</span>
+            <span className="text-sm opacity-60">{viewCount} views</span> */}
           </div>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
