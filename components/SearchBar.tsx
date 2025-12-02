@@ -26,7 +26,7 @@ export default function SearchBar() {
    * For now, this could navigate to a search results page
    * or filter recipes on the homepage
    */
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!searchTerm.trim()) {
@@ -52,7 +52,7 @@ export default function SearchBar() {
             placeholder="Search recipes by name or tags..."
             className="input input-bordered flex-1 typewriter"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           />
           <button type="submit" className="btn btn-square">
             <svg
