@@ -80,7 +80,7 @@ export default function RecipePageClient({
   const router = useRouter();
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [isFavorited, setIsFavorited] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [forking, setForking] = useState(false);
   
@@ -362,7 +362,7 @@ export default function RecipePageClient({
 
       // Copy all ingredients to the new recipe
       if (originalRecipe.ingredients && originalRecipe.ingredients.length > 0) {
-        const ingredientsData = originalRecipe.ingredients.map((ing: any) => ({
+        const ingredientsData = originalRecipe.ingredients.map((ing: { name: string; amount_grams: number; unit: string; display_amount: number; order_index: number }) => ({
           recipe_id: newRecipe.id,
           name: ing.name,
           amount_grams: ing.amount_grams,

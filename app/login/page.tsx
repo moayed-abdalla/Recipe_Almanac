@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -29,8 +29,9 @@ export default function LoginPage() {
         router.push('/');
         router.refresh();
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,7 @@ export default function LoginPage() {
                 placeholder="email@example.com"
                 className="input input-bordered"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -72,7 +73,7 @@ export default function LoginPage() {
                 placeholder="password"
                 className="input input-bordered"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
               />
             </div>
