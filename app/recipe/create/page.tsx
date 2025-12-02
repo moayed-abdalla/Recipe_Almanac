@@ -60,7 +60,7 @@ export default function RecipeCreatePage() {
    * Handle form submission
    * Creates a new recipe in the database with all provided information
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -193,7 +193,7 @@ export default function RecipeCreatePage() {
     setIngredients([...ingredients, { name: '', amount: 0, unit: 'cup' }]);
   };
 
-  const updateIngredient = (index: number, field: string, value: any) => {
+  const updateIngredient = (index: number, field: string, value: string | number) => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
     setIngredients(newIngredients);
@@ -219,7 +219,7 @@ export default function RecipeCreatePage() {
             type="text"
             className="input input-bordered"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             required
           />
         </div>
@@ -233,7 +233,7 @@ export default function RecipeCreatePage() {
             type="file"
             accept="image/*"
             className="file-input file-input-bordered"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageFile(e.target.files?.[0] || null)}
           />
         </div>
 
@@ -245,7 +245,7 @@ export default function RecipeCreatePage() {
           <textarea
             className="textarea textarea-bordered"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             rows={3}
           />
         </div>
@@ -259,7 +259,7 @@ export default function RecipeCreatePage() {
             type="text"
             className="input input-bordered"
             value={tags}
-            onChange={(e) => setTags(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)}
             placeholder="dessert, chocolate, cake"
           />
         </div>
@@ -277,12 +277,12 @@ export default function RecipeCreatePage() {
                 className="input input-bordered w-24"
                 placeholder="Amount"
                 value={ing.amount || ''}
-                onChange={(e) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
                 className="select select-bordered"
                 value={ing.unit}
-                onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
               >
                 <option value="cup">cup</option>
                 <option value="cups">cups</option>
@@ -295,7 +295,7 @@ export default function RecipeCreatePage() {
                 className="input input-bordered flex-1"
                 placeholder="Ingredient name"
                 value={ing.name}
-                onChange={(e) => updateIngredient(index, 'name', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
               />
             </div>
           ))}
@@ -321,7 +321,7 @@ export default function RecipeCreatePage() {
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={step}
-                onChange={(e) => updateMethodStep(index, e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
                 rows={2}
               />
             </div>
@@ -348,7 +348,7 @@ export default function RecipeCreatePage() {
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={note}
-                onChange={(e) => updateNote(index, e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
                 rows={2}
               />
             </div>

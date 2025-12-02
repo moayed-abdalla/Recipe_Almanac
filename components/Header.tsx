@@ -23,13 +23,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
+import type { Session } from '@supabase/supabase-js';
 
 export default function Header() {
   // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
   // User state - current authenticated user
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { username?: string; avatar_url?: string } } | null>(null);
   
   // Supabase client for authentication
   const supabase = supabaseClient;
@@ -55,7 +56,7 @@ export default function Header() {
       });
 
       // Listen for authentication state changes (login, logout, etc.)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
         setUser(session?.user ?? null);
       });
 

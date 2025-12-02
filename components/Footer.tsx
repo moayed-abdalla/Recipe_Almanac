@@ -4,9 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabaseClient } from '@/lib/supabase-client';
 import { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 
 export default function Footer() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export default function Footer() {
       setUser(session?.user ?? null);
     });
 
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setUser(session?.user ?? null);
     });
 

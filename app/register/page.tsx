@@ -14,7 +14,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
 
@@ -89,7 +89,7 @@ export default function RegisterPage() {
                 placeholder="username"
                 className="input input-bordered"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                 required
                 minLength={3}
               />
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                 placeholder="email@example.com"
                 className="input input-bordered"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                 placeholder="password"
                 className="input input-bordered"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
@@ -133,7 +133,7 @@ export default function RegisterPage() {
                 placeholder="confirm password"
                 className="input input-bordered"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
               />

@@ -6,7 +6,7 @@ import { supabaseClient } from '@/lib/supabase-client';
 
 export default function MyProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
