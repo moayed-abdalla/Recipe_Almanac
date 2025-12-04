@@ -52,7 +52,7 @@ body::before {
     url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png');
   background-position: 
-    5% 15%, 
+    10% 15%, 
     20% 60%, 
     25% 45%, 
     45% 25%, 
@@ -66,7 +66,7 @@ body::before {
     30% 80%, 
     90% 55%, 
     15% 80%, 
-    40% 5%, 
+    40% 10%, 
     55% 85%, 
     75% 30%, 
     40% 90%, 
@@ -112,11 +112,11 @@ body::before {
       url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
     background-position: 
-      10% 20%, 
+      15% 20%, 
       50% 60%, 
       80% 30%, 
       30% 80%, 
-      70% 10%, 
+      70% 15%, 
       20% 70%, 
       60% 50%, 
       40% 90%, 
@@ -158,8 +158,8 @@ body::before {
       85% 35%, 
       90% 80%, 
       30% 80%, 
-      40% 10%, 
-      70% 10%, 
+      40% 15%, 
+      70% 15%, 
       75% 65%;
     background-size: 
       60px auto, 
@@ -203,7 +203,7 @@ body::before {
     url('/bg_pic_dark_5.png'),
     url('/bg_pic_dark_5.png');
   background-position: 
-    5% 15%, 
+    10% 15%, 
     20% 60%, 
     25% 45%, 
     45% 25%, 
@@ -217,7 +217,7 @@ body::before {
     30% 85%, 
     90% 55%, 
     15% 80%, 
-    40% 5%, 
+    40% 10%, 
     55% 90%, 
     75% 30%, 
     40% 90%, 
@@ -262,11 +262,11 @@ body::before {
       url('/bg_pic_dark_5.png'),
       url('/bg_pic_dark_5.png');
     background-position: 
-      10% 20%, 
+      15% 20%, 
       50% 60%, 
       80% 30%, 
       30% 80%, 
-      70% 10%, 
+      70% 15%, 
       20% 70%, 
       60% 50%, 
       40% 80%, 
@@ -308,8 +308,8 @@ body::before {
       85% 35%, 
       90% 80%, 
       30% 80%, 
-      40% 10%, 
-      70% 10%, 
+      40% 15%, 
+      70% 15%, 
       75% 65%;
     background-size: 
       60px auto, 
@@ -345,5 +345,10 @@ i, em, .italic {
   font-family: "Special Elite", system-ui;
   font-weight: 400;
   font-style: normal;
+}
+
+/* Arial font for recipe content */
+.arial-font {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
