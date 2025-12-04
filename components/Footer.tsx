@@ -75,26 +75,28 @@ export default function Footer() {
               href="https://buymeacoffee.com/moayed_abdalla"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost btn-circle hover:opacity-80 transition-opacity"
+              className="btn btn-ghost btn-circle hover:opacity-80 transition-opacity flex items-center justify-center"
               aria-label="Buy Me a Coffee"
             >
-              {theme === 'light' ? (
-                <Image
-                  src="/BuyMeACoffee_Light.png"
-                  alt="Buy Me a Coffee"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
-                />
-              ) : (
-                <Image
-                  src="/BuyMeACoffee_Dark.png"
-                  alt="Buy Me a Coffee"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
-                />
-              )}
+              <div className="w-6 h-6 relative flex items-center justify-center">
+                {theme === 'light' ? (
+                  <Image
+                    src="/BuyMeACoffee_Light.png"
+                    alt="Buy Me a Coffee"
+                    fill
+                    className="object-contain"
+                    sizes="24px"
+                  />
+                ) : (
+                  <Image
+                    src="/BuyMeACoffee_Dark.png"
+                    alt="Buy Me a Coffee"
+                    fill
+                    className="object-contain"
+                    sizes="24px"
+                  />
+                )}
+              </div>
             </a>
           </nav>
         </div>
