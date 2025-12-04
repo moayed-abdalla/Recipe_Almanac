@@ -63,11 +63,11 @@ body::before {
     65% 40%, 
     80% 10%, 
     85% 65%, 
-    30% 85%, 
+    30% 80%, 
     90% 55%, 
     15% 80%, 
     40% 5%, 
-    55% 90%, 
+    55% 85%, 
     75% 30%, 
     40% 90%, 
     10% 50%, 
@@ -269,7 +269,7 @@ body::before {
       70% 10%, 
       20% 70%, 
       60% 50%, 
-      40% 90%, 
+      40% 80%, 
       90% 40%, 
       15% 30%;
     background-size: 
@@ -339,5 +339,11 @@ i, em, .italic {
 .typewriter {
   font-family: "Special Elite", system-ui, monospace;
   font-weight: 400;
+}
+
+.special-elite-regular {
+  font-family: "Special Elite", system-ui;
+  font-weight: 400;
+  font-style: normal;
 }
 
