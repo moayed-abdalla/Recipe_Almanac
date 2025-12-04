@@ -88,7 +88,23 @@ export default async function RecipePage({ params }: RecipePageProps) {
       </div>
     );
   }
-
+  
+  // Check if recipe is private and verify access
+  if (!typedRecipe.is_public) {
+    // Check if current user is the owner
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user || user.id !== typedRecipe.user_id) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <div className="alert alert-error">
+            <span>This recipe is private and you don't have permission to view it.</span>
+          </div>
+        </div>
+      );
+    }
+  }
+  
   // Fetch ingredients
   const { data: ingredients } = await supabase
     .from('ingredients')
