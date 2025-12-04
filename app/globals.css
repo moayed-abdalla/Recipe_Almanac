@@ -19,7 +19,7 @@ body {
   color: #FFA500;
 }
 
-/* Chemistry flask background pattern - Responsive based on screen size */
+/* Background pattern - Responsive based on screen size */
 body::before {
   content: '';
   position: fixed;
@@ -29,16 +29,18 @@ body::before {
   height: 100%;
   opacity: 0.3;
   z-index: 0;
-  /* Default: 8 flasks for large screens */
+  /* Default: 2 of each image (10 total) for large screens */
   background-image: 
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png'),
-    url('/flask_light.png');
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_5.png'),
+    url('/bg_pic_light_5.png');
   background-position: 
     5% 15%, 
     20% 60%, 
@@ -47,7 +49,9 @@ body::before {
     65% 40%, 
     80% 10%, 
     90% 55%, 
-    95% 30%;
+    15% 80%, 
+    75% 30%, 
+    40% 90%;
   background-size: 
     120px auto, 
     100px auto, 
@@ -56,44 +60,73 @@ body::before {
     130px auto, 
     90px auto, 
     150px auto, 
-    105px auto;
+    105px auto, 
+    125px auto, 
+    115px auto;
   background-repeat: no-repeat;
   pointer-events: none;
 }
 
-/* Medium screens: 4 flasks, smaller size */
+/* Medium screens: 2 of each image (10 total), smaller size */
 @media (max-width: 1024px) {
   body::before {
     background-image: 
-      url('/flask_light.png'),
-      url('/flask_light.png'),
-      url('/flask_light.png'),
-      url('/flask_light.png');
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_5.png'),
+      url('/bg_pic_light_5.png');
     background-position: 
       10% 20%, 
       50% 60%, 
       80% 30%, 
-      30% 80%;
+      30% 80%, 
+      70% 10%, 
+      20% 70%, 
+      60% 50%, 
+      40% 90%, 
+      90% 40%, 
+      15% 30%;
     background-size: 
       80px auto, 
       70px auto, 
       90px auto, 
-      75px auto;
+      75px auto, 
+      85px auto, 
+      65px auto, 
+      95px auto, 
+      72px auto, 
+      88px auto, 
+      68px auto;
   }
 }
 
-/* Small screens: 2 flasks, even smaller */
+/* Small screens: 1 of each image (5 total), even smaller */
 @media (max-width: 768px) {
   body::before {
     background-image: 
-      url('/flask_light.png'),
-      url('/flask_light.png');
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_5.png');
     background-position: 
       15% 25%, 
-      85% 75%;
+      50% 60%, 
+      85% 35%, 
+      30% 80%, 
+      70% 10%;
     background-size: 
       60px auto, 
-      55px auto;
+      55px auto, 
+      65px auto, 
+      58px auto, 
+      62px auto;
   }
 }
 
@@ -102,36 +135,103 @@ body::before {
 }
 
 [data-theme="dark"] body::before {
-  /* Default: 8 flasks for large screens */
+  /* Default: 2 of each image (10 total) for large screens */
   background-image: 
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png'),
-    url('/flask_dark.png');
+    url('/bg_pic_dark_1.png'),
+    url('/bg_pic_dark_1.png'),
+    url('/bg_pic_dark_2.png'),
+    url('/bg_pic_dark_2.png'),
+    url('/bg_pic_dark_3.png'),
+    url('/bg_pic_dark_3.png'),
+    url('/bg_pic_dark_4.png'),
+    url('/bg_pic_dark_4.png'),
+    url('/bg_pic_dark_5.png'),
+    url('/bg_pic_dark_5.png');
+  background-position: 
+    5% 15%, 
+    20% 60%, 
+    35% 25%, 
+    50% 70%, 
+    65% 40%, 
+    80% 10%, 
+    90% 55%, 
+    15% 80%, 
+    75% 30%, 
+    40% 90%;
+  background-size: 
+    120px auto, 
+    100px auto, 
+    140px auto, 
+    110px auto, 
+    130px auto, 
+    90px auto, 
+    150px auto, 
+    105px auto, 
+    125px auto, 
+    115px auto;
   opacity: 1.0;
 }
 
-/* Medium screens: 4 flasks for dark mode */
+/* Medium screens: 2 of each image (10 total) for dark mode */
 @media (max-width: 1024px) {
   [data-theme="dark"] body::before {
     background-image: 
-      url('/flask_dark.png'),
-      url('/flask_dark.png'),
-      url('/flask_dark.png'),
-      url('/flask_dark.png');
+      url('/bg_pic_dark_1.png'),
+      url('/bg_pic_dark_1.png'),
+      url('/bg_pic_dark_2.png'),
+      url('/bg_pic_dark_2.png'),
+      url('/bg_pic_dark_3.png'),
+      url('/bg_pic_dark_3.png'),
+      url('/bg_pic_dark_4.png'),
+      url('/bg_pic_dark_4.png'),
+      url('/bg_pic_dark_5.png'),
+      url('/bg_pic_dark_5.png');
+    background-position: 
+      10% 20%, 
+      50% 60%, 
+      80% 30%, 
+      30% 80%, 
+      70% 10%, 
+      20% 70%, 
+      60% 50%, 
+      40% 90%, 
+      90% 40%, 
+      15% 30%;
+    background-size: 
+      80px auto, 
+      70px auto, 
+      90px auto, 
+      75px auto, 
+      85px auto, 
+      65px auto, 
+      95px auto, 
+      72px auto, 
+      88px auto, 
+      68px auto;
   }
 }
 
-/* Small screens: 2 flasks for dark mode */
+/* Small screens: 1 of each image (5 total) for dark mode */
 @media (max-width: 768px) {
   [data-theme="dark"] body::before {
     background-image: 
-      url('/flask_dark.png'),
-      url('/flask_dark.png');
+      url('/bg_pic_dark_1.png'),
+      url('/bg_pic_dark_2.png'),
+      url('/bg_pic_dark_3.png'),
+      url('/bg_pic_dark_4.png'),
+      url('/bg_pic_dark_5.png');
+    background-position: 
+      15% 25%, 
+      50% 60%, 
+      85% 35%, 
+      30% 80%, 
+      70% 10%;
+    background-size: 
+      60px auto, 
+      55px auto, 
+      65px auto, 
+      58px auto, 
+      62px auto;
   }
 }
 
