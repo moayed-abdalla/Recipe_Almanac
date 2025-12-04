@@ -29,40 +29,70 @@ body::before {
   height: 100%;
   opacity: 0.3;
   z-index: 0;
-  /* Default: 2 of each image (10 total) for large screens */
+  /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
   background-image: 
     url('/bg_pic_light_1.png'),
     url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_2.png'),
     url('/bg_pic_light_2.png'),
     url('/bg_pic_light_2.png'),
     url('/bg_pic_light_3.png'),
     url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
     url('/bg_pic_light_4.png'),
     url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_5.png'),
+    url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png');
   background-position: 
     5% 15%, 
     20% 60%, 
+    25% 45%, 
+    45% 25%, 
     35% 25%, 
     50% 70%, 
+    60% 50%, 
+    75% 15%, 
     65% 40%, 
     80% 10%, 
+    85% 65%, 
+    30% 85%, 
     90% 55%, 
     15% 80%, 
+    40% 5%, 
+    55% 90%, 
     75% 30%, 
-    40% 90%;
+    40% 90%, 
+    10% 50%, 
+    95% 75%;
   background-size: 
+    144px auto, 
     120px auto, 
-    100px auto, 
-    140px auto, 
-    110px auto, 
-    130px auto, 
-    90px auto, 
+    144px auto, 
+    120px auto, 
+    168px auto, 
+    132px auto, 
+    168px auto, 
+    132px auto, 
+    156px auto, 
+    108px auto, 
+    156px auto, 
+    108px auto, 
+    180px auto, 
+    126px auto, 
+    180px auto, 
+    126px auto, 
     150px auto, 
-    105px auto, 
-    125px auto, 
-    115px auto;
+    138px auto, 
+    150px auto, 
+    138px auto;
   background-repeat: no-repeat;
   pointer-events: none;
 }
@@ -106,26 +136,41 @@ body::before {
   }
 }
 
-/* Small screens: 1 of each image (5 total), even smaller */
+/* Small screens: 2 of each image (10 total), even smaller */
 @media (max-width: 768px) {
   body::before {
     background-image: 
       url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_2.png'),
       url('/bg_pic_light_2.png'),
       url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_3.png'),
       url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
     background-position: 
       15% 25%, 
+      25% 70%, 
       50% 60%, 
+      60% 20%, 
       85% 35%, 
+      90% 80%, 
       30% 80%, 
-      70% 10%;
+      40% 10%, 
+      70% 10%, 
+      75% 65%;
     background-size: 
       60px auto, 
+      60px auto, 
+      55px auto, 
       55px auto, 
       65px auto, 
+      65px auto, 
       58px auto, 
+      58px auto, 
+      62px auto, 
       62px auto;
   }
 }
@@ -135,40 +180,70 @@ body::before {
 }
 
 [data-theme="dark"] body::before {
-  /* Default: 2 of each image (10 total) for large screens */
+  /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
   background-image: 
     url('/bg_pic_dark_1.png'),
     url('/bg_pic_dark_1.png'),
+    url('/bg_pic_dark_1.png'),
+    url('/bg_pic_dark_1.png'),
+    url('/bg_pic_dark_2.png'),
+    url('/bg_pic_dark_2.png'),
     url('/bg_pic_dark_2.png'),
     url('/bg_pic_dark_2.png'),
     url('/bg_pic_dark_3.png'),
     url('/bg_pic_dark_3.png'),
+    url('/bg_pic_dark_3.png'),
+    url('/bg_pic_dark_3.png'),
     url('/bg_pic_dark_4.png'),
     url('/bg_pic_dark_4.png'),
+    url('/bg_pic_dark_4.png'),
+    url('/bg_pic_dark_4.png'),
+    url('/bg_pic_dark_5.png'),
+    url('/bg_pic_dark_5.png'),
     url('/bg_pic_dark_5.png'),
     url('/bg_pic_dark_5.png');
   background-position: 
     5% 15%, 
     20% 60%, 
+    25% 45%, 
+    45% 25%, 
     35% 25%, 
     50% 70%, 
+    60% 50%, 
+    75% 15%, 
     65% 40%, 
     80% 10%, 
+    85% 65%, 
+    30% 85%, 
     90% 55%, 
     15% 80%, 
+    40% 5%, 
+    55% 90%, 
     75% 30%, 
-    40% 90%;
+    40% 90%, 
+    10% 50%, 
+    95% 75%;
   background-size: 
+    144px auto, 
     120px auto, 
-    100px auto, 
-    140px auto, 
-    110px auto, 
-    130px auto, 
-    90px auto, 
+    144px auto, 
+    120px auto, 
+    168px auto, 
+    132px auto, 
+    168px auto, 
+    132px auto, 
+    156px auto, 
+    108px auto, 
+    156px auto, 
+    108px auto, 
+    180px auto, 
+    126px auto, 
+    180px auto, 
+    126px auto, 
     150px auto, 
-    105px auto, 
-    125px auto, 
-    115px auto;
+    138px auto, 
+    150px auto, 
+    138px auto;
   opacity: 1.0;
 }
 
@@ -211,26 +286,41 @@ body::before {
   }
 }
 
-/* Small screens: 1 of each image (5 total) for dark mode */
+/* Small screens: 2 of each image (10 total) for dark mode */
 @media (max-width: 768px) {
   [data-theme="dark"] body::before {
     background-image: 
       url('/bg_pic_dark_1.png'),
+      url('/bg_pic_dark_1.png'),
+      url('/bg_pic_dark_2.png'),
       url('/bg_pic_dark_2.png'),
       url('/bg_pic_dark_3.png'),
+      url('/bg_pic_dark_3.png'),
       url('/bg_pic_dark_4.png'),
+      url('/bg_pic_dark_4.png'),
+      url('/bg_pic_dark_5.png'),
       url('/bg_pic_dark_5.png');
     background-position: 
       15% 25%, 
+      25% 70%, 
       50% 60%, 
+      60% 20%, 
       85% 35%, 
+      90% 80%, 
       30% 80%, 
-      70% 10%;
+      40% 10%, 
+      70% 10%, 
+      75% 65%;
     background-size: 
       60px auto, 
+      60px auto, 
+      55px auto, 
       55px auto, 
       65px auto, 
+      65px auto, 
       58px auto, 
+      58px auto, 
+      62px auto, 
       62px auto;
   }
 }
