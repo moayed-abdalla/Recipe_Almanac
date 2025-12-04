@@ -96,7 +96,7 @@ export default function Header() {
               height={40}
               className="mr-2"
             />
-            Recipe Almanac
+            <span className="special-elite-regular">Recipe Almanac</span>
           </Link>
         </div>
         
