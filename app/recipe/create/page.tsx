@@ -41,6 +41,7 @@ export default function RecipeCreatePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  const [isPublic, setIsPublic] = useState(true); // Default to public
   
   // Form state - recipe content
   const [methodSteps, setMethodSteps] = useState<string[]>(['']);
@@ -117,7 +118,7 @@ export default function RecipeCreatePage() {
           tags: tags.split(',').map(t => t.trim()).filter(Boolean), // Parse comma-separated tags
           method_steps: methodSteps.filter(Boolean), // Remove empty steps
           notes: notes.filter(Boolean), // Remove empty notes
-          is_public: true, // New recipes are public by default
+          is_public: isPublic,
         })
         .select()
         .single();
@@ -262,6 +263,22 @@ export default function RecipeCreatePage() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)}
             placeholder="dessert, chocolate, cake"
           />
+        </div>
+
+        {/* Public/Private Toggle */}
+        <div className="form-control">
+          <label className="label cursor-pointer">
+            <span className="label-text">Make recipe public</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-primary"
+              checked={isPublic}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsPublic(e.target.checked)}
+            />
+          </label>
+          <label className="label">
+            <span className="label-text-alt">Public recipes can be viewed by everyone. Private recipes are only visible to you.</span>
+          </label>
         </div>
 
         {/* Ingredients */}
