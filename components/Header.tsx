@@ -85,7 +85,7 @@ export default function Header() {
   };
 
   return (
-    <header className="navbar bg-base-100 shadow-lg border-b border-base-300">
+    <header className="navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50">
       <div className="container mx-auto">
         <div className="flex-1">
           <Link href="/" className="btn btn-ghost normal-case text-xl typewriter">

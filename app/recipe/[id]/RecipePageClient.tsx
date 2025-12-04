@@ -407,7 +407,7 @@ export default function RecipePageClient({
       {/* Recipe Title and Actions */}
       <div className="mb-6">
         <div className="flex justify-between items-start mb-2 gap-4">
-          <h1 className="text-4xl font-bold flex-1">{recipe.title}</h1>
+          <h1 className="text-4xl font-bold flex-1 special-elite-regular">{recipe.title}</h1>
           <div className="flex gap-2">
             {/* Fork Button */}
             <button
@@ -459,10 +459,10 @@ export default function RecipePageClient({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-lg opacity-70">by</span>
+          <span className="text-lg opacity-70 arial-font">by</span>
           <Link
             href={`/profile/${owner.username}`}
-            className="link link-primary text-lg"
+            className="link link-primary text-lg arial-font"
           >
             {owner.username}
           </Link>
@@ -479,7 +479,7 @@ export default function RecipePageClient({
           {recipe.tags.map((tag, index) => (
             <span
               key={index}
-              className="badge badge-outline"
+              className="badge badge-outline arial-font"
             >
               {tag}
             </span>
@@ -489,12 +489,12 @@ export default function RecipePageClient({
 
       {/* Description */}
       {recipe.description && (
-        <p className="mb-8 text-lg">{recipe.description}</p>
+        <p className="mb-8 text-lg arial-font">{recipe.description}</p>
       )}
 
       {/* Ingredients Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
+        <h2 className="text-2xl font-bold mb-4 special-elite-regular">Ingredients</h2>
         <ul className="space-y-3">
           {ingredients.map((ingredient) => {
             const { amount, unit, showWarning } = getDisplayAmount(ingredient);
@@ -510,7 +510,7 @@ export default function RecipePageClient({
                   onChange={() => toggleIngredient(ingredient.id)}
                   className="checkbox"
                 />
-                <span className={isChecked ? 'line-through opacity-50 flex-1' : 'flex-1'}>
+                <span className={`${isChecked ? 'line-through opacity-50 flex-1' : 'flex-1'} arial-font`}>
                   {formatMeasurement(amount, unit)} {ingredient.name}
                   {showWarning && (
                     <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
@@ -521,7 +521,7 @@ export default function RecipePageClient({
                 <select
                   value={currentUnit}
                   onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
-                  className="select select-bordered select-sm max-w-xs"
+                  className="select select-bordered select-sm max-w-xs arial-font"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {availableUnits.map((unitOption) => (
@@ -536,7 +536,7 @@ export default function RecipePageClient({
         </ul>
         {Object.values(unitWarnings).some(w => w.originalIsVolume !== w.currentIsVolume) && (
           <div className="mt-4 alert alert-warning">
-            <span className="text-sm">
+            <span className="text-sm arial-font">
               <span className="text-warning font-bold">*</span> Indicates conversion between volume and weight measurements. 
               These conversions are approximate and may vary based on ingredient density.
             </span>
@@ -546,10 +546,10 @@ export default function RecipePageClient({
 
       {/* Method Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Method</h2>
+        <h2 className="text-2xl font-bold mb-4 special-elite-regular">Method</h2>
         <ol className="list-decimal list-inside space-y-3">
           {recipe.method_steps.map((step, index) => (
-            <li key={index} className="text-lg">
+            <li key={index} className="text-lg arial-font">
               {step}
             </li>
           ))}
@@ -559,10 +559,10 @@ export default function RecipePageClient({
       {/* Notes Section */}
       {recipe.notes.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Notes</h2>
+          <h2 className="text-2xl font-bold mb-4 special-elite-regular">Notes</h2>
           <ol className="list-decimal list-inside space-y-2">
             {recipe.notes.map((note, index) => (
-              <li key={index} className="opacity-80">
+              <li key={index} className="opacity-80 arial-font">
                 {note}
               </li>
             ))}
