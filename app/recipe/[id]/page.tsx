@@ -112,6 +112,10 @@ export default async function RecipePage({ params }: RecipePageProps) {
     .eq('recipe_id', params.id)
     .order('order_index');
 
+  // Check if current user is the recipe owner
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === typedRecipe.user_id;
+
   // Increment view count (fire and forget)
   // Use direct update instead of RPC function for reliability
   // Use proper Database type for the update
@@ -137,6 +141,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
       recipe={typedRecipe}
       ingredients={ingredients || []}
       owner={owner}
+      isOwner={isOwner}
     />
   );
 }
