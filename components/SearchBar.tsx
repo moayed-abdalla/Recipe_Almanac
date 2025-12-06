@@ -14,33 +14,32 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
-export default function SearchBar() {
-  const router = useRouter();
+interface SearchBarProps {
+  onSearchChange?: (searchTerm: string) => void;
+}
+
+export default function SearchBar({ onSearchChange }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   /**
-   * Handle search form submission
-   * TODO: Implement full search functionality
-   * For now, this could navigate to a search results page
-   * or filter recipes on the homepage
+   * Handle search input changes and update parent component
+   */
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    // Call parent callback to filter recipes in real-time
+    if (onSearchChange) {
+      onSearchChange(value);
+    }
+  };
+
+  /**
+   * Handle search form submission (prevent default to avoid page reload)
    */
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!searchTerm.trim()) {
-      return; // Don't search if input is empty
-    }
-    
-    // TODO: Implement search functionality
-    // Option 1: Navigate to search results page
-    // router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    
-    // Option 2: Filter recipes on current page
-    // This would require passing search term to parent component
-    
-    console.log('Searching for:', searchTerm);
+    // Search is handled in real-time via onChange, so we just prevent default
   };
 
   return (
@@ -52,7 +51,7 @@ export default function SearchBar() {
             placeholder="Search recipes by name or tags..."
             className="input input-bordered flex-1 typewriter"
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={handleInputChange}
           />
           <button type="submit" className="btn btn-square">
             <svg
