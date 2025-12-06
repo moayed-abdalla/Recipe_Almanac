@@ -94,9 +94,9 @@ export default function Header() {
               alt="Recipe Almanac"
               width={40}
               height={40}
-              className="mr-2"
+              className="mr-2 w-9 h-9 sm:w-10 sm:h-10"
             />
-            <span className="special-elite-regular">Recipe Almanac</span>
+            <span className="special-elite-regular text-[0.8em]">Recipe Almanac</span>
           </Link>
         </div>
         
