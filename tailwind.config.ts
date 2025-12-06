@@ -30,7 +30,7 @@ const config: Config = {
           'base-200': '#E8E8E8', // Light grey secondary
           'base-300': '#D3D3D3', // Medium grey
           'base-content': '#CC5500', // Dark orange text
-          'primary': '#FF8C00', // Orange primary
+          'primary': '#CC5500', // Orange primary
           'secondary': '#FFA500', // Orange secondary
           'accent': '#87CEEB', // Light blue accent
           'neutral': '#808080', // Grey neutral
@@ -40,7 +40,7 @@ const config: Config = {
           'base-200': '#2D2D2D', // Dark grey secondary
           'base-300': '#404040', // Medium dark grey
           'base-content': '#FFA500', // Orange text (inverse of dark orange)
-          'primary': '#FF8C00', // Orange primary
+          'primary': '#FFA500', // Orange primary
           'secondary': '#FFA500', // Orange secondary
           'accent': '#87CEEB', // Light blue accent
           'neutral': '#666666', // Light grey neutral
