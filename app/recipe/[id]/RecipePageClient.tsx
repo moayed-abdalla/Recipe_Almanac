@@ -64,6 +64,7 @@ interface RecipePageClientProps {
   recipe: Recipe;
   ingredients: Ingredient[];
   owner: Owner;
+  isOwner: boolean;
 }
 
 // Available unit options for conversion
@@ -76,6 +77,7 @@ export default function RecipePageClient({
   recipe,
   ingredients,
   owner,
+  isOwner,
 }: RecipePageClientProps) {
   const router = useRouter();
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
@@ -451,6 +453,29 @@ export default function RecipePageClient({
         <div className="flex justify-between items-start mb-2 gap-4">
           <h1 className="text-4xl font-bold flex-1 special-elite-regular">{recipe.title}</h1>
           <div className="flex gap-2">
+            {/* Edit Button - Only show for recipe owner */}
+            {isOwner && (
+              <Link
+                href={`/recipe/${recipe.id}/edit`}
+                className="btn btn-circle btn-ghost"
+                aria-label="Edit recipe"
+                title="Edit this recipe"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </Link>
+            )}
             {/* Fork Button */}
             <button
               onClick={handleFork}
