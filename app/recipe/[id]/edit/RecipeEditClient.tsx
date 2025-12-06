@@ -1,5 +1,5 @@
 /**
- * Recipe Edit Page Component
+ * Recipe Edit Page Client Component
  * 
  * Allows recipe owners to edit their recipes with:
  * - Title, description, and tags
@@ -99,6 +99,8 @@ export default function RecipeEditClient({
   
   // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const originalImageUrl = recipe.image_url;
 
   /**
    * Handle form submission
@@ -127,7 +129,7 @@ export default function RecipeEditClient({
         .replace(/(^-|-$)/g, '');
 
       // Step 3: Upload new image to Supabase Storage if provided
-      let imageUrl = recipe.image_url; // Keep existing image by default
+      let imageUrl = originalImageUrl; // Keep existing image by default
       if (imageFile) {
         try {
           const fileExt = imageFile.name.split('.').pop();
@@ -226,6 +228,13 @@ export default function RecipeEditClient({
     setMethodSteps([...methodSteps, '']);
   };
 
+  const removeMethodStep = (index: number) => {
+    if (methodSteps.length > 1) {
+      const newSteps = methodSteps.filter((_, i) => i !== index);
+      setMethodSteps(newSteps);
+    }
+  };
+
   const updateMethodStep = (index: number, value: string) => {
     const newSteps = [...methodSteps];
     newSteps[index] = value;
@@ -236,6 +245,13 @@ export default function RecipeEditClient({
     setNotes([...notes, '']);
   };
 
+  const removeNote = (index: number) => {
+    if (notes.length > 1) {
+      const newNotes = notes.filter((_, i) => i !== index);
+      setNotes(newNotes);
+    }
+  };
+
   const updateNote = (index: number, value: string) => {
     const newNotes = [...notes];
     newNotes[index] = value;
@@ -244,6 +260,13 @@ export default function RecipeEditClient({
 
   const addIngredient = () => {
     setIngredients([...ingredients, { name: '', amount: 0, unit: 'cup' }]);
+  };
+
+  const removeIngredient = (index: number) => {
+    if (ingredients.length > 1) {
+      const newIngredients = ingredients.filter((_, i) => i !== index);
+      setIngredients(newIngredients);
+    }
   };
 
   const updateIngredient = (index: number, field: string, value: string | number) => {
@@ -282,21 +305,36 @@ export default function RecipeEditClient({
           <label className="label">
             <span className="label-text">Recipe Image</span>
           </label>
-          {recipe.image_url && !imageFile && (
+          {(imagePreview || originalImageUrl) && (
             <div className="mb-2">
               <img
-                src={recipe.image_url}
-                alt="Current recipe image"
+                src={imagePreview || originalImageUrl || ''}
+                alt="Recipe image"
                 className="w-64 h-48 object-cover rounded-lg"
               />
-              <p className="text-sm opacity-70 mt-1">Current image</p>
+              <p className="text-sm opacity-70 mt-1">
+                {imagePreview ? 'New image preview' : 'Current image'}
+              </p>
             </div>
           )}
           <input
             type="file"
             accept="image/*"
             className="file-input file-input-bordered"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageFile(e.target.files?.[0] || null)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const file = e.target.files?.[0] || null;
+              setImageFile(file);
+              if (file) {
+                // Preview new image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  setImagePreview(e.target?.result as string);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                setImagePreview(null);
+              }
+            }}
           />
           <label className="label">
             <span className="label-text-alt">Leave empty to keep current image</span>
@@ -379,6 +417,16 @@ export default function RecipeEditClient({
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
               />
+              {ingredients.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeIngredient(index)}
+                  className="btn btn-sm btn-ghost"
+                  aria-label="Remove ingredient"
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
           <button
@@ -397,9 +445,21 @@ export default function RecipeEditClient({
           </label>
           {methodSteps.map((step, index) => (
             <div key={index} className="mb-2">
-              <label className="label">
-                <span className="label-text">Step {index + 1}</span>
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="label">
+                  <span className="label-text">Step {index + 1}</span>
+                </label>
+                {methodSteps.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeMethodStep(index)}
+                    className="btn btn-xs btn-ghost"
+                    aria-label="Remove step"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={step}
@@ -424,9 +484,21 @@ export default function RecipeEditClient({
           </label>
           {notes.map((note, index) => (
             <div key={index} className="mb-2">
-              <label className="label">
-                <span className="label-text">Note {index + 1}</span>
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="label">
+                  <span className="label-text">Note {index + 1}</span>
+                </label>
+                {notes.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeNote(index)}
+                    className="btn btn-xs btn-ghost"
+                    aria-label="Remove note"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={note}
@@ -446,16 +518,25 @@ export default function RecipeEditClient({
 
         {/* Submit */}
         <div className="form-control mt-6">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? 'Updating...' : 'Update Recipe'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/recipe/${recipe.id}`)}
+              className="btn btn-ghost"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </form>
     </div>
   );
 }
-
