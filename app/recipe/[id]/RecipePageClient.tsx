@@ -84,6 +84,11 @@ export default function RecipePageClient({
   const [loading, setLoading] = useState(true);
   const [forking, setForking] = useState(false);
   
+  // Ingredient multiplier state (default 1x)
+  const [multiplier, setMultiplier] = useState<number>(1);
+  const [customMultiplier, setCustomMultiplier] = useState<string>('');
+  const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
+  
   // Per-ingredient unit conversion state
   // Key: ingredient ID, Value: selected unit
   const [ingredientUnits, setIngredientUnits] = useState<Record<string, string>>({});
@@ -194,7 +199,41 @@ export default function RecipePageClient({
   };
 
   /**
-   * Get display amount for an ingredient based on selected unit
+   * Handle multiplier button clicks
+   */
+  const handleMultiplierClick = (value: number) => {
+    setMultiplier(value);
+    setShowCustomInput(false);
+    setCustomMultiplier('');
+  };
+
+  /**
+   * Handle custom multiplier input
+   */
+  const handleCustomMultiplierChange = (value: string) => {
+    setCustomMultiplier(value);
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      setMultiplier(numValue);
+    }
+  };
+
+  /**
+   * Handle custom multiplier input toggle
+   */
+  const handleCustomInputToggle = () => {
+    setShowCustomInput(!showCustomInput);
+    if (!showCustomInput) {
+      setCustomMultiplier('');
+    } else {
+      // Reset to 1x when closing custom input
+      setMultiplier(1);
+      setCustomMultiplier('');
+    }
+  };
+
+  /**
+   * Get display amount for an ingredient based on selected unit and multiplier
    */
   const getDisplayAmount = (ingredient: Ingredient): { amount: number; unit: string; showWarning: boolean } => {
     const selectedUnit = ingredientUnits[ingredient.id] || ingredient.unit;
@@ -239,6 +278,9 @@ export default function RecipePageClient({
         amount = ingredient.amount_grams; // grams
       }
     }
+
+    // Apply multiplier to the amount
+    amount = amount * multiplier;
 
     return { amount, unit, showWarning };
   };
@@ -494,7 +536,60 @@ export default function RecipePageClient({
 
       {/* Ingredients Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 special-elite-regular">Ingredients</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold special-elite-regular">Ingredients</h2>
+          {/* Multiplier Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm opacity-70 arial-font mr-2">Scale:</span>
+            <button
+              onClick={() => handleMultiplierClick(0.5)}
+              className={`btn btn-sm ${multiplier === 0.5 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+            >
+              0.5x
+            </button>
+            <button
+              onClick={() => handleMultiplierClick(1)}
+              className={`btn btn-sm ${multiplier === 1 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+            >
+              1x
+            </button>
+            <button
+              onClick={() => handleMultiplierClick(2)}
+              className={`btn btn-sm ${multiplier === 2 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+            >
+              2x
+            </button>
+            {showCustomInput ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  className="input input-bordered input-sm w-20 arial-font"
+                  placeholder="Custom"
+                  value={customMultiplier}
+                  onChange={(e) => handleCustomMultiplierChange(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  onClick={handleCustomInputToggle}
+                  className="btn btn-sm btn-ghost"
+                  title="Close custom input"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleCustomInputToggle}
+                className={`btn btn-sm ${showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+                title="Enter custom multiplier"
+              >
+                Custom
+              </button>
+            )}
+          </div>
+        </div>
         <ul className="space-y-3">
           {ingredients.map((ingredient) => {
             const { amount, unit, showWarning } = getDisplayAmount(ingredient);
