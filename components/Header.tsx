@@ -88,7 +88,7 @@ export default function Header() {
     <header className="navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50">
       <div className="container mx-auto">
         <div className="flex-1">
-          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter">
+          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0">
             <Image
               src="/logo.png"
               alt="Recipe Almanac"
