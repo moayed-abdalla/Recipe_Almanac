@@ -96,7 +96,7 @@ export default function Header() {
               height={40}
               className="mr-2 w-9 h-9 sm:w-10 sm:h-10"
             />
-            <span className="special-elite-regular text-[0.8em]">Recipe Almanac</span>
+            <span className="special-elite-regular text-[0.8em] lg:text-xl mr-0 pr-0">Recipe Almanac</span>
           </Link>
         </div>
         
