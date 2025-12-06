@@ -12,8 +12,7 @@
  */
 
 import { createServerClient } from '@/lib/supabase';
-import SearchBar from '@/components/SearchBar';
-import RecipeListClient from '@/components/RecipeListClient';
+import HomePageClient from '@/components/HomePageClient';
 
 interface Recipe {
   id: string;
@@ -83,20 +82,8 @@ export default async function Home() {
           </p>
         </div>
         
-        {/* Search bar for finding recipes */}
-        <div className="mb-12">
-          <SearchBar />
-        </div>
-
-        {/* Decorative divider */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent flex-1"></div>
-          <span className="text-sm opacity-60 font-mono">RECIPES</span>
-          <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent flex-1"></div>
-        </div>
-
-        {/* Recipe cards grid with pagination */}
-        <RecipeListClient recipes={typedRecipes} />
+        {/* Search and recipe list (client-side filtering) */}
+        <HomePageClient recipes={typedRecipes} />
       </div>
     </div>
   );
