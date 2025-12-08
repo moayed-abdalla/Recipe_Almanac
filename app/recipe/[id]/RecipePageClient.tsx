@@ -81,6 +81,18 @@ export default function RecipePageClient({
   isOwner,
 }: RecipePageClientProps) {
   const router = useRouter();
+  
+  // Debug logging (remove in production)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[RecipePageClient] Props received:', {
+        isOwner,
+        recipeId: recipe.id,
+        recipeSlug: recipe.slug,
+        ownerUsername: owner.username,
+      });
+    }
+  }, [isOwner, recipe.id, recipe.slug, owner.username]);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [isFavorited, setIsFavorited] = useState(false);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
@@ -395,7 +407,11 @@ export default function RecipePageClient({
       }
 
       // Generate slug for forked recipe: username-recipe-title-forked-timestamp
-      const usernameSlug = profile.username.replace(/[^a-z0-9]+/g, '_');
+      // Convert username to lowercase first, then replace non-alphanumeric characters
+      const usernameSlug = profile.username
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/(^_|_$)/g, ''); // Remove leading/trailing underscores
       const recipeTitleSlug = originalRecipe.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')

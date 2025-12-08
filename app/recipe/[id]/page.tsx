@@ -116,6 +116,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
   // Check if current user is the recipe owner
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === typedRecipe.user_id;
+  
+  // Debug logging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[RecipePage] Owner check:', {
+      userId: user?.id,
+      recipeUserId: typedRecipe.user_id,
+      isOwner,
+      recipeSlug: typedRecipe.slug,
+    });
+  }
 
   // Increment view count (fire and forget)
   // Use direct update instead of RPC function for reliability
