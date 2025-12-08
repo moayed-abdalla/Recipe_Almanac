@@ -142,7 +142,11 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         .replace(/(^-|-$)/g, '');
 
       // Step 2b: Create full slug with username: username-recipe-slug
-      const usernameSlug = profile.username.replace(/[^a-z0-9]+/g, '_');
+      // Convert username to lowercase first, then replace non-alphanumeric characters
+      const usernameSlug = profile.username
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/(^_|_$)/g, ''); // Remove leading/trailing underscores
       const slug = `${usernameSlug}-${recipeSlug}`;
 
       // Step 2c: Check for duplicate recipe name for this user (only when creating)
