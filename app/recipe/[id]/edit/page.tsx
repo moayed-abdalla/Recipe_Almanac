@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
-import RecipeEditClient from './RecipeEditClient';
+import { RecipeForm } from '@/app/recipe/create/page';
 
 interface RecipeEditPageProps {
   params: {
@@ -68,7 +68,7 @@ export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
     .order('order_index');
 
   return (
-    <RecipeEditClient
+    <RecipeForm
       recipe={typedRecipe}
       ingredients={(ingredients || []) as Ingredient[]}
     />
