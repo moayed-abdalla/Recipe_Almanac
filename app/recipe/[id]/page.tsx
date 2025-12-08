@@ -3,7 +3,7 @@ import RecipePageClient from './RecipePageClient';
 
 interface RecipePageProps {
   params: {
-    id: string;
+    slug: string; // Format: username-recipe-slug
   };
 }
 
@@ -35,7 +35,7 @@ interface RecipeWithProfile extends Recipe {
 export default async function RecipePage({ params }: RecipePageProps) {
   const supabase = await createServerClient();
   
-  // Fetch recipe data
+  // Fetch recipe data by slug (format: username-recipe-slug)
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select(`
@@ -45,7 +45,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         avatar_url
       )
     `)
-    .eq('id', params.id)
+    .eq('slug', params.slug)
     .single();
 
   if (error || !recipe) {
@@ -109,7 +109,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const { data: ingredients } = await supabase
     .from('ingredients')
     .select('*')
-    .eq('recipe_id', params.id)
+    .eq('recipe_id', typedRecipe.id)
     .order('order_index');
 
   // Check if current user is the recipe owner

@@ -31,6 +31,7 @@ import RecipeCard from '@/components/RecipeCard';
  */
 interface Recipe {
   id: string;
+  slug: string;
   title: string;
   image_url: string | null;
   description: string | null;
@@ -48,6 +49,7 @@ interface Recipe {
  */
 interface NormalizedRecipe {
   id: string;
+  slug: string;
   title: string;
   image_url: string | null;
   description: string | null;
@@ -182,6 +184,7 @@ export default function AlmanacPage() {
         .from('recipes')
         .select(`
           id,
+          slug,
           title,
           image_url,
           description,
@@ -245,6 +248,7 @@ export default function AlmanacPage() {
         .from('recipes')
         .select(`
           id,
+          slug,
           title,
           image_url,
           description,
@@ -378,6 +382,7 @@ export default function AlmanacPage() {
             <RecipeCard
               key={recipe.id}
               id={recipe.id}
+              slug={recipe.slug}
               title={recipe.title}
               imageUrl={recipe.image_url}
               description={recipe.description}

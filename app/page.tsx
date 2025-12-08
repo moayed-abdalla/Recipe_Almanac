@@ -16,6 +16,7 @@ import HomePageClient from '@/components/HomePageClient';
 
 interface Recipe {
   id: string;
+  slug: string;
   title: string;
   image_url: string | null;
   description: string | null;
@@ -37,6 +38,7 @@ export default async function Home() {
     .from('recipes')
     .select(`
       id,
+      slug,
       title,
       image_url,
       description,

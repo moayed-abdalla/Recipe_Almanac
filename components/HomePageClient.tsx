@@ -20,6 +20,7 @@ import RecipeListClient from './RecipeListClient';
 
 interface Recipe {
   id: string;
+  slug: string;
   title: string;
   image_url: string | null;
   description: string | null;
