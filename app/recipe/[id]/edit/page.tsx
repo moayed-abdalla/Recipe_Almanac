@@ -4,7 +4,7 @@ import { RecipeForm } from '@/app/recipe/create/page';
 
 interface RecipeEditPageProps {
   params: {
-    slug: string; // Format: username-recipe-slug
+    id: string; // Format: username-recipe-slug (treated as slug)
   };
 }
 
@@ -34,10 +34,11 @@ export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
   const supabase = await createServerClient();
   
   // Fetch recipe data by slug (format: username-recipe-slug)
+  // Note: params.id contains the slug value
   const { data: recipe, error: recipeError } = await supabase
     .from('recipes')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', params.id)
     .single();
 
   if (recipeError || !recipe) {
@@ -57,7 +58,7 @@ export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user || user.id !== typedRecipe.user_id) {
-    redirect(`/recipe/${params.slug}`);
+    redirect(`/recipe/${params.id}`);
   }
 
   // Fetch ingredients

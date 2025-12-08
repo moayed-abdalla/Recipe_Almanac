@@ -3,7 +3,7 @@ import RecipePageClient from './RecipePageClient';
 
 interface RecipePageProps {
   params: {
-    slug: string; // Format: username-recipe-slug
+    id: string; // Format: username-recipe-slug (treated as slug)
   };
 }
 
@@ -36,6 +36,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const supabase = await createServerClient();
   
   // Fetch recipe data by slug (format: username-recipe-slug)
+  // Note: params.id contains the slug value
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select(`
@@ -45,7 +46,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         avatar_url
       )
     `)
-    .eq('slug', params.slug)
+    .eq('slug', params.id)
     .single();
 
   if (error || !recipe) {
