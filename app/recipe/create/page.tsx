@@ -1,7 +1,7 @@
 /**
- * Recipe Creation Page Component
+ * Recipe Creation/Edit Page Component
  * 
- * Allows authenticated users to create new recipes with:
+ * Allows authenticated users to create new recipes or edit existing ones with:
  * - Title, description, and tags
  * - Recipe image upload
  * - Dynamic ingredient list (amount, unit, name)
@@ -14,11 +14,12 @@
  * - Unit conversion (volume to weight) for ingredients
  * - Form validation
  * - Error handling
+ * - Supports both create and edit modes
  * 
  * This is a Client Component because it needs to:
  * - Handle form state and user interactions
  * - Upload files to Supabase Storage
- * - Navigate after successful creation
+ * - Navigate after successful creation/update
  */
 
 'use client';
@@ -28,8 +29,40 @@ import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight } from '@/utils/unitConverter';
 
+interface Recipe {
+  id: string;
+  user_id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  tags: string[];
+  method_steps: string[];
+  notes: string[];
+  is_public: boolean;
+}
+
+interface Ingredient {
+  id: string;
+  name: string;
+  amount_grams: number;
+  unit: string;
+  display_amount: number;
+  order_index: number;
+}
+
+interface RecipeFormProps {
+  recipe?: Recipe;
+  ingredients?: Ingredient[];
+}
+
 export default function RecipeCreatePage() {
+  return <RecipeForm />;
+}
+
+export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFormProps) {
   const router = useRouter();
+  const isEditMode = !!recipe;
   
   // Loading state for form submission
   const [loading, setLoading] = useState(false);
@@ -37,29 +70,42 @@ export default function RecipeCreatePage() {
   // Error message state
   const [error, setError] = useState('');
   
-  // Form state - recipe metadata
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [tags, setTags] = useState('');
-  const [isPublic, setIsPublic] = useState(true); // Default to public
+  // Form state - recipe metadata (pre-filled if editing)
+  const [title, setTitle] = useState(recipe?.title || '');
+  const [description, setDescription] = useState(recipe?.description || '');
+  const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
+  const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
   
-  // Form state - recipe content
-  const [methodSteps, setMethodSteps] = useState<string[]>(['']);
-  const [notes, setNotes] = useState<string[]>(['']);
+  // Form state - recipe content (pre-filled if editing)
+  const [methodSteps, setMethodSteps] = useState<string[]>(
+    recipe?.method_steps && recipe.method_steps.length > 0 ? recipe.method_steps : ['']
+  );
+  const [notes, setNotes] = useState<string[]>(
+    recipe?.notes && recipe.notes.length > 0 ? recipe.notes : ['']
+  );
   
-  // Form state - ingredients (array of ingredient objects)
+  // Form state - ingredients (pre-filled if editing)
   const [ingredients, setIngredients] = useState<Array<{
     name: string;
     amount: number;
     unit: string;
-  }>>([{ name: '', amount: 0, unit: 'cup' }]);
+  }>>(
+    initialIngredients && initialIngredients.length > 0
+      ? initialIngredients.map(ing => ({
+          name: ing.name,
+          amount: ing.display_amount,
+          unit: ing.unit,
+        }))
+      : [{ name: '', amount: 0, unit: 'cup' }] // Default to one empty ingredient field
+  );
   
   // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(recipe?.image_url || null);
 
   /**
    * Handle form submission
-   * Creates a new recipe in the database with all provided information
+   * Creates a new recipe or updates an existing one in the database
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,18 +116,22 @@ export default function RecipeCreatePage() {
       // Step 1: Verify user is authenticated
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
       if (userError || !user) {
-        throw new Error('You must be logged in to create a recipe');
+        throw new Error(`You must be logged in to ${isEditMode ? 'edit' : 'create'} a recipe`);
+      }
+
+      // Step 1b: If editing, verify user is the owner
+      if (isEditMode && user.id !== recipe!.user_id) {
+        throw new Error('You do not have permission to edit this recipe');
       }
 
       // Step 2: Generate URL-friendly slug from title
-      // Converts to lowercase, replaces spaces/special chars with hyphens
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
 
       // Step 3: Upload image to Supabase Storage if provided
-      let imageUrl = null;
+      let imageUrl = isEditMode ? recipe!.image_url : null; // Keep existing image by default when editing
       if (imageFile) {
         try {
           const fileExt = imageFile.name.split('.').pop();
@@ -106,65 +156,123 @@ export default function RecipeCreatePage() {
         }
       }
 
-      // Step 4: Create recipe record in database
-      const { data: recipe, error: recipeError } = await supabaseClient
-        .from('recipes')
-        .insert({
-          user_id: user.id,
-          title,
-          slug,
-          description: description || null,
-          image_url: imageUrl,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean), // Parse comma-separated tags
-          method_steps: methodSteps.filter(Boolean), // Remove empty steps
-          notes: notes.filter(Boolean), // Remove empty notes
-          is_public: isPublic,
-        })
-        .select()
-        .single();
+      if (isEditMode) {
+        // Step 4a: Update existing recipe record
+        const { error: recipeError } = await supabaseClient
+          .from('recipes')
+          .update({
+            title,
+            slug,
+            description: description || null,
+            image_url: imageUrl,
+            tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+            method_steps: methodSteps.filter(Boolean),
+            notes: notes.filter(Boolean),
+            is_public: isPublic,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', recipe!.id);
 
-      if (recipeError) {
-        throw new Error(`Failed to create recipe: ${recipeError.message}`);
-      }
-
-      if (!recipe) {
-        throw new Error('Recipe was created but no data was returned');
-      }
-
-      // Step 5: Create ingredient records
-      // Filter out empty ingredients and convert volumes to weights
-      const ingredientsData = ingredients
-        .filter(ing => ing.name && ing.amount > 0)
-        .map((ing, index) => {
-          // Convert volume measurements to weight (grams) for consistency
-          const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
-          return {
-            recipe_id: recipe.id,
-            name: ing.name,
-            amount_grams: amountGrams,
-            unit: ing.unit,
-            display_amount: ing.amount,
-            order_index: index,
-          };
-        });
-
-      // Insert ingredients if any were provided
-      if (ingredientsData.length > 0) {
-        const { error: ingredientsError } = await supabaseClient
-          .from('ingredients')
-          .insert(ingredientsData);
-
-        if (ingredientsError) {
-          throw new Error(`Failed to save ingredients: ${ingredientsError.message}`);
+        if (recipeError) {
+          throw new Error(`Failed to update recipe: ${recipeError.message}`);
         }
-      }
 
-      // Step 6: Redirect to the newly created recipe page
-      router.push(`/recipe/${recipe.id}`);
+        // Step 5a: Delete existing ingredients
+        const { error: deleteError } = await supabaseClient
+          .from('ingredients')
+          .delete()
+          .eq('recipe_id', recipe!.id);
+
+        if (deleteError) {
+          throw new Error(`Failed to delete existing ingredients: ${deleteError.message}`);
+        }
+
+        // Step 6a: Create new ingredient records
+        const ingredientsData = ingredients
+          .filter(ing => ing.name && ing.amount > 0)
+          .map((ing, index) => {
+            const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
+            return {
+              recipe_id: recipe!.id,
+              name: ing.name,
+              amount_grams: amountGrams,
+              unit: ing.unit,
+              display_amount: ing.amount,
+              order_index: index,
+            };
+          });
+
+        if (ingredientsData.length > 0) {
+          const { error: ingredientsError } = await supabaseClient
+            .from('ingredients')
+            .insert(ingredientsData);
+
+          if (ingredientsError) {
+            throw new Error(`Failed to save ingredients: ${ingredientsError.message}`);
+          }
+        }
+
+        // Step 7a: Redirect to the updated recipe page
+        router.push(`/recipe/${recipe!.id}`);
+        router.refresh();
+      } else {
+        // Step 4b: Create new recipe record
+        const { data: newRecipe, error: recipeError } = await supabaseClient
+          .from('recipes')
+          .insert({
+            user_id: user.id,
+            title,
+            slug,
+            description: description || null,
+            image_url: imageUrl,
+            tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+            method_steps: methodSteps.filter(Boolean),
+            notes: notes.filter(Boolean),
+            is_public: isPublic,
+          })
+          .select()
+          .single();
+
+        if (recipeError) {
+          throw new Error(`Failed to create recipe: ${recipeError.message}`);
+        }
+
+        if (!newRecipe) {
+          throw new Error('Recipe was created but no data was returned');
+        }
+
+        // Step 5b: Create ingredient records
+        const ingredientsData = ingredients
+          .filter(ing => ing.name && ing.amount > 0)
+          .map((ing, index) => {
+            const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
+            return {
+              recipe_id: newRecipe.id,
+              name: ing.name,
+              amount_grams: amountGrams,
+              unit: ing.unit,
+              display_amount: ing.amount,
+              order_index: index,
+            };
+          });
+
+        if (ingredientsData.length > 0) {
+          const { error: ingredientsError } = await supabaseClient
+            .from('ingredients')
+            .insert(ingredientsData);
+
+          if (ingredientsError) {
+            throw new Error(`Failed to save ingredients: ${ingredientsError.message}`);
+          }
+        }
+
+        // Step 6b: Redirect to the newly created recipe page
+        router.push(`/recipe/${newRecipe.id}`);
+      }
     } catch (err: any) {
       // Display error message to user
-      setError(err.message || 'Failed to create recipe. Please try again.');
-      console.error('Error creating recipe:', err);
+      setError(err.message || `Failed to ${isEditMode ? 'update' : 'create'} recipe. Please try again.`);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} recipe:`, err);
     } finally {
       setLoading(false);
     }
@@ -194,15 +302,36 @@ export default function RecipeCreatePage() {
     setIngredients([...ingredients, { name: '', amount: 0, unit: 'cup' }]);
   };
 
+  const removeIngredient = (index: number) => {
+    if (ingredients.length > 1) {
+      const newIngredients = ingredients.filter((_, i) => i !== index);
+      setIngredients(newIngredients);
+    }
+  };
+
   const updateIngredient = (index: number, field: string, value: string | number) => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
     setIngredients(newIngredients);
   };
 
+  const removeMethodStep = (index: number) => {
+    if (methodSteps.length > 1) {
+      const newSteps = methodSteps.filter((_, i) => i !== index);
+      setMethodSteps(newSteps);
+    }
+  };
+
+  const removeNote = (index: number) => {
+    if (notes.length > 1) {
+      const newNotes = notes.filter((_, i) => i !== index);
+      setNotes(newNotes);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8">Create Recipe</h1>
+      <h1 className="text-4xl font-bold mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
@@ -230,12 +359,42 @@ export default function RecipeCreatePage() {
           <label className="label">
             <span className="label-text">Recipe Image</span>
           </label>
+          {(imagePreview || (isEditMode && recipe?.image_url)) && (
+            <div className="mb-2">
+              <img
+                src={imagePreview || recipe?.image_url || ''}
+                alt="Recipe image"
+                className="w-64 h-48 object-cover rounded-lg"
+              />
+              <p className="text-sm opacity-70 mt-1">
+                {imagePreview ? 'New image preview' : 'Current image'}
+              </p>
+            </div>
+          )}
           <input
             type="file"
             accept="image/*"
             className="file-input file-input-bordered"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageFile(e.target.files?.[0] || null)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const file = e.target.files?.[0] || null;
+              setImageFile(file);
+              if (file) {
+                // Preview new image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  setImagePreview(e.target?.result as string);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                setImagePreview(isEditMode ? recipe?.image_url || null : null);
+              }
+            }}
           />
+          {isEditMode && (
+            <label className="label">
+              <span className="label-text-alt">Leave empty to keep current image</span>
+            </label>
+          )}
         </div>
 
         {/* Description */}
@@ -314,6 +473,16 @@ export default function RecipeCreatePage() {
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
               />
+              {ingredients.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeIngredient(index)}
+                  className="btn btn-sm btn-ghost"
+                  aria-label="Remove ingredient"
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
           <button
@@ -332,9 +501,21 @@ export default function RecipeCreatePage() {
           </label>
           {methodSteps.map((step, index) => (
             <div key={index} className="mb-2">
-              <label className="label">
-                <span className="label-text">Step {index + 1}</span>
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="label">
+                  <span className="label-text">Step {index + 1}</span>
+                </label>
+                {methodSteps.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeMethodStep(index)}
+                    className="btn btn-xs btn-ghost"
+                    aria-label="Remove step"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={step}
@@ -359,9 +540,21 @@ export default function RecipeCreatePage() {
           </label>
           {notes.map((note, index) => (
             <div key={index} className="mb-2">
-              <label className="label">
-                <span className="label-text">Note {index + 1}</span>
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="label">
+                  <span className="label-text">Note {index + 1}</span>
+                </label>
+                {notes.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeNote(index)}
+                    className="btn btn-xs btn-ghost"
+                    aria-label="Remove note"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <textarea
                 className="textarea textarea-bordered w-full"
                 value={note}
@@ -381,13 +574,25 @@ export default function RecipeCreatePage() {
 
         {/* Submit */}
         <div className="form-control mt-6">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Recipe'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Recipe' : 'Create Recipe')}
+            </button>
+            {isEditMode && (
+              <button
+                type="button"
+                onClick={() => router.push(`/recipe/${recipe!.id}`)}
+                className="btn btn-ghost"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
       </form>
     </div>
