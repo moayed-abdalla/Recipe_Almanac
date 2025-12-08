@@ -99,6 +99,7 @@ export default function AlmanacPage() {
     
     return {
       id: recipe.id,
+      slug: recipe.slug,
       title: recipe.title,
       image_url: recipe.image_url,
       description: recipe.description,
