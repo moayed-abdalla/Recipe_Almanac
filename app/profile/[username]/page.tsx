@@ -129,6 +129,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               <RecipeCard
                 key={recipe.id}
                 id={recipe.id}
+                slug={recipe.slug}
                 title={recipe.title}
                 imageUrl={recipe.image_url}
                 description={recipe.description}

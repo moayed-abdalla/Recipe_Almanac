@@ -23,6 +23,7 @@ import Image from 'next/image';
 
 interface RecipeCardProps {
   id: string;
+  slug: string; // Recipe slug for URL (format: username-recipe-slug)
   title: string;
   imageUrl?: string | null;
   description?: string | null;
@@ -33,6 +34,7 @@ interface RecipeCardProps {
 
 export default function RecipeCard({
   id,
+  slug,
   title,
   imageUrl,
   description,
@@ -41,7 +43,7 @@ export default function RecipeCard({
   tags = [],
 }: RecipeCardProps) {
   return (
-    <Link href={`/recipe/${id}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+    <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
       <figure>
         {imageUrl ? (
           <Image

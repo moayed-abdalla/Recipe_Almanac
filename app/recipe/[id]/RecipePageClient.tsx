@@ -47,6 +47,7 @@ interface Ingredient {
 interface Recipe {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   image_url: string | null;
   tags: string[];
@@ -366,6 +367,19 @@ export default function RecipePageClient({
     setForking(true);
 
     try {
+      // Get user's username for slug generation
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile?.username) {
+        alert('User profile not found. Please complete your profile setup.');
+        setForking(false);
+        return;
+      }
+
       // Fetch the original recipe with all its data
       const { data: originalRecipe, error: fetchError } = await supabaseClient
         .from('recipes')
@@ -380,13 +394,21 @@ export default function RecipePageClient({
         return;
       }
 
+      // Generate slug for forked recipe: username-recipe-title-forked-timestamp
+      const usernameSlug = profile.username.replace(/[^a-z0-9]+/g, '_');
+      const recipeTitleSlug = originalRecipe.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      const forkedSlug = `${usernameSlug}-${recipeTitleSlug}-forked-${Date.now()}`;
+
       // Create a new recipe based on the original
       const { data: newRecipe, error: createError } = await supabaseClient
         .from('recipes')
         .insert({
           user_id: user.id,
           title: `${originalRecipe.title} (Forked)`,
-          slug: `${originalRecipe.slug || originalRecipe.title.toLowerCase().replace(/\s+/g, '-')}-forked-${Date.now()}`,
+          slug: forkedSlug,
           description: originalRecipe.description,
           image_url: originalRecipe.image_url,
           tags: originalRecipe.tags,
@@ -420,8 +442,8 @@ export default function RecipePageClient({
           .insert(ingredientsData);
       }
 
-      // Navigate to the newly forked recipe page
-      router.push(`/recipe/${newRecipe.id}`);
+      // Navigate to the newly forked recipe page using slug
+      router.push(`/recipe/${newRecipe.slug}`);
     } catch (err) {
       console.error('Unexpected error forking recipe:', err);
       alert('An unexpected error occurred. Please try again.');
@@ -453,29 +475,6 @@ export default function RecipePageClient({
         <div className="flex justify-between items-start mb-2 gap-4">
           <h1 className="text-4xl font-bold flex-1 special-elite-regular">{recipe.title}</h1>
           <div className="flex gap-2">
-            {/* Edit Button - Only show for recipe owner */}
-            {isOwner && (
-              <Link
-                href={`/recipe/${recipe.id}/edit`}
-                className="btn btn-circle btn-ghost"
-                aria-label="Edit recipe"
-                title="Edit this recipe"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-              </Link>
-            )}
             {/* Fork Button */}
             <button
               onClick={handleFork}
@@ -502,6 +501,29 @@ export default function RecipePageClient({
                 </svg>
               )}
             </button>
+            {/* Edit Button - Only show for recipe owner */}
+            {isOwner && (
+              <Link
+                href={`/recipe/${recipe.slug}/edit`}
+                className="btn btn-circle btn-ghost"
+                aria-label="Edit recipe"
+                title="Edit this recipe"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </Link>
+            )}
             {/* Favorite Button */}
             <button
               onClick={toggleFavorite}

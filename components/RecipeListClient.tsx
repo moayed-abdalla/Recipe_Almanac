@@ -19,6 +19,7 @@ import RecipeCard from './RecipeCard';
 
 interface Recipe {
   id: string;
+  slug: string;
   title: string;
   image_url: string | null;
   description: string | null;
@@ -91,6 +92,7 @@ export default function RecipeListClient({ recipes }: RecipeListClientProps) {
           <RecipeCard
             key={recipe.id}
             id={recipe.id}
+            slug={recipe.slug}
             title={recipe.title}
             imageUrl={recipe.image_url}
             description={recipe.description}

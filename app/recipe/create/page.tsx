@@ -124,11 +124,53 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         throw new Error('You do not have permission to edit this recipe');
       }
 
+      // Step 1c: Get user's username for slug generation
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile?.username) {
+        throw new Error('User profile not found. Please complete your profile setup.');
+      }
+
       // Step 2: Generate URL-friendly slug from title
-      const slug = title
+      const recipeSlug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+
+      // Step 2b: Create full slug with username: username-recipe-slug
+      const usernameSlug = profile.username.replace(/[^a-z0-9]+/g, '_');
+      const slug = `${usernameSlug}-${recipeSlug}`;
+
+      // Step 2c: Check for duplicate recipe name for this user (only when creating)
+      if (!isEditMode) {
+        const { data: existingRecipe } = await supabaseClient
+          .from('recipes')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('slug', slug)
+          .single();
+
+        if (existingRecipe) {
+          throw new Error('You already have a recipe with this name. Please choose a different name.');
+        }
+      } else {
+        // When editing, check if another recipe with same slug exists (excluding current recipe)
+        const { data: existingRecipe } = await supabaseClient
+          .from('recipes')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('slug', slug)
+          .neq('id', recipe!.id)
+          .single();
+
+        if (existingRecipe) {
+          throw new Error('You already have a recipe with this name. Please choose a different name.');
+        }
+      }
 
       // Step 3: Upload image to Supabase Storage if provided
       let imageUrl = isEditMode ? recipe!.image_url : null; // Keep existing image by default when editing
@@ -212,8 +254,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           }
         }
 
-        // Step 7a: Redirect to the updated recipe page
-        router.push(`/recipe/${recipe!.id}`);
+        // Step 7a: Redirect to the updated recipe page using slug
+        router.push(`/recipe/${slug}`);
         router.refresh();
       } else {
         // Step 4b: Create new recipe record
@@ -266,8 +308,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           }
         }
 
-        // Step 6b: Redirect to the newly created recipe page
-        router.push(`/recipe/${newRecipe.id}`);
+        // Step 6b: Redirect to the newly created recipe page using slug
+        router.push(`/recipe/${slug}`);
       }
     } catch (err: any) {
       // Display error message to user
@@ -585,7 +627,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             {isEditMode && (
               <button
                 type="button"
-                onClick={() => router.push(`/recipe/${recipe!.id}`)}
+                onClick={() => router.push(`/recipe/${recipe!.slug}`)}
                 className="btn btn-ghost"
                 disabled={loading}
               >
