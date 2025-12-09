@@ -144,9 +144,9 @@ export default function Header() {
 
   return (
     <header className="navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50">
-      <div className="container mx-auto">
-        <div className="flex-1">
-          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0">
+      <div className="container mx-auto flex items-center">
+        <div className="flex-1 flex items-center">
+          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0 flex items-center">
             <Image
               src="/logo.png"
               alt="Recipe Almanac"
@@ -158,7 +158,7 @@ export default function Header() {
           </Link>
         </div>
         
-        <div className="flex-none gap-2 items-center">
+        <div className="flex-none gap-2 flex items-center">
           {/* Profile Icon / Login Button */}
           {user ? (
             <div className="dropdown dropdown-end">
