@@ -25,6 +25,11 @@ import { useState, useEffect } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 
+interface ProfileData {
+  avatar_url: string | null;
+  username: string;
+}
+
 export default function Header() {
   // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -32,8 +37,34 @@ export default function Header() {
   // User state - current authenticated user
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { username?: string; avatar_url?: string } } | null>(null);
   
+  // Profile data (avatar and username from profiles table)
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  
   // Supabase client for authentication
   const supabase = supabaseClient;
+
+  /**
+   * Fetch profile data from profiles table
+   */
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar_url, username')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data as ProfileData;
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err);
+      return null;
+    }
+  };
 
   /**
    * Initialize theme and user session on component mount
@@ -47,22 +78,49 @@ export default function Header() {
       document.documentElement.setAttribute('data-theme', initialTheme);
 
       // Check for existing user session
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
+      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
         if (error) {
           console.error('Error getting session:', error);
         } else {
           setUser(session?.user ?? null);
+          // Fetch profile if user is logged in
+          if (session?.user) {
+            const profileData = await fetchProfile(session.user.id);
+            setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
         }
       });
 
       // Listen for authentication state changes (login, logout, etc.)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
         setUser(session?.user ?? null);
+        // Fetch profile when auth state changes
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          setProfile(profileData);
+        } else {
+          setProfile(null);
+        }
       });
 
-      // Cleanup: unsubscribe from auth state changes when component unmounts
+      // Listen for profile update events (dispatched from profile page)
+      const handleProfileUpdate = async () => {
+        // Get current user from session to avoid stale closure
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          setProfile(profileData);
+        }
+      };
+
+      window.addEventListener('profileAvatarUpdated', handleProfileUpdate);
+
+      // Cleanup: unsubscribe from auth state changes and remove event listener
       return () => {
         subscription.unsubscribe();
+        window.removeEventListener('profileAvatarUpdated', handleProfileUpdate);
       };
     } catch (error) {
       console.error('Error initializing header:', error);
@@ -106,9 +164,9 @@ export default function Header() {
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full bg-base-300">
-                  {user.user_metadata?.avatar_url ? (
+                  {profile?.avatar_url ? (
                     <Image
-                      src={user.user_metadata.avatar_url}
+                      src={profile.avatar_url}
                       alt="Profile"
                       width={40}
                       height={40}
@@ -117,7 +175,7 @@ export default function Header() {
                   ) : (
                     <div className="w-full h-full rounded-full bg-base-300 flex items-center justify-center">
                       <span className="text-xs font-bold">
-                        {user.user_metadata?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                        {profile?.username?.charAt(0).toUpperCase() || user.user_metadata?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>
                   )}
