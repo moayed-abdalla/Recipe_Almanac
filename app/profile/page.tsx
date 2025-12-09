@@ -290,6 +290,9 @@ export default function MyProfilePage() {
       // Update local state
       setProfile({ ...profile, avatar_url: publicUrl });
       setAvatarPreview(null);
+      
+      // Dispatch event to notify header (and other components) that avatar was updated
+      window.dispatchEvent(new CustomEvent('profileAvatarUpdated'));
     } catch (err: any) {
       console.error('Error uploading avatar:', err);
       alert(`Failed to upload avatar: ${err.message}`);
