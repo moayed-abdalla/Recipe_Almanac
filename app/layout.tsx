@@ -17,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light">
       <head>
+        <link rel="icon" href="/favicon_light.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />

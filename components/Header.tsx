@@ -128,6 +128,30 @@ export default function Header() {
   }, [supabase]);
 
   /**
+   * Update favicon based on current theme
+   */
+  const updateFavicon = (currentTheme: 'light' | 'dark') => {
+    try {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = currentTheme === 'dark' ? '/favicon_dark.ico' : '/favicon_light.ico';
+    } catch (error) {
+      console.error('Error updating favicon:', error);
+    }
+  };
+
+  /**
+   * Update favicon when theme changes
+   */
+  useEffect(() => {
+    updateFavicon(theme);
+  }, [theme]);
+
+  /**
    * Toggle between light and dark theme
    * Saves preference to localStorage for persistence
    */
@@ -137,6 +161,7 @@ export default function Header() {
       setTheme(newTheme);
       localStorage.setItem('theme', newTheme);
       document.documentElement.setAttribute('data-theme', newTheme);
+      updateFavicon(newTheme);
     } catch (error) {
       console.error('Error toggling theme:', error);
     }
@@ -148,7 +173,7 @@ export default function Header() {
         <div className="flex-1 flex items-center">
           <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0 flex items-center">
             <Image
-              src="/logo.png"
+              src={theme === 'dark' ? '/logo_dark.png' : '/logo_light.png'}
               alt="Recipe Almanac"
               width={40}
               height={40}
