@@ -30,6 +30,7 @@ body::before {
   opacity: 0.4;
   z-index: 0;
   /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
+  /* Image order (1-20): 1-4 bg_pic_light_1, 5-8 bg_pic_light_2, 9-12 bg_pic_light_3, 13-16 bg_pic_light_4, 17-20 bg_pic_light_5 */
   background-image: 
     url('/bg_pic_light_1.png'),
     url('/bg_pic_light_1.png'),
@@ -51,48 +52,50 @@ body::before {
     url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png');
+  /* Positions map 1-20 to the image list (x% y%). Y <= 80% keeps clear of footer. */
   background-position: 
-    10% 15%, 
-    20% 60%, 
-    25% 45%, 
-    45% 25%, 
-    35% 25%, 
-    50% 70%, 
-    60% 50%, 
-    75% 15%, 
-    65% 40%, 
-    80% 10%, 
-    85% 65%, 
-    30% 80%, 
-    90% 55%, 
-    15% 80%, 
-    40% 10%, 
-    55% 85%, 
-    75% 30%, 
-    40% 90%, 
-    10% 50%, 
-    95% 75%;
+    10% 15%,   /* 1: bg_pic_light_1 */
+    20% 60%,   /* 2: bg_pic_light_1 */
+    25% 45%,   /* 3: bg_pic_light_1 */
+    45% 25%,   /* 4: bg_pic_light_1 */
+    35% 25%,   /* 5: bg_pic_light_2 */
+    50% 65%,   /* 6: bg_pic_light_2 */
+    60% 50%,   /* 7: bg_pic_light_2 */
+    75% 15%,   /* 8: bg_pic_light_2 */
+    65% 40%,   /* 9: bg_pic_light_3 */
+    80% 10%,   /* 10: bg_pic_light_3 */
+    75% 65%,   /* 11: bg_pic_light_3 */
+    30% 70%,   /* 12: bg_pic_light_3 */
+    80% 55%,   /* 13: bg_pic_light_4 */
+    15% 70%,   /* 14: bg_pic_light_4 */
+    40% 10%,   /* 15: bg_pic_light_4 */
+    55% 75%,   /* 16: bg_pic_light_4 */
+    75% 30%,   /* 17: bg_pic_light_5 */
+    40% 78%,   /* 18: bg_pic_light_5 */
+    10% 50%,   /* 19: bg_pic_light_5 */
+    95% 70%;   /* 20: bg_pic_light_5 */
+  /* Sizes map to the images above (width px, height auto). Range 100-130px; max delta 30px. */
   background-size: 
-    110px auto, 
-    90px auto, 
-    110px auto, 
-    90px auto, 
-    125px auto, 
-    100px auto, 
-    125px auto, 
-    100px auto, 
-    115px auto, 
-    80px auto, 
-    115px auto, 
-    80px auto, 
-    135px auto, 
-    95px auto, 
-    135px auto, 
-    95px auto, 
-    110px auto, 
-    105px auto, 
-    110px auto, 
-    105px auto;
+    120px auto, /* 1 */
+    110px auto, /* 2 */
+    120px auto, /* 3 */
+    110px auto, /* 4 */
+    125px auto, /* 5 */
+    115px auto, /* 6 */
+    125px auto, /* 7 */
+    115px auto, /* 8 */
+    120px auto, /* 9 */
+    100px auto, /* 10 */
+    120px auto, /* 11 */
+    100px auto, /* 12 */
+    130px auto, /* 13 */
+    110px auto, /* 14 */
+    130px auto, /* 15 */
+    110px auto, /* 16 */
+    120px auto, /* 17 */
+    115px auto, /* 18 */
+    120px auto, /* 19 */
+    115px auto; /* 20 */
   background-repeat: no-repeat;
   pointer-events: none;
 }
@@ -111,17 +114,18 @@ body::before {
       url('/bg_pic_light_4.png'),
       url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
+    /* Positions map 1-10; keep y <= 80% to avoid footer */
     background-position: 
-      15% 20%, 
-      50% 60%, 
-      80% 30%, 
-      30% 80%, 
-      70% 15%, 
-      20% 70%, 
-      60% 50%, 
-      40% 90%, 
-      90% 40%, 
-      15% 30%;
+      15% 20%,  /* 1 */
+      50% 60%,  /* 2 */
+      80% 30%,  /* 3 */
+      30% 78%,  /* 4 */
+      70% 15%,  /* 5 */
+      20% 70%,  /* 6 */
+      60% 50%,  /* 7 */
+      40% 78%,  /* 8 */
+      90% 40%,  /* 9 */
+      15% 30%;  /* 10 */
     background-size: 
       60px auto, 
       50px auto, 
@@ -150,17 +154,18 @@ body::before {
       url('/bg_pic_light_4.png'),
       url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
+    /* Positions map 1-10; y capped at 80% */
     background-position: 
-      15% 25%, 
-      25% 70%, 
-      50% 60%, 
-      60% 20%, 
-      85% 35%, 
-      90% 80%, 
-      30% 80%, 
-      40% 15%, 
-      70% 15%, 
-      75% 65%;
+      15% 25%, /* 1 */
+      25% 70%, /* 2 */
+      50% 60%, /* 3 */
+      60% 20%, /* 4 */
+      85% 35%, /* 5 */
+      90% 75%, /* 6 */
+      30% 75%, /* 7 */
+      40% 15%, /* 8 */
+      70% 15%, /* 9 */
+      75% 65%; /* 10 */
     background-size: 
       45px auto, 
       45px auto, 
@@ -203,26 +208,26 @@ body::before {
     url('/bg_pic_dark_5.png'),
     url('/bg_pic_dark_5.png');
   background-position: 
-    10% 15%, 
-    20% 60%, 
-    25% 45%, 
-    45% 25%, 
-    35% 25%, 
-    50% 70%, 
-    60% 50%, 
-    75% 15%, 
-    65% 40%, 
-    80% 10%, 
-    85% 65%, 
-    30% 85%, 
-    90% 55%, 
-    15% 80%, 
-    40% 10%, 
-    55% 90%, 
-    75% 30%, 
-    40% 90%, 
-    10% 50%, 
-    95% 75%;
+    10% 15%,  /* 1 */
+    20% 60%,  /* 2 */
+    25% 45%,  /* 3 */
+    45% 25%,  /* 4 */
+    35% 25%,  /* 5 */
+    50% 70%,  /* 6 */
+    60% 50%,  /* 7 */
+    75% 15%,  /* 8 */
+    65% 40%,  /* 9 */
+    80% 10%,  /* 10 */
+    75% 65%,  /* 11 */
+    30% 75%,  /* 12 */
+    90% 55%,  /* 13 */
+    15% 75%,  /* 14 */
+    40% 10%,  /* 15 */
+    55% 78%,  /* 16 */
+    75% 30%,  /* 17 */
+    40% 78%,  /* 18 */
+    10% 50%,  /* 19 */
+    95% 70%;  /* 20 */
   background-size: 
     110px auto, 
     90px auto, 
@@ -262,16 +267,16 @@ body::before {
       url('/bg_pic_dark_5.png'),
       url('/bg_pic_dark_5.png');
     background-position: 
-      15% 20%, 
-      50% 60%, 
-      80% 30%, 
-      30% 80%, 
-      70% 15%, 
-      20% 70%, 
-      60% 50%, 
-      40% 80%, 
-      90% 40%, 
-      15% 30%;
+      15% 20%, /* 1 */
+      50% 60%, /* 2 */
+      80% 30%, /* 3 */
+      30% 78%, /* 4 */
+      70% 15%, /* 5 */
+      20% 70%, /* 6 */
+      60% 50%, /* 7 */
+      40% 78%, /* 8 */
+      90% 40%, /* 9 */
+      15% 30%; /* 10 */
     background-size: 
       60px auto, 
       50px auto, 
@@ -301,16 +306,16 @@ body::before {
       url('/bg_pic_dark_5.png'),
       url('/bg_pic_dark_5.png');
     background-position: 
-      15% 25%, 
-      25% 70%, 
-      50% 60%, 
-      60% 20%, 
-      85% 35%, 
-      90% 80%, 
-      30% 80%, 
-      40% 15%, 
-      70% 15%, 
-      75% 65%;
+      15% 25%, /* 1 */
+      25% 70%, /* 2 */
+      50% 60%, /* 3 */
+      60% 20%, /* 4 */
+      85% 35%, /* 5 */
+      90% 75%, /* 6 */
+      30% 75%, /* 7 */
+      40% 15%, /* 8 */
+      70% 15%, /* 9 */
+      75% 65%; /* 10 */
     background-size: 
       45px auto, 
       45px auto, 
