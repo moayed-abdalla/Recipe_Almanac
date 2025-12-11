@@ -54,6 +54,12 @@ export default function Footer() {
           </div>
           
           <nav className="flex items-center gap-4">
+            <Link href="/feedback?type=bug" className="btn btn-sm btn-outline">
+              Report a bug
+            </Link>
+            <Link href="/feedback?type=feature" className="btn btn-sm btn-outline">
+              Request a feature
+            </Link>
             {user && (
               <>
                 <Link href="/profile" className="link link-hover">My Profile</Link>
