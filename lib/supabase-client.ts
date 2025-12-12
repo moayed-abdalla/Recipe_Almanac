@@ -1,13 +1,13 @@
 /**
- * Simplified Supabase Client for Client Components
+ * Supabase Client for Client Components
  * 
- * This is a simpler alternative if you prefer not to use auth-helpers-nextjs
+ * Uses @supabase/ssr to sync sessions between client and server via cookies
  * Use this in 'use client' components
  */
 
 'use client';
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 // Note: Database types should be generated from Supabase
 // Run: npx supabase gen types typescript --project-id YOUR_PROJECT_ID > lib/database.types.ts
 // For now, using a simplified type
@@ -20,14 +20,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Create client - will throw error at runtime if env vars are missing when actually used
 // This prevents build-time errors while still catching configuration issues at runtime
-export const supabaseClient = createClient<Database>(
+// Uses SSR browser client to sync cookies automatically
+export const supabaseClient = createBrowserClient<Database>(
   supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  }
+  supabaseAnonKey
 );
 
