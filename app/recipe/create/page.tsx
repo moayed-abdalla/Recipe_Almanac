@@ -403,8 +403,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
@@ -519,17 +519,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             <span className="label-text text-lg font-bold">Ingredients</span>
           </label>
           {ingredients.map((ing, index) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className="flex flex-wrap gap-2 mb-2">
               <input
                 type="number"
                 step="0.25"
-                className="input input-bordered w-24"
+                className="input input-bordered w-20 sm:w-24 flex-shrink-0"
                 placeholder="Amount"
                 value={ing.amount || ''}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
-                className="select select-bordered"
+                className="select select-bordered flex-shrink-0 min-w-[120px]"
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
               >
@@ -552,7 +552,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
               </select>
               <input
                 type="text"
-                className="input input-bordered flex-1"
+                className="input input-bordered flex-1 min-w-[150px]"
                 placeholder="Ingredient name"
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
@@ -561,7 +561,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 <button
                   type="button"
                   onClick={() => removeIngredient(index)}
-                  className="btn btn-sm btn-ghost"
+                  className="btn btn-sm btn-ghost flex-shrink-0"
                   aria-label="Remove ingredient"
                 >
                   ×
