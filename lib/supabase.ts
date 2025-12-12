@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient as createSSRServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 // Database types (you can generate these with: npx supabase gen types typescript --project-id YOUR_PROJECT_ID)
@@ -174,23 +175,34 @@ export function createBrowserClient() {
 /**
  * Server-side Supabase client
  * Use this in Server Components, API routes, and Server Actions
+ * Uses @supabase/ssr to properly sync cookies between client and server
  */
 export async function createServerClient() {
   validateEnvVars();
   const cookieStore = await cookies();
   
-  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-    global: {
-      headers: {
-        Cookie: cookieStore.toString(),
+  return createSSRServerClient<Database>(
+    supabaseUrl!,
+    supabaseAnonKey!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
       },
-    },
-  });
+    }
+  );
 }
 
 /**
