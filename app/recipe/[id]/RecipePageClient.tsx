@@ -468,29 +468,29 @@ export default function RecipePageClient({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
       {/* Recipe Image */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         {recipe.image_url ? (
           <Image
             src={recipe.image_url}
             alt={recipe.title}
             width={800}
             height={600}
-            className="w-full h-96 object-cover rounded-lg"
+            className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg"
           />
         ) : (
-          <div className="w-full h-96 bg-base-300 rounded-lg flex items-center justify-center">
-            <span className="text-base-content opacity-50 text-xl">No Image</span>
+          <div className="w-full h-64 sm:h-80 lg:h-96 bg-base-300 rounded-lg flex items-center justify-center">
+            <span className="text-base-content opacity-50 text-lg sm:text-xl">No Image</span>
           </div>
         )}
       </div>
 
       {/* Recipe Title and Actions */}
       <div className="mb-6">
-        <div className="flex justify-between items-start mb-2 gap-4">
-          <h1 className="text-4xl font-bold flex-1 special-elite-regular">{recipe.title}</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-3 sm:gap-4">
+          <h1 className="text-3xl sm:text-4xl font-bold flex-1 special-elite-regular break-words">{recipe.title}</h1>
+          <div className="flex gap-2 flex-shrink-0">
             {/* Fork Button */}
             <button
               onClick={handleFork}
@@ -599,11 +599,11 @@ export default function RecipePageClient({
 
       {/* Ingredients Section */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-4">
           <h2 className="text-2xl font-bold special-elite-regular">Ingredients</h2>
           {/* Multiplier Controls */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm opacity-70 arial-font mr-2">Scale:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm opacity-70 arial-font mr-2 w-full sm:w-auto">Scale:</span>
             <button
               onClick={() => handleMultiplierClick(0.5)}
               className={`btn btn-sm ${multiplier === 0.5 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
@@ -623,12 +623,12 @@ export default function RecipePageClient({
               2x
             </button>
             {showCustomInput ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <input
                   type="number"
                   step="0.1"
                   min="0.1"
-                  className="input input-bordered input-sm w-20 arial-font"
+                  className="input input-bordered input-sm w-20 arial-font flex-shrink-0"
                   placeholder="Custom"
                   value={customMultiplier}
                   onChange={(e) => handleCustomMultiplierChange(e.target.value)}
@@ -636,7 +636,7 @@ export default function RecipePageClient({
                 />
                 <button
                   onClick={handleCustomInputToggle}
-                  className="btn btn-sm btn-ghost"
+                  className="btn btn-sm btn-ghost flex-shrink-0"
                   title="Close custom input"
                 >
                   ×
@@ -645,7 +645,7 @@ export default function RecipePageClient({
             ) : (
               <button
                 onClick={handleCustomInputToggle}
-                className={`btn btn-sm ${showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm ${showCustomInput ? 'btn-primary' : 'btn-outline'} flex-shrink-0`}
                 title="Enter custom multiplier"
               >
                 Custom
@@ -661,14 +661,14 @@ export default function RecipePageClient({
             const currentUnit = ingredientUnits[ingredient.id] || ingredient.unit;
 
             return (
-              <li key={ingredient.id} className="flex items-center gap-3 flex-wrap">
+              <li key={ingredient.id} className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <input
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleIngredient(ingredient.id)}
-                  className="checkbox"
+                  className="checkbox flex-shrink-0"
                 />
-                <span className={`${isChecked ? 'line-through opacity-50 flex-1' : 'flex-1'} arial-font`}>
+                <span className={`${isChecked ? 'line-through opacity-50 flex-1 min-w-0' : 'flex-1 min-w-0'} arial-font break-words`}>
                   {formatMeasurement(amount, unit)} {ingredient.name}
                   {showWarning && (
                     <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
@@ -679,7 +679,7 @@ export default function RecipePageClient({
                 <select
                   value={currentUnit}
                   onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
-                  className="select select-bordered select-sm max-w-xs arial-font"
+                  className="select select-bordered select-sm max-w-xs arial-font flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {availableUnits.map((unitOption) => (
