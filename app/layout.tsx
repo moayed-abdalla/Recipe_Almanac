@@ -22,7 +22,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-base-100 text-base-content">
+      <body className="bg-base-100 text-base-content min-h-screen flex flex-col">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-VXFFHEPYS9"
           strategy="afterInteractive"
@@ -36,7 +36,7 @@ export default function RootLayout({
           `}
         </Script>
         <Header />
-        <main className="min-h-screen relative z-10">
+        <main className="flex-1 relative z-10">
           {children}
         </main>
         <Footer />
