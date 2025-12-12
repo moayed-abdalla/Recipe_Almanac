@@ -27,7 +27,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
-import { volumeToWeight } from '@/utils/unitConverter';
+import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
 
 interface Recipe {
   id: string;
@@ -96,7 +96,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           amount: ing.display_amount,
           unit: ing.unit,
         }))
-      : [{ name: '', amount: 0, unit: 'cup' }] // Default to one empty ingredient field
+      : [{ name: '', amount: 0, unit: 'cups' }] // Default to one empty ingredient field
   );
   
   // Form state - image file for upload
@@ -237,7 +237,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         const ingredientsData = ingredients
           .filter(ing => ing.name && ing.amount > 0)
           .map((ing, index) => {
-            const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
+            const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: recipe!.id,
               name: ing.name,
@@ -291,7 +291,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         const ingredientsData = ingredients
           .filter(ing => ing.name && ing.amount > 0)
           .map((ing, index) => {
-            const amountGrams = volumeToWeight(ing.amount, ing.unit, ing.name);
+            const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: newRecipe.id,
               name: ing.name,
@@ -345,7 +345,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   };
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', amount: 0, unit: 'cup' }]);
+    setIngredients([...ingredients, { name: '', amount: 0, unit: 'cups' }]);
   };
 
   const removeIngredient = (index: number) => {
@@ -375,6 +375,33 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
     }
   };
 
+  /**
+   * Convert any unit to grams
+   * Handles both volume and weight units
+   */
+  const convertToGrams = (amount: number, unit: string, ingredientName: string): number => {
+    const unitLower = unit.toLowerCase();
+    
+    // Check if it's a volume unit
+    if (VOLUME_UNITS[unitLower] !== undefined) {
+      return volumeToWeight(amount, unit, ingredientName);
+    }
+    
+    // Handle weight units - convert to grams
+    if (unitLower === 'g' || unitLower === 'gram' || unitLower === 'grams') {
+      return amount;
+    } else if (unitLower === 'kg' || unitLower === 'kilogram' || unitLower === 'kilograms') {
+      return amount * 1000;
+    } else if (unitLower === 'oz' || unitLower === 'ounce' || unitLower === 'ounces') {
+      return amount * 28.35;
+    } else if (unitLower === 'lb' || unitLower === 'pound' || unitLower === 'pounds') {
+      return amount * 453.592;
+    }
+    
+    // Default: assume grams if unknown
+    return amount;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-4xl font-bold mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
@@ -389,7 +416,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Title */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Recipe Title *</span>
+            <span className="label-text text-lg font-bold">Recipe Title *</span>
           </label>
           <input
             type="text"
@@ -403,7 +430,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Image */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Recipe Image</span>
+            <span className="label-text text-lg font-bold">Recipe Image</span>
           </label>
           {(imagePreview || (isEditMode && recipe?.image_url)) && (
             <div className="mb-2">
@@ -446,7 +473,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Description */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Description</span>
+            <span className="label-text text-lg font-bold">Description</span>
           </label>
           <textarea
             className="textarea textarea-bordered"
@@ -459,7 +486,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Tags */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Tags (comma-separated)</span>
+            <span className="label-text text-lg font-bold">Tags (comma-separated)</span>
           </label>
           <input
             type="text"
@@ -489,7 +516,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Ingredients */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Ingredients</span>
+            <span className="label-text text-lg font-bold">Ingredients</span>
           </label>
           {ingredients.map((ing, index) => (
             <div key={index} className="flex gap-2 mb-2">
@@ -506,11 +533,22 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
               >
-                <option value="cup">cup</option>
-                <option value="cups">cups</option>
-                <option value="tsp">teaspoon</option>
-                <option value="tbsp">tablespoon</option>
-                <option value="ml">ml</option>
+                <optgroup label="Weight - Metric">
+                  <option value="g">g (grams)</option>
+                  <option value="kg">kg (kilograms)</option>
+                </optgroup>
+                <optgroup label="Weight - Imperial">
+                  <option value="oz">oz (ounces)</option>
+                  <option value="lb">lb (pounds)</option>
+                </optgroup>
+                <optgroup label="Volume">
+                  <option value="cups">cups</option>
+                  <option value="tbsp">tbsp (tablespoon)</option>
+                  <option value="tsp">tsp (teaspoon)</option>
+                  <option value="ml">ml (milliliters)</option>
+                  <option value="fl oz">fl oz (fluid ounces)</option>
+                  <option value="l">l (liters)</option>
+                </optgroup>
               </select>
               <input
                 type="text"
@@ -543,7 +581,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Method Steps */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Method Steps</span>
+            <span className="label-text text-lg font-bold">Method Steps</span>
           </label>
           {methodSteps.map((step, index) => (
             <div key={index} className="mb-2">
@@ -582,7 +620,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         {/* Notes */}
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Notes</span>
+            <span className="label-text text-lg font-bold">Notes</span>
           </label>
           {notes.map((note, index) => (
             <div key={index} className="mb-2">
