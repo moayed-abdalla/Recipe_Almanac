@@ -54,11 +54,9 @@ export default function Footer() {
           </div>
           
           <nav className="flex items-center gap-4">
-            <Link href="/feedback" className="btn btn-sm btn-outline">
-              Feedback
-            </Link>
             {user && (
               <>
+                <Link href="/feedback" className="link link-hover">Feedback</Link>
                 <Link href="/profile" className="link link-hover">My Profile</Link>
                 <Link href="/almanac" className="link link-hover">My Almanac</Link>
               </>
