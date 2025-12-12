@@ -25,6 +25,7 @@ Diagnostic_Guide.md
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+debug-console-script.js
 
 # local env files
 .env*.local
