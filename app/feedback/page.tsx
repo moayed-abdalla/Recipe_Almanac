@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -10,7 +10,7 @@ type FeedbackType = 'bug' | 'feature' | 'other';
 
 const FEEDBACK_BUCKET = 'feedback-attachments';
 
-export default function FeedbackPage() {
+function FeedbackPageContent() {
   const searchParams = useSearchParams();
 
   const initialType = useMemo<FeedbackType>(() => {
@@ -303,6 +303,18 @@ export default function FeedbackPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function FeedbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center py-10">
+        <span className="loading loading-spinner loading-lg" aria-label="Loading"></span>
+      </div>
+    }>
+      <FeedbackPageContent />
+    </Suspense>
   );
 }
 
