@@ -1,6 +1,24 @@
-import ProfileEditPage from './ProfileEditPage';
+/**
+ * Profile Edit Page Component
+ * 
+ * Allows the authenticated user to edit their profile:
+ * - Profile picture upload/change
+ * - Username editing
+ * - Profile description editing
+ * 
+ * This is a Client Component because it needs to:
+ * - Access user authentication state
+ * - Handle profile picture uploads
+ * - Handle form submissions
+ */
 
-export default ProfileEditPage;
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabaseClient } from '@/lib/supabase-client';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface Profile {
   id: string;

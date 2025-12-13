@@ -1,6 +1,32 @@
-import MyAlmanacPage from './MyAlmanacPage';
+/**
+ * My Almanac Page Component
+ * 
+ * Displays the authenticated user's personal recipe collection:
+ * - "Favorites" tab: Shows all recipes the user has favorited
+ * - "Public Recipes" tab: Shows all public recipes created by the user
+ * - "Private Recipes" tab: Shows all private recipes created by the user
+ * 
+ * Features:
+ * - Add Recipe button to create new recipes
+ * - Tab-based filtering between favorites, public, and private recipes
+ * - Recipe count display for each tab
+ * - Empty state messages when no recipes exist
+ * - Requires login to access
+ * 
+ * This is a Client Component because it needs to:
+ * - Access user authentication state
+ * - Handle user interactions (tabs, navigation)
+ * - Fetch user-specific data from Supabase
+ */
 
-export default MyAlmanacPage;
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabaseClient } from '@/lib/supabase-client';
+import type { Session } from '@supabase/supabase-js';
+import RecipeCard from '@/components/RecipeCard';
 
 /**
  * Recipe interface matching the database schema
@@ -38,7 +64,7 @@ interface NormalizedRecipe {
   };
 }
 
-export default function AlmanacPage() {
+export default function MyAlmanacPage() {
   const router = useRouter();
   
   // Current authenticated user

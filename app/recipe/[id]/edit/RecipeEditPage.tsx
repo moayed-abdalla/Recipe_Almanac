@@ -1,6 +1,6 @@
-import RecipeEditPage from './RecipeEditPage';
-
-export default RecipeEditPage;
+import { createServerClient } from '@/lib/supabase';
+import { redirect } from 'next/navigation';
+import { RecipeForm } from '@/app/recipe/create/RecipeCreatePage';
 
 interface RecipeEditPageProps {
   params: {
@@ -75,4 +75,3 @@ export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
     />
   );
 }
-

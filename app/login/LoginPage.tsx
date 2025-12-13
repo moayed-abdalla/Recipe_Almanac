@@ -1,6 +1,9 @@
-import LoginPage from './LoginPage';
+'use client';
 
-export default LoginPage;
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { supabaseClient } from '@/lib/supabase-client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -99,4 +102,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

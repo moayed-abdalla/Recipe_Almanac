@@ -1,6 +1,9 @@
-import RegisterPage from './RegisterPage';
+'use client';
 
-export default RegisterPage;
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { supabaseClient } from '@/lib/supabase-client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -160,4 +163,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
