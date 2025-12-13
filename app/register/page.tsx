@@ -1,9 +1,6 @@
-'use client';
+import RegisterPage from './RegisterPage';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { supabaseClient } from '@/lib/supabase-client';
+export default RegisterPage;
 
 export default function RegisterPage() {
   const router = useRouter();

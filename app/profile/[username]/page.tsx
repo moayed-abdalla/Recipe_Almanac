@@ -1,21 +1,6 @@
-/**
- * Profile Page Component
- * 
- * Displays a user's public profile with:
- * - Username and avatar
- * - Profile description
- * - List of all public recipes created by the user
- * 
- * This is a Server Component that fetches data from Supabase.
- * Only public recipes are displayed on profile pages.
- * Users can see their own private recipes in "My Almanac".
- * 
- * @param params - Route parameters containing the username
- */
+import ProfileViewPage from './ProfileViewPage';
 
-import { createServerClient } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
-import RecipeCard from '@/components/RecipeCard';
+export default ProfileViewPage;
 
 interface ProfilePageProps {
   params: {

@@ -1,38 +1,6 @@
-import { createServerClient } from '@/lib/supabase';
-import RecipePageClient from './RecipePageClient';
+import RecipeDetailPage from './RecipeDetailPage';
 
-interface RecipePageProps {
-  params: {
-    id: string; // Format: username-recipe-slug (treated as slug)
-  };
-}
-
-interface Recipe {
-  id: string;
-  user_id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  tags: string[];
-  method_steps: string[];
-  notes: string[];
-  view_count: number;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Profile {
-  username: string;
-  avatar_url: string | null;
-}
-
-interface RecipeWithProfile extends Recipe {
-  profiles: Profile | Profile[] | null;
-}
-
-export default async function RecipePage({ params }: RecipePageProps) {
+export default RecipeDetailPage;
   const supabase = await createServerClient();
   
   // Fetch recipe data by slug (format: username-recipe-slug)
