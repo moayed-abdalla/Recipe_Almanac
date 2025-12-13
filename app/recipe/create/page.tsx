@@ -1,33 +1,6 @@
-/**
- * Recipe Creation/Edit Page Component
- * 
- * Allows authenticated users to create new recipes or edit existing ones with:
- * - Title, description, and tags
- * - Recipe image upload
- * - Dynamic ingredient list (amount, unit, name)
- * - Dynamic method steps
- * - Optional notes
- * 
- * Features:
- * - Automatic slug generation from title
- * - Image upload to Supabase Storage
- * - Unit conversion (volume to weight) for ingredients
- * - Form validation
- * - Error handling
- * - Supports both create and edit modes
- * 
- * This is a Client Component because it needs to:
- * - Handle form state and user interactions
- * - Upload files to Supabase Storage
- * - Navigate after successful creation/update
- */
+import RecipeCreatePage from './RecipeCreatePage';
 
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabaseClient } from '@/lib/supabase-client';
-import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
+export default RecipeCreatePage;
 
 interface Recipe {
   id: string;

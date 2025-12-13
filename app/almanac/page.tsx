@@ -1,33 +1,9 @@
-/**
- * Almanac Page Component
- * 
- * Displays the user's personal recipe collection:
- * - "My Recipes" tab: Shows all recipes created by the logged-in user
- * - "Favorites" tab: Shows all recipes the user has favorited
- * 
- * Features:
- * - Add Recipe button to create new recipes
- * - Tab-based filtering between own recipes and favorites
- * - Recipe count display for each tab
- * - Empty state messages when no recipes exist
- * 
- * This is a Client Component because it needs to:
- * - Access user authentication state
- * - Handle user interactions (tabs, navigation)
- * - Fetch user-specific data from Supabase
- */
+import MyAlmanacPage from './MyAlmanacPage';
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { supabaseClient } from '@/lib/supabase-client';
-import type { Session } from '@supabase/supabase-js';
-import RecipeCard from '@/components/RecipeCard';
+export default MyAlmanacPage;
 
 /**
  * Recipe interface matching the database schema
- * Note: Supabase may return profiles as an array or single object depending on the query
  */
 interface Recipe {
   id: string;
@@ -37,6 +13,7 @@ interface Recipe {
   description: string | null;
   view_count: number;
   tags: string[];
+  is_public: boolean;
   profiles: {
     username: string;
   } | {
@@ -55,43 +32,44 @@ interface NormalizedRecipe {
   description: string | null;
   view_count: number;
   tags: string[];
+  is_public: boolean;
   profiles: {
     username: string;
   };
 }
 
 export default function AlmanacPage() {
+  const router = useRouter();
+  
   // Current authenticated user
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   
-  // Active filter tab: 'my-recipes' or 'favorites'
-  const [filter, setFilter] = useState<'my-recipes' | 'favorites'>('my-recipes');
+  // Active filter tab: 'favorites', 'public', or 'private'
+  const [filter, setFilter] = useState<'favorites' | 'public' | 'private'>('favorites');
   
-  // User's own recipes (normalized with single profiles object)
-  const [myRecipes, setMyRecipes] = useState<NormalizedRecipe[]>([]);
-  
-  // User's favorited recipes (normalized with single profiles object)
+  // User's favorited recipes
   const [favoriteRecipes, setFavoriteRecipes] = useState<NormalizedRecipe[]>([]);
+  
+  // User's public recipes
+  const [publicRecipes, setPublicRecipes] = useState<NormalizedRecipe[]>([]);
+  
+  // User's private recipes
+  const [privateRecipes, setPrivateRecipes] = useState<NormalizedRecipe[]>([]);
   
   /**
    * Normalize recipe data from Supabase
-   * Converts profiles from array to single object if needed
    */
   const normalizeRecipe = (recipe: Recipe): NormalizedRecipe | null => {
     if (!recipe) return null;
     
-    // Handle profiles - Supabase may return it as an array or single object
     let profiles: { username: string } | null = null;
     
     if (Array.isArray(recipe.profiles)) {
-      // If it's an array, take the first element
       profiles = recipe.profiles[0] || null;
     } else if (recipe.profiles) {
-      // If it's already a single object, use it directly
       profiles = recipe.profiles;
     }
     
-    // If no profile found, skip this recipe (shouldn't happen, but safety check)
     if (!profiles) {
       console.warn('Recipe missing profile data:', recipe.id);
       return null;
@@ -105,6 +83,7 @@ export default function AlmanacPage() {
       description: recipe.description,
       view_count: recipe.view_count,
       tags: recipe.tags,
+      is_public: recipe.is_public,
       profiles,
     };
   };
@@ -117,7 +96,6 @@ export default function AlmanacPage() {
 
   /**
    * Fetch user data and recipes on component mount
-   * Also listens for auth state changes to update recipes when user logs in/out
    */
   useEffect(() => {
     const fetchUser = async () => {
@@ -125,22 +103,20 @@ export default function AlmanacPage() {
         setError(null);
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
         
-        if (userError) {
+        if (userError || !user) {
           console.error('Error fetching user:', userError);
-          setError('Failed to load user data');
-          setLoading(false);
+          router.push('/login');
           return;
         }
         
         setUser(user);
         
-        // Fetch recipes if user is logged in
-        if (user) {
-          await Promise.all([
-            fetchMyRecipes(user.id),
-            fetchFavoriteRecipes(user.id),
-          ]);
-        }
+        // Fetch all recipes
+        await Promise.all([
+          fetchFavoriteRecipes(user.id),
+          fetchPublicRecipes(user.id),
+          fetchPrivateRecipes(user.id),
+        ]);
       } catch (err) {
         console.error('Error in fetchUser:', err);
         setError('An unexpected error occurred');
@@ -151,21 +127,21 @@ export default function AlmanacPage() {
 
     fetchUser();
 
-    // Listen for authentication state changes (login, logout, etc.)
+    // Listen for authentication state changes
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         // Refresh recipes when user logs in
         Promise.all([
-          fetchMyRecipes(session.user.id),
           fetchFavoriteRecipes(session.user.id),
+          fetchPublicRecipes(session.user.id),
+          fetchPrivateRecipes(session.user.id),
         ]).catch((err) => {
           console.error('Error refreshing recipes:', err);
         });
       } else {
-        // Clear recipes when user logs out
-        setMyRecipes([]);
-        setFavoriteRecipes([]);
+        // Redirect to login when user logs out
+        router.push('/login');
       }
     });
 
@@ -173,59 +149,13 @@ export default function AlmanacPage() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
-
-  /**
-   * Fetch all recipes created by the current user
-   * @param userId - The ID of the user whose recipes to fetch
-   */
-  const fetchMyRecipes = async (userId: string) => {
-    try {
-      const { data, error } = await supabaseClient
-        .from('recipes')
-        .select(`
-          id,
-          slug,
-          title,
-          image_url,
-          description,
-          view_count,
-          tags,
-          profiles:user_id (
-            username
-          )
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching my recipes:', error);
-        setError('Failed to load your recipes');
-        return;
-      }
-
-      // Normalize recipes and filter out any null values
-      // Use 'unknown' first to safely convert from Supabase's return type
-      const recipes = (data || []) as unknown as Recipe[];
-      const normalizedRecipes = recipes
-        .map((recipe: Recipe) => normalizeRecipe(recipe))
-        .filter((recipe): recipe is NormalizedRecipe => recipe !== null);
-      
-      setMyRecipes(normalizedRecipes);
-    } catch (err) {
-      console.error('Unexpected error fetching my recipes:', err);
-      setError('An unexpected error occurred while loading recipes');
-    }
-  };
+  }, [router]);
 
   /**
    * Fetch all recipes that the user has favorited
-   * First gets the list of favorited recipe IDs, then fetches the full recipe data
-   * @param userId - The ID of the user whose favorites to fetch
    */
   const fetchFavoriteRecipes = async (userId: string) => {
     try {
-      // Step 1: Get list of favorited recipe IDs
       const { data: savedData, error: savedError } = await supabaseClient
         .from('saved_recipes')
         .select('recipe_id')
@@ -237,13 +167,11 @@ export default function AlmanacPage() {
         return;
       }
 
-      // If no favorites, set empty array and return
       if (!savedData || savedData.length === 0) {
         setFavoriteRecipes([]);
         return;
       }
 
-      // Step 2: Fetch full recipe data for favorited recipes
       const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
       const { data, error } = await supabaseClient
         .from('recipes')
@@ -255,6 +183,7 @@ export default function AlmanacPage() {
           description,
           view_count,
           tags,
+          is_public,
           profiles:user_id (
             username
           )
@@ -268,8 +197,6 @@ export default function AlmanacPage() {
         return;
       }
 
-      // Normalize recipes and filter out any null values
-      // Use 'unknown' first to safely convert from Supabase's return type
       const recipes = (data || []) as unknown as Recipe[];
       const normalizedRecipes = recipes
         .map((recipe: Recipe) => normalizeRecipe(recipe))
@@ -279,6 +206,90 @@ export default function AlmanacPage() {
     } catch (err) {
       console.error('Unexpected error fetching favorite recipes:', err);
       setError('An unexpected error occurred while loading favorites');
+    }
+  };
+
+  /**
+   * Fetch all public recipes created by the user
+   */
+  const fetchPublicRecipes = async (userId: string) => {
+    try {
+      const { data, error } = await supabaseClient
+        .from('recipes')
+        .select(`
+          id,
+          slug,
+          title,
+          image_url,
+          description,
+          view_count,
+          tags,
+          is_public,
+          profiles:user_id (
+            username
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('is_public', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching public recipes:', error);
+        setError('Failed to load your public recipes');
+        return;
+      }
+
+      const recipes = (data || []) as unknown as Recipe[];
+      const normalizedRecipes = recipes
+        .map((recipe: Recipe) => normalizeRecipe(recipe))
+        .filter((recipe): recipe is NormalizedRecipe => recipe !== null);
+      
+      setPublicRecipes(normalizedRecipes);
+    } catch (err) {
+      console.error('Unexpected error fetching public recipes:', err);
+      setError('An unexpected error occurred while loading recipes');
+    }
+  };
+
+  /**
+   * Fetch all private recipes created by the user
+   */
+  const fetchPrivateRecipes = async (userId: string) => {
+    try {
+      const { data, error } = await supabaseClient
+        .from('recipes')
+        .select(`
+          id,
+          slug,
+          title,
+          image_url,
+          description,
+          view_count,
+          tags,
+          is_public,
+          profiles:user_id (
+            username
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('is_public', false)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching private recipes:', error);
+        setError('Failed to load your private recipes');
+        return;
+      }
+
+      const recipes = (data || []) as unknown as Recipe[];
+      const normalizedRecipes = recipes
+        .map((recipe: Recipe) => normalizeRecipe(recipe))
+        .filter((recipe): recipe is NormalizedRecipe => recipe !== null);
+      
+      setPrivateRecipes(normalizedRecipes);
+    } catch (err) {
+      console.error('Unexpected error fetching private recipes:', err);
+      setError('An unexpected error occurred while loading recipes');
     }
   };
 
@@ -293,7 +304,7 @@ export default function AlmanacPage() {
     );
   }
 
-  // Not logged in: show message prompting user to log in
+  // Not logged in: should have been redirected, but show message just in case
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -323,8 +334,9 @@ export default function AlmanacPage() {
               setError(null);
               if (user) {
                 Promise.all([
-                  fetchMyRecipes(user.id),
                   fetchFavoriteRecipes(user.id),
+                  fetchPublicRecipes(user.id),
+                  fetchPrivateRecipes(user.id),
                 ]);
               }
             }}
@@ -336,7 +348,10 @@ export default function AlmanacPage() {
     );
   }
 
-  const currentRecipes = filter === 'my-recipes' ? myRecipes : favoriteRecipes;
+  const currentRecipes = 
+    filter === 'favorites' ? favoriteRecipes :
+    filter === 'public' ? publicRecipes :
+    privateRecipes;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -350,16 +365,22 @@ export default function AlmanacPage() {
       {/* Filter Tabs */}
       <div className="tabs tabs-boxed mb-6">
         <button
-          className={`tab ${filter === 'my-recipes' ? 'tab-active' : ''}`}
-          onClick={() => setFilter('my-recipes')}
-        >
-          My Recipes ({myRecipes.length})
-        </button>
-        <button
           className={`tab ${filter === 'favorites' ? 'tab-active' : ''}`}
           onClick={() => setFilter('favorites')}
         >
           Favorites ({favoriteRecipes.length})
+        </button>
+        <button
+          className={`tab ${filter === 'public' ? 'tab-active' : ''}`}
+          onClick={() => setFilter('public')}
+        >
+          Public Recipes ({publicRecipes.length})
+        </button>
+        <button
+          className={`tab ${filter === 'private' ? 'tab-active' : ''}`}
+          onClick={() => setFilter('private')}
+        >
+          Private Recipes ({privateRecipes.length})
         </button>
       </div>
 
@@ -367,11 +388,13 @@ export default function AlmanacPage() {
       {currentRecipes.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-lg opacity-70 mb-4">
-            {filter === 'my-recipes' 
-              ? "You haven't created any recipes yet." 
-              : "You haven't favorited any recipes yet."}
+            {filter === 'favorites' 
+              ? "You haven't favorited any recipes yet." 
+              : filter === 'public'
+              ? "You haven't created any public recipes yet."
+              : "You haven't created any private recipes yet."}
           </p>
-          {filter === 'my-recipes' && (
+          {(filter === 'public' || filter === 'private') && (
             <Link href="/recipe/create" className="btn btn-primary">
               Create Your First Recipe
             </Link>
@@ -397,4 +420,3 @@ export default function AlmanacPage() {
     </div>
   );
 }
-

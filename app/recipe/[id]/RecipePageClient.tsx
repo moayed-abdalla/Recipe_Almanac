@@ -416,14 +416,14 @@ export default function RecipePageClient({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
-      const forkedSlug = `${usernameSlug}-${recipeTitleSlug}-forked-${Date.now()}`;
+      const forkedSlug = `${usernameSlug}-${recipeTitleSlug}-Copied-${Date.now()}`;
 
       // Create a new recipe based on the original
       const { data: newRecipe, error: createError } = await supabaseClient
         .from('recipes')
         .insert({
           user_id: user.id,
-          title: `${originalRecipe.title} (Forked)`,
+          title: `${originalRecipe.title} (Copied)`,
           slug: forkedSlug,
           description: originalRecipe.description,
           image_url: originalRecipe.image_url,
@@ -566,7 +566,7 @@ export default function RecipePageClient({
         <div className="flex items-center gap-2">
           <span className="text-lg opacity-70 arial-font">by</span>
           <Link
-            href={`/profile/${owner.username}`}
+            href={`/user/${owner.username}`}
             className="link link-primary text-lg arial-font"
           >
             {owner.username}

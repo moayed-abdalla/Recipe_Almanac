@@ -1,6 +1,6 @@
-import { createServerClient } from '@/lib/supabase';
-import { redirect } from 'next/navigation';
-import { RecipeForm } from '@/app/recipe/create/page';
+import RecipeEditPage from './RecipeEditPage';
+
+export default RecipeEditPage;
 
 interface RecipeEditPageProps {
   params: {
