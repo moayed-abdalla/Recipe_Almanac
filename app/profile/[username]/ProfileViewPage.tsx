@@ -1,8 +1,23 @@
-import ProfileViewPage from './ProfileViewPage';
+/**
+ * Profile Page Component
+ * 
+ * Displays a user's public profile with:
+ * - Username and avatar
+ * - Profile description
+ * - List of all public recipes created by the user
+ * 
+ * This is a Server Component that fetches data from Supabase.
+ * Only public recipes are displayed on profile pages.
+ * Users can see their own private recipes in "My Almanac".
+ * 
+ * @param params - Route parameters containing the username
+ */
 
-export default ProfileViewPage;
+import { createServerClient } from '@/lib/supabase';
+import { notFound } from 'next/navigation';
+import RecipeCard from '@/components/RecipeCard';
 
-interface ProfilePageProps {
+interface ProfileViewPageProps {
   params: {
     username: string;
   };
@@ -33,7 +48,7 @@ interface Recipe {
   updated_at: string;
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
+export default async function ProfileViewPage({ params }: ProfileViewPageProps) {
   const supabase = await createServerClient();
 
   // Step 1: Fetch user profile by username
@@ -129,4 +144,3 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     </div>
   );
 }
-

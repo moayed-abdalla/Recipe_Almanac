@@ -57,7 +57,7 @@ export default function Footer() {
             {user && (
               <>
                 <Link href="/feedback" className="link link-hover">Feedback</Link>
-                <Link href="/profile" className="link link-hover">My Profile</Link>
+                <Link href="/profile" className="link link-hover">Edit Profile</Link>
                 <Link href="/almanac" className="link link-hover">My Almanac</Link>
               </>
             )}
