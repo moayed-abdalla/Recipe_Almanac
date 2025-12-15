@@ -1,6 +1,10 @@
-import FeedbackPage from './FeedbackPage';
+'use client';
 
-export default FeedbackPage;
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
+import { supabaseClient } from '@/lib/supabase-client';
 
 type FeedbackType = 'bug' | 'feature' | 'other';
 

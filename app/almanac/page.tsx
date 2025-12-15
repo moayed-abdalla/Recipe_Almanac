@@ -1,6 +1,11 @@
-import MyAlmanacPage from './MyAlmanacPage';
+'use client';
 
-export default MyAlmanacPage;
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabaseClient } from '@/lib/supabase-client';
+import type { Session } from '@supabase/supabase-js';
+import RecipeCard from '@/components/RecipeCard';
 
 /**
  * Recipe interface matching the database schema
