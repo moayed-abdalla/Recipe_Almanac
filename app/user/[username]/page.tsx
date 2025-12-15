@@ -1,6 +1,11 @@
-import UserProfileAlmanacPage from './UserProfileAlmanacPage';
+'use client';
 
-export default UserProfileAlmanacPage;
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { supabaseClient } from '@/lib/supabase-client';
+import type { Session } from '@supabase/supabase-js';
+import RecipeCard from '@/components/RecipeCard';
+import Image from 'next/image';
 
 interface Profile {
   id: string;
