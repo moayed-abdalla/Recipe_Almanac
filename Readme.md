@@ -97,21 +97,78 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 
 ```
 Recipe_Almanac/
-├── app/                    # Next.js App Router
-│   ├── api/                # API routes
-│   ├── almanac/            # User's saved recipes
-│   ├── login/              # Login page
-│   ├── register/           # Registration page
-│   ├── profile/            # User profiles
-│   ├── recipe/             # Recipe pages
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Homepage
-├── components/             # Reusable React components
-├── lib/                    # Supabase client configuration
-├── utils/                  # Utility functions (unit conversion, etc.)
-├── database/               # Database schema and setup files
-└── public/                 # Static assets (logo, images)
+├── app/                          # Next.js App Router
+│   ├── api/                      # API routes
+│   │   ├── debug-auth/           # Debug authentication endpoint
+│   │   └── recipes/              # Recipes API endpoint
+│   ├── almanac/                  # User's saved recipes
+│   │   ├── MyAlmanacPage.tsx     # Main almanac component
+│   │   └── page.tsx              # Almanac page route
+│   ├── feedback/                 # Feedback page
+│   │   ├── FeedbackPage.tsx      # Feedback component
+│   │   └── page.tsx              # Feedback route
+│   ├── login/                    # Login page
+│   │   ├── LoginPage.tsx         # Login component
+│   │   └── page.tsx              # Login route
+│   ├── profile/                  # User profiles
+│   │   ├── [username]/           # Dynamic username route
+│   │   │   ├── ProfileViewPage.tsx
+│   │   │   └── page.tsx
+│   │   ├── ProfileEditPage.tsx   # Profile editing component
+│   │   └── page.tsx              # Profile route
+│   ├── recipe/                   # Recipe pages
+│   │   ├── [id]/                 # Dynamic recipe ID route
+│   │   │   ├── edit/             # Recipe editing
+│   │   │   │   ├── RecipeEditPage.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── RecipeDetailPage.tsx
+│   │   │   ├── RecipePageClient.tsx
+│   │   │   └── page.tsx
+│   │   └── create/               # Recipe creation
+│   │       ├── RecipeCreatePage.tsx
+│   │       └── page.tsx
+│   ├── register/                 # Registration page
+│   │   ├── RegisterPage.tsx     # Registration component
+│   │   └── page.tsx              # Registration route
+│   ├── user/                     # User profile pages
+│   │   └── [username]/           # Dynamic username route
+│   │       ├── UserProfileAlmanacPage.tsx
+│   │       └── page.tsx
+│   ├── write_recipe/             # Legacy recipe writing route
+│   │   └── page.tsx
+│   ├── globals.css               # Global styles
+│   ├── HomePage.tsx              # Homepage component
+│   ├── layout.tsx                # Root layout
+│   └── page.tsx                  # Homepage route
+├── components/                   # Reusable React components
+│   ├── Footer.tsx                # Site footer
+│   ├── Header.tsx                # Site header/navigation
+│   ├── HomePageClient.tsx        # Client-side homepage logic
+│   ├── RecipeCard.tsx            # Recipe card component
+│   ├── RecipeListClient.tsx     # Recipe list client component
+│   └── SearchBar.tsx            # Search bar component
+├── lib/                          # Supabase client configuration
+│   ├── supabase.ts              # Server-side Supabase client
+│   └── supabase-client.ts       # Client-side Supabase client
+├── utils/                        # Utility functions
+│   └── unitConverter.ts         # Unit conversion utilities
+├── public/                       # Static assets
+│   ├── bg_pic_dark_*.png        # Dark mode background images
+│   ├── bg_pic_light_*.png       # Light mode background images
+│   ├── BuyMeACoffee_*.png       # Support images
+│   ├── favicon_*.ico            # Favicons
+│   └── logo_*.png               # Logo images
+├── middleware.ts                 # Next.js middleware (auth handling)
+├── next.config.js                # Next.js configuration
+├── package.json                  # Dependencies and scripts
+├── postcss.config.js             # PostCSS configuration
+├── tailwind.config.ts            # Tailwind CSS configuration
+├── tsconfig.json                 # TypeScript configuration
+├── DIAGNOSTIC_GUIDE.md           # Comprehensive debugging guide
+└── Readme.md                     # This file
 ```
+
+**Note**: Database schema files are not included in this repository. The database schema should be set up directly in your Supabase project's SQL Editor. See the [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for detailed setup instructions.
 
 ## Getting Started
 
@@ -134,13 +191,18 @@ Recipe_Almanac/
 
 3. **Set up Supabase**
    - Create a project at [supabase.com](https://supabase.com)
-   - Run the SQL schema from `database/schema.sql` in the Supabase SQL Editor
+   - Set up your database schema (see [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for SQL schema)
    - Create storage buckets: `recipe-images` and `avatars` (both public)
    - Get your API keys from Settings > API
 
 4. **Configure environment variables**
-   - Copy `.env.local.example` to `.env.local`
-   - Add your Supabase URL and anon key
+   - Create a `.env.local` file in the root directory
+   - Add the following variables:
+     ```env
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     ```
+   - Replace the placeholder values with your actual Supabase credentials
 
 5. **Run the development server**
    ```bash
@@ -190,6 +252,10 @@ Recipe Almanac is open source! Feel free to:
 ## License
 
 This project is open source and available for everyone to use and contribute to.
+
+## Troubleshooting
+
+If you encounter issues setting up or running the application, please refer to the [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for comprehensive troubleshooting steps, common issues, and debugging techniques.
 
 ## Support
 
