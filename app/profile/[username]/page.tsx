@@ -1,6 +1,6 @@
-import ProfileViewPage from './ProfileViewPage';
-
-export default ProfileViewPage;
+import { createServerClient } from '@/lib/supabase';
+import { notFound } from 'next/navigation';
+import RecipeCard from '@/components/RecipeCard';
 
 interface ProfilePageProps {
   params: {
