@@ -224,10 +224,7 @@ export default function Header() {
                 }}
               >
                 <li>
-                  <Link href={profile?.username ? `/user/${profile.username}` : '/profile'} className="block">My Profile</Link>
-                </li>
-                <li>
-                  <Link href="/profile" className="block">Edit Profile</Link>
+                  <Link href="/profile" className="block">Profile</Link>
                 </li>
                 <li>
                   <Link href="/almanac" className="block">My Almanac</Link>
