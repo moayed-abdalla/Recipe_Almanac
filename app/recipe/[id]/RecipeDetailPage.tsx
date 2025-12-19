@@ -1,35 +1,11 @@
 import { createServerClient } from '@/lib/supabase';
 import RecipePageClient from './RecipePageClient';
+import type { Recipe, Profile, RecipeWithProfile } from '@/types';
 
 interface RecipeDetailPageProps {
   params: {
     id: string; // Format: username-recipe-slug (treated as slug)
   };
-}
-
-interface Recipe {
-  id: string;
-  user_id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  tags: string[];
-  method_steps: string[];
-  notes: string[];
-  view_count: number;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Profile {
-  username: string;
-  avatar_url: string | null;
-}
-
-interface RecipeWithProfile extends Recipe {
-  profiles: Profile | Profile[] | null;
 }
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
