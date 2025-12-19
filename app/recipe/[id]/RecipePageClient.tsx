@@ -566,7 +566,7 @@ export default function RecipePageClient({
         <div className="flex items-center gap-2">
           <span className="text-lg opacity-70 arial-font">by</span>
           <Link
-            href={`/user/${owner.username}`}
+            href={`/profile/${owner.username}`}
             className="link link-primary text-lg arial-font"
           >
             {owner.username}
