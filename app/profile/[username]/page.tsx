@@ -1,36 +1,12 @@
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import RecipeCard from '@/components/RecipeCard';
+import type { Profile, Recipe } from '@/types';
 
 interface ProfilePageProps {
   params: {
     username: string;
   };
-}
-
-interface Profile {
-  id: string;
-  username: string;
-  profile_description: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Recipe {
-  id: string;
-  user_id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  tags: string[];
-  method_steps: string[];
-  notes: string[];
-  view_count: number;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
