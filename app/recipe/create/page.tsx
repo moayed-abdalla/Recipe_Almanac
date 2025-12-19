@@ -4,28 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
-
-interface Recipe {
-  id: string;
-  user_id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  tags: string[];
-  method_steps: string[];
-  notes: string[];
-  is_public: boolean;
-}
-
-interface Ingredient {
-  id: string;
-  name: string;
-  amount_grams: number;
-  unit: string;
-  display_amount: number;
-  order_index: number;
-}
+import type { Recipe, Ingredient } from '@/types';
 
 interface RecipeFormProps {
   recipe?: Recipe;
