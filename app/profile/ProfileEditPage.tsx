@@ -209,7 +209,7 @@ export default function ProfileEditPage() {
       alert('Profile updated successfully!');
       
       // Redirect to user's profile page
-      router.push(`/user/${username.trim()}`);
+      router.push(`/profile/${username.trim()}`);
     } catch (err: any) {
       console.error('Error updating profile:', err);
       alert(`Failed to update profile: ${err.message}`);
@@ -273,7 +273,7 @@ export default function ProfileEditPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <Link href={`/user/${profile.username}`} className="link link-primary">
+          <Link href={`/profile/${profile.username}`} className="link link-primary">
             ← Back to Profile
           </Link>
         </div>
@@ -399,7 +399,7 @@ export default function ProfileEditPage() {
 
               {/* Submit Button */}
               <div className="flex justify-end gap-4">
-                <Link href={`/user/${profile.username}`} className="btn btn-ghost">
+                <Link href={`/profile/${profile.username}`} className="btn btn-ghost">
                   Cancel
                 </Link>
                 <button
