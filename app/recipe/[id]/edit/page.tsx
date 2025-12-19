@@ -1,33 +1,12 @@
 import { createServerClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { RecipeForm } from '@/app/recipe/create/page';
+import type { Recipe, Ingredient } from '@/types';
 
 interface RecipeEditPageProps {
   params: {
     id: string; // Format: username-recipe-slug (treated as slug)
   };
-}
-
-interface Recipe {
-  id: string;
-  user_id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  tags: string[];
-  method_steps: string[];
-  notes: string[];
-  is_public: boolean;
-}
-
-interface Ingredient {
-  id: string;
-  name: string;
-  amount_grams: number;
-  unit: string;
-  display_amount: number;
-  order_index: number;
 }
 
 export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
