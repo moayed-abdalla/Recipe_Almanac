@@ -158,19 +158,6 @@ function validateEnvVars() {
   }
 }
 
-/**
- * Client-side Supabase client
- * Use this in React components that run in the browser ('use client')
- */
-export function createBrowserClient() {
-  validateEnvVars();
-  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-}
 
 /**
  * Server-side Supabase client
