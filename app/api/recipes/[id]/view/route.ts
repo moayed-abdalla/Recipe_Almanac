@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import type { Database } from '@/lib/supabase';
 
+type RecipeRow = Database['public']['Tables']['recipes']['Row'];
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -23,17 +25,18 @@ export async function POST(
       );
     }
 
-    // Increment view count
-    const updateData: Database['public']['Tables']['recipes']['Update'] = {
-      view_count: (recipe.view_count || 0) + 1,
-    };
+    // Type assertion for the selected fields
+    const recipeData = recipe as Pick<RecipeRow, 'id' | 'view_count'>;
+    const newViewCount = (recipeData.view_count || 0) + 1;
 
-    const { data: updatedRecipe, error: updateError } = await supabase
+    // Increment view count
+    // Create a fresh client instance to avoid type inference issues from previous .select()
+    const updateClient = await createServerClient();
+    const { error: updateError } = await updateClient
       .from('recipes')
-      .update(updateData)
-      .eq('id', recipe.id)
-      .select('view_count')
-      .single();
+      // @ts-ignore - Supabase type inference limitation when chaining .select() and .update()
+      .update({ view_count: newViewCount })
+      .eq('id', recipeData.id);
 
     if (updateError) {
       console.error('Error incrementing view count:', updateError);
@@ -45,7 +48,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      view_count: updatedRecipe.view_count,
+      view_count: newViewCount,
     });
   } catch (error) {
     console.error('Unexpected error:', error);
