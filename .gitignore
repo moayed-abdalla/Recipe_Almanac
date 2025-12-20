@@ -18,7 +18,6 @@
 # misc
 .DS_Store
 desktop.ini
-CODE_REVIEW_REPORT.md
 *.pem
 
 # debug
