@@ -13,11 +13,14 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const supabase = await createServerClient();
 
+  // Decode username from URL (handles URL-encoded spaces like "Uncle%20Mo" -> "Uncle Mo")
+  const decodedUsername = decodeURIComponent(params.username);
+
   // Step 1: Fetch user profile by username
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
-    .eq('username', params.username)
+    .eq('username', decodedUsername)
     .single();
 
   // If profile not found, show 404 page
@@ -57,7 +60,41 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // Normalize recipes
   const normalizedRecipes = normalizeRecipes((recipes || []) as RecipeWithProfile[]);
 
-  // Step 3: Fetch user statistics
+  // Step 3: Fetch profile owner's favorited recipes (only public ones for public profile view)
+  const { data: savedData, error: savedError } = await supabase
+    .from('saved_recipes')
+    .select('recipe_id')
+    .eq('user_id', typedProfile.id)
+    .order('saved_at', { ascending: false });
+
+  let normalizedFavoriteRecipes: NormalizedRecipe[] = [];
+  if (!savedError && savedData && savedData.length > 0) {
+    const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
+    const { data: favoriteRecipesData, error: favoriteRecipesError } = await supabase
+      .from('recipes')
+      .select(`
+        id,
+        slug,
+        title,
+        image_url,
+        description,
+        view_count,
+        tags,
+        is_public,
+        profiles:user_id (
+          username
+        )
+      `)
+      .in('id', recipeIds)
+      .eq('is_public', true) // Only show public recipes in public profile view
+      .order('created_at', { ascending: false });
+
+    if (!favoriteRecipesError && favoriteRecipesData) {
+      normalizedFavoriteRecipes = normalizeRecipes((favoriteRecipesData || []) as RecipeWithProfile[]);
+    }
+  }
+
+  // Step 4: Fetch user statistics
   const { data: recipesForStats, error: statsError } = await supabase
     .from('recipes')
     .select('id, view_count')
@@ -83,6 +120,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       <ProfileViewClient
         profile={typedProfile}
         initialPublicRecipes={normalizedRecipes}
+        initialFavoriteRecipes={normalizedFavoriteRecipes}
         initialStats={stats}
       />
     </div>
