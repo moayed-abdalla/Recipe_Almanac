@@ -1,7 +1,7 @@
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { normalizeRecipes } from '@/utils/recipeNormalizer';
-import type { Profile, RecipeWithProfile, UserStats } from '@/types';
+import type { Profile, RecipeWithProfile, UserStats, NormalizedRecipe } from '@/types';
 import ProfileViewClient from './ProfileViewClient';
 
 interface ProfilePageProps {
@@ -9,6 +9,9 @@ interface ProfilePageProps {
     username: string;
   };
 }
+
+// Force dynamic rendering since this page depends on user-specific data
+export const dynamic = 'force-dynamic';
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const supabase = await createServerClient();
