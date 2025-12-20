@@ -7,6 +7,7 @@
  * - User profile dropdown (when logged in) with:
  *   - My Profile link
  *   - My Almanac link
+ *   - Create Recipe link
  *   - Logout button
  * - Login button (when not logged in)
  * - Theme toggle (light/dark mode)
@@ -228,6 +229,9 @@ export default function Header() {
                 </li>
                 <li>
                   <Link href="/almanac" className="block">My Almanac</Link>
+                </li>
+                <li>
+                  <Link href="/recipe/create" className="block">Create Recipe</Link>
                 </li>
                 <li>
                   <button 
