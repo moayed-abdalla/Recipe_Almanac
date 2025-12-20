@@ -30,7 +30,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
@@ -98,6 +98,16 @@ export default function RecipePageClient({
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [forking, setForking] = useState(false);
+  const [viewCount, setViewCount] = useState<number>(recipe.view_count);
+  const [viewTracked, setViewTracked] = useState<boolean>(false);
+  const viewTrackingRef = useRef<boolean>(false); // Ref to prevent multiple API calls
+
+  // Sync view count when recipe prop changes
+  useEffect(() => {
+    setViewCount(recipe.view_count);
+    setViewTracked(false);
+    viewTrackingRef.current = false; // Reset ref when recipe changes
+  }, [recipe.id, recipe.view_count]);
   
   // Ingredient multiplier state (default 1x)
   const [multiplier, setMultiplier] = useState<number>(1);
@@ -174,6 +184,88 @@ export default function RecipePageClient({
 
     checkFavorite();
   }, [recipe.id]);
+
+  /**
+   * Track scroll percentage and register view when user scrolls more than 5%
+   */
+  useEffect(() => {
+    if (viewTracked || viewTrackingRef.current) return; // Already tracked view for this page load
+
+    const handleScroll = () => {
+      // Prevent multiple API calls
+      if (viewTrackingRef.current) return;
+
+      // Calculate scroll percentage
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Calculate scrollable distance
+      const scrollableDistance = documentHeight - windowHeight;
+      
+      // If page is shorter than viewport or no scrollable distance, consider it viewed
+      if (scrollableDistance <= 0) {
+        // Page fits in viewport, consider it viewed immediately
+        viewTrackingRef.current = true;
+        setViewTracked(true);
+        
+        // Call API to increment view count
+        fetch(`/api/recipes/${recipe.slug}/view`, {
+          method: 'POST',
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success && data.view_count !== undefined) {
+              setViewCount(data.view_count);
+            }
+          })
+          .catch((error) => {
+            console.error('Error tracking view:', error);
+          });
+        
+        // Remove scroll listener after tracking
+        window.removeEventListener('scroll', handleScroll);
+        return;
+      }
+      
+      // Calculate how much of the page has been scrolled
+      const scrollPercentage = (scrollTop / scrollableDistance) * 100;
+      
+      // If user has scrolled more than 5%, register the view
+      if (scrollPercentage > 5) {
+        viewTrackingRef.current = true;
+        setViewTracked(true);
+        
+        // Call API to increment view count
+        fetch(`/api/recipes/${recipe.slug}/view`, {
+          method: 'POST',
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success && data.view_count !== undefined) {
+              setViewCount(data.view_count);
+            }
+          })
+          .catch((error) => {
+            console.error('Error tracking view:', error);
+          });
+        
+        // Remove scroll listener after tracking
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    // Add scroll listener
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Check initial scroll position (in case user refreshes mid-scroll)
+    handleScroll();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [recipe.slug, viewTracked]);
 
   const toggleIngredient = (id: string) => {
     const newChecked = new Set(checkedIngredients);
@@ -572,10 +664,9 @@ export default function RecipePageClient({
             {owner.username}
           </Link>
         </div>
-        {/* COMMENTED OUT: View count display disabled */}
-        {/* <div className="mt-2 text-sm opacity-60">
-          {recipe.view_count} views
-        </div> */}
+        <div className="mt-2 text-sm opacity-60">
+          {viewCount} {viewCount === 1 ? 'view' : 'views'}
+        </div>
       </div>
 
       {/* Tags */}
