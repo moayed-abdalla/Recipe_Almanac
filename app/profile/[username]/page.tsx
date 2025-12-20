@@ -64,36 +64,80 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const normalizedRecipes = normalizeRecipes((recipes || []) as RecipeWithProfile[]);
 
   // Step 3: Fetch profile owner's favorited recipes (only public ones for public profile view)
-  const { data: savedData, error: savedError } = await supabase
-    .from('saved_recipes')
-    .select('recipe_id')
-    .eq('user_id', typedProfile.id)
-    .order('saved_at', { ascending: false });
-
+  // Use RPC function to bypass RLS when viewing someone else's profile while not logged in
   let normalizedFavoriteRecipes: NormalizedRecipe[] = [];
-  if (!savedError && savedData && savedData.length > 0) {
-    const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
-    const { data: favoriteRecipesData, error: favoriteRecipesError } = await supabase
-      .from('recipes')
-      .select(`
-        id,
-        slug,
-        title,
-        image_url,
-        description,
-        view_count,
-        tags,
-        is_public,
-        profiles:user_id (
-          username
-        )
-      `)
-      .in('id', recipeIds)
-      .eq('is_public', true) // Only show public recipes in public profile view
-      .order('created_at', { ascending: false });
+  
+  // Define the RPC result type
+  type RPCFavoriteRecipe = {
+    id: string;
+    slug: string;
+    title: string;
+    image_url: string | null;
+    description: string | null;
+    view_count: number;
+    tags: string[];
+    is_public: boolean;
+    created_at: string;
+    updated_at: string;
+    user_id: string;
+    creator_username: string;
+  };
+  
+  // Try using the RPC function first (works for both authenticated and anonymous users)
+  const { data: rpcFavoriteRecipes, error: rpcError } = await (supabase
+    .rpc as any)('get_public_favorited_recipes', { target_user_id: typedProfile.id }) as {
+    data: RPCFavoriteRecipe[] | null;
+    error: any;
+  };
 
-    if (!favoriteRecipesError && favoriteRecipesData) {
-      normalizedFavoriteRecipes = normalizeRecipes((favoriteRecipesData || []) as RecipeWithProfile[]);
+  if (!rpcError && rpcFavoriteRecipes && rpcFavoriteRecipes.length > 0) {
+    // Map the RPC result to match the expected RecipeWithProfile format
+    const recipesWithProfiles = rpcFavoriteRecipes.map((recipe: RPCFavoriteRecipe) => ({
+      id: recipe.id,
+      slug: recipe.slug,
+      title: recipe.title,
+      image_url: recipe.image_url,
+      description: recipe.description,
+      view_count: recipe.view_count,
+      tags: recipe.tags,
+      is_public: recipe.is_public,
+      profiles: {
+        username: recipe.creator_username,
+      },
+    }));
+    normalizedFavoriteRecipes = normalizeRecipes(recipesWithProfiles as RecipeWithProfile[]);
+  } else {
+    // Fallback to direct query (works when viewing your own profile while logged in)
+    const { data: savedData, error: savedError } = await supabase
+      .from('saved_recipes')
+      .select('recipe_id')
+      .eq('user_id', typedProfile.id)
+      .order('saved_at', { ascending: false });
+
+    if (!savedError && savedData && savedData.length > 0) {
+      const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
+      const { data: favoriteRecipesData, error: favoriteRecipesError } = await supabase
+        .from('recipes')
+        .select(`
+          id,
+          slug,
+          title,
+          image_url,
+          description,
+          view_count,
+          tags,
+          is_public,
+          profiles:user_id (
+            username
+          )
+        `)
+        .in('id', recipeIds)
+        .eq('is_public', true) // Only show public recipes in public profile view
+        .order('created_at', { ascending: false });
+
+      if (!favoriteRecipesError && favoriteRecipesData) {
+        normalizedFavoriteRecipes = normalizeRecipes((favoriteRecipesData || []) as RecipeWithProfile[]);
+      }
     }
   }
 

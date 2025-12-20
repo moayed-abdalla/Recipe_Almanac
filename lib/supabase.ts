@@ -140,6 +140,27 @@ export type Database = {
         };
       };
     };
+    Functions: {
+      get_public_favorited_recipes: {
+        Args: {
+          target_user_id: string;
+        };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          title: string;
+          image_url: string | null;
+          description: string | null;
+          view_count: number;
+          tags: string[];
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+          user_id: string;
+          creator_username: string;
+        }>;
+      };
+    };
   };
 };
 
