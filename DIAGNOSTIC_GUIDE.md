@@ -348,6 +348,13 @@ CREATE POLICY "Users can unsave recipes" ON saved_recipes
 - **Allowed MIME types**: `image/jpeg, image/png, image/webp`
 - Click **"Create bucket"**
 
+#### Bucket 3: `feedback-attachments`
+- **Name**: `feedback-attachments`
+- **Public bucket**: ✅ **Yes** (check this)
+- **File size limit**: 5MB (or your preference)
+- **Allowed MIME types**: `image/jpeg, image/png, image/webp, image/gif`
+- Click **"Create bucket"**
+
 ### Step 2: Set Up Storage Policies
 
 Go to **Storage** → **Policies** and create the following:
@@ -355,23 +362,32 @@ Go to **Storage** → **Policies** and create the following:
 #### For `recipe-images` bucket:
 
 ```sql
--- Allow authenticated users to upload recipe images
+-- Allow authenticated users to upload recipe images to their own folder
 CREATE POLICY "Authenticated users can upload recipe images"
 ON storage.objects FOR INSERT
 TO authenticated
-WITH CHECK (bucket_id = 'recipe-images');
+WITH CHECK (
+  bucket_id = 'recipe-images' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
 
 -- Allow authenticated users to update their own recipe images
 CREATE POLICY "Users can update their own recipe images"
 ON storage.objects FOR UPDATE
 TO authenticated
-USING (bucket_id = 'recipe-images');
+USING (
+  bucket_id = 'recipe-images' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
 
 -- Allow authenticated users to delete their own recipe images
 CREATE POLICY "Users can delete their own recipe images"
 ON storage.objects FOR DELETE
 TO authenticated
-USING (bucket_id = 'recipe-images');
+USING (
+  bucket_id = 'recipe-images' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
 
 -- Allow public read access to recipe images
 CREATE POLICY "Public can view recipe images"
@@ -406,6 +422,43 @@ CREATE POLICY "Public can view avatars"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'avatars');
+```
+
+#### For `feedback-attachments` bucket:
+
+```sql
+-- Allow authenticated users to upload feedback attachments to their own folder
+CREATE POLICY "Authenticated users can upload feedback attachments"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'feedback-attachments' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to update their own feedback attachments
+CREATE POLICY "Users can update their own feedback attachments"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'feedback-attachments' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to delete their own feedback attachments
+CREATE POLICY "Users can delete their own feedback attachments"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'feedback-attachments' 
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow public read access to feedback attachments
+CREATE POLICY "Public can view feedback attachments"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'feedback-attachments');
 ```
 
 ---
@@ -566,12 +619,14 @@ export default function DebugAuth() {
 - Image upload fails
 - Images don't display
 - Storage errors
+- "new row violates row-level security policy" error
 
 **Solution**:
-1. **Verify Storage Buckets**: Check that `recipe-images` and `avatars` buckets exist
-2. **Check Storage Policies**: Ensure policies allow uploads
+1. **Verify Storage Buckets**: Check that `recipe-images`, `avatars`, and `feedback-attachments` buckets exist
+2. **Check Storage Policies**: Ensure policies allow uploads and check ownership correctly
 3. **Check File Size**: Verify file is under the bucket's size limit
 4. **Check MIME Types**: Ensure file type is allowed
+5. **Verify RLS Policies**: Make sure storage policies include ownership checks using `(storage.foldername(name))[1] = auth.uid()::text`
 
 **Debug Steps**:
 ```typescript
@@ -588,6 +643,39 @@ const testUpload = async () => {
   console.log('Upload error:', error);
 };
 ```
+
+#### Sub-issue: "Policy already exists" but no policies visible
+
+**Error Message**:
+```
+ERROR: 42710: policy "Authenticated users can upload recipe images" for table "objects" already exists
+```
+
+**Symptoms**:
+- SQL error says policy exists
+- Supabase UI shows no policies for the bucket
+- Policies may be corrupted or hidden
+
+**Solution**:
+1. **Use the fix script**: Run `fix-recipe-images-policies.sql` which automatically drops existing policies before creating new ones
+2. **Manual fix**: Run this SQL to drop all recipe-related policies:
+   ```sql
+   -- Drop policies by name
+   DROP POLICY IF EXISTS "Authenticated users can upload recipe images" ON storage.objects;
+   DROP POLICY IF EXISTS "Users can update their own recipe images" ON storage.objects;
+   DROP POLICY IF EXISTS "Users can delete their own recipe images" ON storage.objects;
+   DROP POLICY IF EXISTS "Public can view recipe images" ON storage.objects;
+   
+   -- Then recreate them using the policies from supabase-storage-policies.sql
+   ```
+3. **Check existing policies**: Run this to see what policies actually exist:
+   ```sql
+   SELECT policyname, cmd, qual, with_check 
+   FROM pg_policies 
+   WHERE schemaname = 'storage' 
+   AND tablename = 'objects'
+   AND policyname LIKE '%recipe%';
+   ```
 
 ---
 

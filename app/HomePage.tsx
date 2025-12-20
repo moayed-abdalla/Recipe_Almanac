@@ -8,7 +8,8 @@
  * 
  * This is a Server Component that fetches recipes from Supabase.
  * Only public recipes are displayed on the homepage.
- * Recipes are ordered by creation date (most recent first).
+ * Recipes are ordered by view count by default (most views first).
+ * Users can change sorting via client-side controls.
  */
 
 import { createServerClient } from '@/lib/supabase';
@@ -21,6 +22,7 @@ interface Recipe {
   image_url: string | null;
   description: string | null;
   view_count: number;
+  created_at: string;
   tags: string[];
   profiles: {
     username: string;
@@ -32,8 +34,8 @@ export default async function HomePage() {
   const supabase = await createServerClient();
 
   // Fetch all public recipes from the database
-  // COMMENTED OUT: Order by view count (most popular first) - now ordering by created_at
-  // We'll handle pagination on the client side
+  // Default sort: by view count (most popular first)
+  // Client-side sorting will allow users to change this
   const { data: recipes, error } = await supabase
     .from('recipes')
     .select(`
@@ -43,13 +45,14 @@ export default async function HomePage() {
       image_url,
       description,
       view_count,
+      created_at,
       tags,
       profiles:user_id (
         username
       )
     `)
     .eq('is_public', true)
-    .order('created_at', { ascending: false }); // Changed from view_count to created_at
+    .order('view_count', { ascending: false }); // Default: most views to least views
 
   // Handle errors gracefully
   if (error) {

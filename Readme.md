@@ -192,7 +192,8 @@ Recipe_Almanac/
 3. **Set up Supabase**
    - Create a project at [supabase.com](https://supabase.com)
    - Set up your database schema (see [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for SQL schema)
-   - Create storage buckets: `recipe-images` and `avatars` (both public)
+   - Create storage buckets: `recipe-images`, `avatars`, and `feedback-attachments` (all public)
+   - Set up storage policies (see [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) or run `supabase-storage-policies.sql`)
    - Get your API keys from Settings > API
 
 4. **Configure environment variables**
