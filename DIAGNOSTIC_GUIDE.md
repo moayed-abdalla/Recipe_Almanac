@@ -334,8 +334,8 @@ CREATE POLICY "Users can unsave recipes" ON saved_recipes
 1. In Supabase dashboard, go to **Storage**
 2. Click **"Create a new bucket"**
 
-#### Bucket 1: `recipe-images`
-- **Name**: `recipe-images`
+#### Bucket 1: `recipe-image`
+- **Name**: `recipe-image`
 - **Public bucket**: ✅ **Yes** (check this)
 - **File size limit**: 5MB (or your preference)
 - **Allowed MIME types**: `image/jpeg, image/png, image/webp, image/gif`
@@ -359,7 +359,7 @@ CREATE POLICY "Users can unsave recipes" ON saved_recipes
 
 Go to **Storage** → **Policies** and create the following:
 
-#### For `recipe-images` bucket:
+#### For `recipe-image` bucket:
 
 ```sql
 -- Allow authenticated users to upload recipe images to their own folder
@@ -367,7 +367,7 @@ CREATE POLICY "Authenticated users can upload recipe images"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
-  bucket_id = 'recipe-images' 
+  bucket_id = 'recipe-image' 
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 
@@ -376,7 +376,7 @@ CREATE POLICY "Users can update their own recipe images"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (
-  bucket_id = 'recipe-images' 
+  bucket_id = 'recipe-image' 
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 
@@ -385,7 +385,7 @@ CREATE POLICY "Users can delete their own recipe images"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (
-  bucket_id = 'recipe-images' 
+  bucket_id = 'recipe-image' 
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 
@@ -393,7 +393,7 @@ USING (
 CREATE POLICY "Public can view recipe images"
 ON storage.objects FOR SELECT
 TO public
-USING (bucket_id = 'recipe-images');
+USING (bucket_id = 'recipe-image');
 ```
 
 #### For `avatars` bucket:
@@ -622,7 +622,7 @@ export default function DebugAuth() {
 - "new row violates row-level security policy" error
 
 **Solution**:
-1. **Verify Storage Buckets**: Check that `recipe-images`, `avatars`, and `feedback-attachments` buckets exist
+1. **Verify Storage Buckets**: Check that `recipe-image`, `avatars`, and `feedback-attachments` buckets exist
 2. **Check Storage Policies**: Ensure policies allow uploads and check ownership correctly
 3. **Check File Size**: Verify file is under the bucket's size limit
 4. **Check MIME Types**: Ensure file type is allowed
@@ -636,7 +636,7 @@ const testUpload = async () => {
   const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
   
   const { data, error } = await supabase.storage
-    .from('recipe-images')
+    .from('recipe-image')
     .upload('test/test.jpg', file);
   
   console.log('Upload result:', data);
@@ -657,7 +657,7 @@ ERROR: 42710: policy "Authenticated users can upload recipe images" for table "o
 - Policies may be corrupted or hidden
 
 **Solution**:
-1. **Use the fix script**: Run `fix-recipe-images-policies.sql` which automatically drops existing policies before creating new ones
+1. **Use the fix script**: Run `fix-recipe-image-policies.sql` which automatically drops existing policies before creating new ones
 2. **Manual fix**: Run this SQL to drop all recipe-related policies:
    ```sql
    -- Drop policies by name
@@ -894,7 +894,7 @@ async function testSetup() {
     return;
   }
   
-  const hasRecipeImages = buckets?.some(b => b.name === 'recipe-images');
+  const hasRecipeImages = buckets?.some(b => b.name === 'recipe-image');
   const hasAvatars = buckets?.some(b => b.name === 'avatars');
   
   if (!hasRecipeImages || !hasAvatars) {
