@@ -184,7 +184,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           const fileName = `${user.id}/${Date.now()}.${fileExt}`;
           
           const { error: uploadError } = await supabaseClient.storage
-            .from('recipe-images')
+            .from('recipe-image')
             .upload(fileName, imageFile);
 
           if (uploadError) {
@@ -193,7 +193,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
 
           // Get public URL for the uploaded image
           const { data: { publicUrl } } = supabaseClient.storage
-            .from('recipe-images')
+            .from('recipe-image')
             .getPublicUrl(fileName);
           
           imageUrl = publicUrl;
