@@ -19,27 +19,41 @@ export default function Footer() {
       setUser(session?.user ?? null);
     });
 
-    // Get initial theme from localStorage or document
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const initialTheme = savedTheme || (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 'light';
-    setTheme(initialTheme);
+    // Get initial theme mode from localStorage or system preference
+    const getSystemThemePreference = (): 'light' | 'dark' => {
+      if (typeof window === 'undefined') return 'light';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    
+    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
+    const initialThemeMode = savedThemeMode || getSystemThemePreference();
+    setTheme(initialThemeMode);
 
-    // Listen for theme changes
+    // Listen for theme mode changes via data-theme-mode attribute
     const observer = new MutationObserver(() => {
-      const currentTheme = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' | null;
-      if (currentTheme) {
-        setTheme(currentTheme);
+      const currentThemeMode = document.documentElement.getAttribute('data-theme-mode') as 'light' | 'dark' | null;
+      if (currentThemeMode) {
+        setTheme(currentThemeMode);
       }
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme']
+      attributeFilter: ['data-theme-mode']
     });
+
+    // Also listen for localStorage changes (when theme is toggled in Header)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'theme-mode' && e.newValue) {
+        setTheme(e.newValue as 'light' | 'dark');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       subscription.unsubscribe();
       observer.disconnect();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

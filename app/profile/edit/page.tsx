@@ -5,18 +5,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
+import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import type { Profile } from '@/types';
 
-interface Profile {
+interface ProfileEdit extends Profile {
   id: string;
   username: string;
   profile_description: string | null;
   avatar_url: string | null;
+  default_light_theme?: LightThemeId | null;
+  default_dark_theme?: DarkThemeId | null;
 }
 
 export default function ProfileEditPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<ProfileEdit | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -27,6 +31,8 @@ export default function ProfileEditPage() {
   const [username, setUsername] = useState('');
   const [description, setDescription] = useState('');
   const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
+  const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
 
   /**
    * Fetch user profile data
@@ -44,7 +50,7 @@ export default function ProfileEditPage() {
         return null;
       }
 
-      return data as Profile;
+      return data as ProfileEdit;
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
       return null;
@@ -177,6 +183,8 @@ export default function ProfileEditPage() {
         .update({
           username: username.trim(),
           profile_description: description.trim() || null,
+          default_light_theme: selectedLightTheme,
+          default_dark_theme: selectedDarkTheme,
         })
         .eq('id', user.id);
       
@@ -189,7 +197,12 @@ export default function ProfileEditPage() {
         ...profile,
         username: username.trim(),
         profile_description: description.trim() || null,
+        default_light_theme: selectedLightTheme,
+        default_dark_theme: selectedDarkTheme,
       });
+      
+      // Dispatch event to notify header (and other components) that profile was updated
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
       
       // Show success message
       alert('Profile updated successfully!');
@@ -229,6 +242,8 @@ export default function ProfileEditPage() {
         setProfile(userProfile);
         setUsername(userProfile.username);
         setDescription(userProfile.profile_description || '');
+        setSelectedLightTheme(userProfile.default_light_theme || DEFAULT_LIGHT_THEME);
+        setSelectedDarkTheme(userProfile.default_dark_theme || DEFAULT_DARK_THEME);
       } catch (err) {
         console.error('Error initializing profile page:', err);
       } finally {
@@ -381,6 +396,79 @@ export default function ProfileEditPage() {
                 <label className="label">
                   <span className="label-text-alt">{description.length}/500</span>
                 </label>
+              </div>
+
+              {/* Theme Selection */}
+              <div className="form-control mb-6">
+                <label className="label">
+                  <span className="label-text font-semibold text-lg">Color Theme</span>
+                </label>
+                
+                {/* Light Themes */}
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold mb-3">Light Themes</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {LIGHT_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => setSelectedLightTheme(theme.id)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          selectedLightTheme === theme.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-base-300 hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                          <div className="w-full h-full flex">
+                            <div
+                              className="w-1/2 h-full"
+                              style={{ backgroundColor: theme.color1 }}
+                            />
+                            <div
+                              className="w-1/2 h-full"
+                              style={{ backgroundColor: theme.color2 }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-xs font-medium">{theme.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dark Themes */}
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold mb-3">Dark Themes</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {DARK_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => setSelectedDarkTheme(theme.id)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          selectedDarkTheme === theme.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-base-300 hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                          <div className="w-full h-full flex">
+                            <div
+                              className="w-1/2 h-full"
+                              style={{ backgroundColor: theme.color1 }}
+                            />
+                            <div
+                              className="w-1/2 h-full"
+                              style={{ backgroundColor: theme.color2 }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-xs font-medium">{theme.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Submit Button */}

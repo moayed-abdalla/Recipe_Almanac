@@ -5,6 +5,8 @@
  * This ensures type consistency and reduces duplication.
  */
 
+import type { LightThemeId, DarkThemeId } from '@/lib/theme-config';
+
 /**
  * Profile interface matching the database schema
  */
@@ -13,6 +15,8 @@ export interface Profile {
   username: string;
   profile_description: string | null;
   avatar_url: string | null;
+  default_light_theme?: LightThemeId | null;
+  default_dark_theme?: DarkThemeId | null;
   created_at?: string;
   updated_at?: string;
 }
