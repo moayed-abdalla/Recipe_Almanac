@@ -412,7 +412,7 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => setSelectedLightTheme(theme.id)}
+                        onClick={() => setSelectedLightTheme(theme.id as LightThemeId)}
                         className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
@@ -445,7 +445,7 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => setSelectedDarkTheme(theme.id)}
+                        onClick={() => setSelectedDarkTheme(theme.id as DarkThemeId)}
                         className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
