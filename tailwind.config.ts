@@ -1,4 +1,11 @@
 import type { Config } from 'tailwindcss';
+import { ALL_THEMES } from './lib/theme-config';
+
+// Convert theme definitions to DaisyUI format
+const daisyThemes = ALL_THEMES.reduce((acc, theme) => {
+  acc[theme.id] = theme.colors;
+  return acc;
+}, {} as Record<string, any>);
 
 const config: Config = {
   content: [
@@ -23,31 +30,8 @@ const config: Config = {
   },
   plugins: [require('daisyui')],
   daisyui: {
-    themes: [
-      {
-        light: {
-          'base-100': '#F7F7F7', // White main background
-          'base-200': '#E8E8E8', // Light grey secondary
-          'base-300': '#D3D3D3', // Medium grey
-          'base-content': '#CC5500', // Dark orange text
-          'primary': '#CC5500', // Orange primary
-          'secondary': '#FFA500', // Orange secondary
-          'accent': '#87CEEB', // Light blue accent
-          'neutral': '#808080', // Grey neutral
-        },
-        dark: {
-          'base-100': '#1A1A1A', // Dark background (inverse of white)
-          'base-200': '#2D2D2D', // Dark grey secondary
-          'base-300': '#404040', // Medium dark grey
-          'base-content': '#FFA500', // Orange text (inverse of dark orange)
-          'primary': '#FFA500', // Orange primary
-          'secondary': '#FFA500', // Orange secondary
-          'accent': '#87CEEB', // Light blue accent
-          'neutral': '#666666', // Light grey neutral
-        },
-      },
-    ],
-    darkTheme: 'dark',
+    themes: [daisyThemes],
+    darkTheme: 'dark-orange', // Default dark theme
     base: true,
     styled: true,
     utils: true,
