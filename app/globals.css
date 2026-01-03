@@ -14,7 +14,7 @@ body {
   color: #CC5500;
 }
 
-[data-theme="dark"] body {
+[data-theme-mode="dark"] body {
   background-color: #1A1A1A;
   color: #FFA500;
 }
@@ -180,11 +180,11 @@ body::before {
   }
 }
 
-[data-theme="dark"] {
+[data-theme-mode="dark"] {
   background-color: #1A1A1A;
 }
 
-[data-theme="dark"] body::before {
+[data-theme-mode="dark"] body::before {
   /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
   background-image: 
     url('/bg_pic_dark_1.png'),
@@ -254,7 +254,7 @@ body::before {
 
 /* Medium screens: 2 of each image (10 total) for dark mode */
 @media (max-width: 1024px) {
-  [data-theme="dark"] body::before {
+  [data-theme-mode="dark"] body::before {
     background-image: 
       url('/bg_pic_dark_1.png'),
       url('/bg_pic_dark_1.png'),
@@ -293,7 +293,7 @@ body::before {
 
 /* Small screens: 2 of each image (10 total) for dark mode */
 @media (max-width: 768px) {
-  [data-theme="dark"] body::before {
+  [data-theme-mode="dark"] body::before {
     background-image: 
       url('/bg_pic_dark_1.png'),
       url('/bg_pic_dark_1.png'),
