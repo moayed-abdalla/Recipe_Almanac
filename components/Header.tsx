@@ -250,13 +250,15 @@ export default function Header() {
       <div className="container mx-auto flex items-center">
         <div className="flex-1 flex items-center">
           <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0 flex items-center">
-            <Image
-              src={theme === 'dark' ? '/logo_dark.png' : '/logo_light.png'}
-              alt="Recipe Almanac"
-              width={40}
-              height={40}
-              className="mr-2 w-9 h-9 sm:w-10 sm:h-10"
-            />
+            <div className="logo-colorized mr-2 w-9 h-9 sm:w-10 sm:h-10">
+              <Image
+                src="/logo_light.png"
+                alt="Recipe Almanac"
+                width={40}
+                height={40}
+                className="w-full h-full"
+              />
+            </div>
             <span className="special-elite-regular text-[0.8em] lg:text-xl mr-0 pr-0">Recipe Almanac</span>
           </Link>
         </div>
