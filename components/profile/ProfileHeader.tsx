@@ -61,7 +61,7 @@ export default function ProfileHeader({
           {/* Profile Info */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
-              <h1 className="text-4xl font-bold">{profile.username}</h1>
+              <h1 className="text-4xl font-bold text-base-content">{profile.username}</h1>
               {showEditButton && (
                 <Link href="/profile/edit" className="btn btn-primary">
                   Edit Profile
@@ -69,7 +69,7 @@ export default function ProfileHeader({
               )}
             </div>
             {profile.profile_description && (
-              <p className="text-lg opacity-80 mb-4">{profile.profile_description}</p>
+              <p className="text-lg opacity-80 mb-4 text-base-content">{profile.profile_description}</p>
             )}
             
             {/* Statistics */}

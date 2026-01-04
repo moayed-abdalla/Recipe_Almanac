@@ -60,13 +60,13 @@ export default function RecipeCard({
         )}
       </figure>
       <div className="card-body">
-        <h2 className="card-title arial-font">{title}</h2>
+        <h2 className="card-title arial-font text-base-content">{title}</h2>
         {description && (
-          <p className="text-sm opacity-70 line-clamp-2 arial-font">{description}</p>
+          <p className="text-sm opacity-70 line-clamp-2 arial-font text-base-content">{description}</p>
         )}
         <div className="card-actions justify-between items-center mt-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm opacity-60 special-elite-regular">by {username}</span>
+            <span className="text-sm opacity-60 special-elite-regular text-base-content">by {username}</span>
             {/* COMMENTED OUT: View count display disabled */}
             {/* <span className="text-sm opacity-60">•</span>
             <span className="text-sm opacity-60">{viewCount} views</span> */}

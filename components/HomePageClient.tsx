@@ -104,7 +104,7 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
       <div className="mb-6 flex flex-wrap items-center gap-4 justify-between">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium opacity-70">Sort by:</span>
+            <span className="text-sm font-medium opacity-70 text-base-content">Sort by:</span>
             <div className="dropdown dropdown-bottom">
               <label tabIndex={0} className="btn btn-sm btn-outline">
                 {sortBy === 'view_count' ? 'View Count' : 'Date Created'}
@@ -134,7 +134,7 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium opacity-70">Order:</span>
+            <span className="text-sm font-medium opacity-70 text-base-content">Order:</span>
             <div className="btn-group">
               <button
                 onClick={() => setSortOrder('desc')}
@@ -156,7 +156,7 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
       {/* Decorative divider */}
       <div className="flex items-center gap-4 mb-8">
         <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent flex-1"></div>
-        <span className="text-sm opacity-60 font-mono">RECIPES</span>
+        <span className="text-sm opacity-60 font-mono text-base-content">RECIPES</span>
         <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent flex-1"></div>
       </div>
 
