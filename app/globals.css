@@ -49,12 +49,11 @@ body {
   font-style: normal;
   background-color: #F7F7F7;
   position: relative;
-  color: #CC5500;
+  /* Color is handled by text-base-content class in layout.tsx */
 }
 
-[data-theme-mode="dark"] body {
+html[data-theme-mode="dark"] body {
   background-color: #1A1A1A;
-  color: #FFA500;
 }
 
 /* Background pattern container - holds both the mask and color layer */
