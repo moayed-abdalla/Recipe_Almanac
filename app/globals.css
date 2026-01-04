@@ -4,6 +4,44 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
+/* Theme color variables for image colorization */
+:root {
+  --theme-image-color: #CC5500; /* Default orange for light-orange */
+  --theme-bg-opacity: 0.15;
+}
+
+/* Light themes */
+[data-theme="light-orange"] {
+  --theme-image-color: #CC5500;
+  --theme-bg-opacity: 0.15;
+}
+
+[data-theme="light-grey"] {
+  --theme-image-color: #616161;
+  --theme-bg-opacity: 0.12;
+}
+
+[data-theme="light-beige"] {
+  --theme-image-color: #4A5568;
+  --theme-bg-opacity: 0.15;
+}
+
+/* Dark themes */
+[data-theme="dark-orange"] {
+  --theme-image-color: #FFA500;
+  --theme-bg-opacity: 0.2;
+}
+
+[data-theme="dark-blue"] {
+  --theme-image-color: #63B3ED;
+  --theme-bg-opacity: 0.18;
+}
+
+[data-theme="dark-red"] {
+  --theme-image-color: #FC8181;
+  --theme-bg-opacity: 0.2;
+}
+
 body {
   min-height: 100vh;
   font-family: "Special Elite", system-ui, monospace;
@@ -19,19 +57,46 @@ body {
   color: #FFA500;
 }
 
-/* Background pattern - Responsive based on screen size */
-body::before {
+/* Background pattern container - holds both the mask and color layer */
+body::before,
+body::after {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.6;
   z-index: 0;
-  /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
-  /* Image order (1-20): 1-4 bg_pic_light_1, 5-8 bg_pic_light_2, 9-12 bg_pic_light_3, 13-16 bg_pic_light_4, 17-20 bg_pic_light_5 */
-  background-image: 
+  pointer-events: none;
+}
+
+/* Color layer - provides the theme color */
+body::before {
+  background-color: var(--theme-image-color);
+  opacity: var(--theme-bg-opacity);
+  /* Use light images as mask - the images act as cutouts showing the color */
+  -webkit-mask-image: 
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_1.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_2.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_3.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_4.png'),
+    url('/bg_pic_light_5.png'),
+    url('/bg_pic_light_5.png'),
+    url('/bg_pic_light_5.png'),
+    url('/bg_pic_light_5.png');
+  mask-image: 
     url('/bg_pic_light_1.png'),
     url('/bg_pic_light_1.png'),
     url('/bg_pic_light_1.png'),
@@ -53,7 +118,7 @@ body::before {
     url('/bg_pic_light_5.png'),
     url('/bg_pic_light_5.png');
   /* Positions map 1-20 to the image list (x% y%). Y <= 80% keeps clear of footer. */
-  background-position: 
+  -webkit-mask-position: 
     10% 15%,   /* 1: bg_pic_light_1 */
     20% 60%,   /* 2: bg_pic_light_1 */
     25% 45%,   /* 3: bg_pic_light_1 */
@@ -74,8 +139,29 @@ body::before {
     40% 78%,   /* 18: bg_pic_light_5 */
     10% 50%,   /* 19: bg_pic_light_5 */
     95% 70%;   /* 20: bg_pic_light_5 */
+  mask-position: 
+    10% 15%,
+    20% 60%,
+    25% 45%,
+    45% 25%,
+    35% 25%,
+    50% 65%,
+    60% 50%,
+    75% 15%,
+    65% 40%,
+    80% 10%,
+    75% 65%,
+    30% 70%,
+    80% 55%,
+    15% 70%,
+    40% 10%,
+    55% 75%,
+    75% 30%,
+    40% 78%,
+    10% 50%,
+    95% 70%;
   /* Sizes map to the images above (width px, height auto). Range 100-130px; max delta 30px. */
-  background-size: 
+  -webkit-mask-size: 
     120px auto, /* 1 */
     110px auto, /* 2 */
     120px auto, /* 3 */
@@ -96,14 +182,51 @@ body::before {
     115px auto, /* 18 */
     120px auto, /* 19 */
     115px auto; /* 20 */
-  background-repeat: no-repeat;
-  pointer-events: none;
+  mask-size: 
+    120px auto,
+    110px auto,
+    120px auto,
+    110px auto,
+    125px auto,
+    115px auto,
+    125px auto,
+    115px auto,
+    120px auto,
+    100px auto,
+    120px auto,
+    100px auto,
+    130px auto,
+    110px auto,
+    130px auto,
+    110px auto,
+    120px auto,
+    115px auto,
+    120px auto,
+    115px auto;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Hide the ::after pseudo-element - not needed with mask approach */
+body::after {
+  display: none;
 }
 
 /* Medium screens: 2 of each image (10 total), smaller size */
 @media (max-width: 1024px) {
   body::before {
-    background-image: 
+    -webkit-mask-image: 
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_5.png'),
+      url('/bg_pic_light_5.png');
+    mask-image: 
       url('/bg_pic_light_1.png'),
       url('/bg_pic_light_1.png'),
       url('/bg_pic_light_2.png'),
@@ -115,7 +238,7 @@ body::before {
       url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
     /* Positions map 1-10; keep y <= 80% to avoid footer */
-    background-position: 
+    -webkit-mask-position: 
       15% 20%,  /* 1 */
       50% 60%,  /* 2 */
       80% 30%,  /* 3 */
@@ -126,7 +249,29 @@ body::before {
       40% 78%,  /* 8 */
       90% 40%,  /* 9 */
       15% 30%;  /* 10 */
-    background-size: 
+    mask-position: 
+      15% 20%,
+      50% 60%,
+      80% 30%,
+      30% 78%,
+      70% 15%,
+      20% 70%,
+      60% 50%,
+      40% 78%,
+      90% 40%,
+      15% 30%;
+    -webkit-mask-size: 
+      60px auto, 
+      50px auto, 
+      65px auto, 
+      55px auto, 
+      65px auto, 
+      50px auto, 
+      70px auto, 
+      55px auto, 
+      65px auto, 
+      50px auto;
+    mask-size: 
       60px auto, 
       50px auto, 
       65px auto, 
@@ -143,7 +288,18 @@ body::before {
 /* Small screens: 2 of each image (10 total), even smaller */
 @media (max-width: 768px) {
   body::before {
-    background-image: 
+    -webkit-mask-image: 
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_1.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_2.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_3.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_4.png'),
+      url('/bg_pic_light_5.png'),
+      url('/bg_pic_light_5.png');
+    mask-image: 
       url('/bg_pic_light_1.png'),
       url('/bg_pic_light_1.png'),
       url('/bg_pic_light_2.png'),
@@ -155,7 +311,7 @@ body::before {
       url('/bg_pic_light_5.png'),
       url('/bg_pic_light_5.png');
     /* Positions map 1-10; y capped at 80% */
-    background-position: 
+    -webkit-mask-position: 
       15% 25%, /* 1 */
       25% 70%, /* 2 */
       50% 60%, /* 3 */
@@ -166,7 +322,29 @@ body::before {
       40% 15%, /* 8 */
       70% 15%, /* 9 */
       75% 65%; /* 10 */
-    background-size: 
+    mask-position: 
+      15% 25%,
+      25% 70%,
+      50% 60%,
+      60% 20%,
+      85% 35%,
+      90% 75%,
+      30% 75%,
+      40% 15%,
+      70% 15%,
+      75% 65%;
+    -webkit-mask-size: 
+      45px auto, 
+      45px auto, 
+      40px auto, 
+      40px auto, 
+      50px auto, 
+      50px auto, 
+      45px auto, 
+      45px auto, 
+      45px auto, 
+      45px auto;
+    mask-size: 
       45px auto, 
       45px auto, 
       40px auto, 
@@ -184,151 +362,7 @@ body::before {
   background-color: #1A1A1A;
 }
 
-[data-theme-mode="dark"] body::before {
-  /* Default: 4 of each image (20 total) for large screens - sizes increased by 20% */
-  background-image: 
-    url('/bg_pic_dark_1.png'),
-    url('/bg_pic_dark_1.png'),
-    url('/bg_pic_dark_1.png'),
-    url('/bg_pic_dark_1.png'),
-    url('/bg_pic_dark_2.png'),
-    url('/bg_pic_dark_2.png'),
-    url('/bg_pic_dark_2.png'),
-    url('/bg_pic_dark_2.png'),
-    url('/bg_pic_dark_3.png'),
-    url('/bg_pic_dark_3.png'),
-    url('/bg_pic_dark_3.png'),
-    url('/bg_pic_dark_3.png'),
-    url('/bg_pic_dark_4.png'),
-    url('/bg_pic_dark_4.png'),
-    url('/bg_pic_dark_4.png'),
-    url('/bg_pic_dark_4.png'),
-    url('/bg_pic_dark_5.png'),
-    url('/bg_pic_dark_5.png'),
-    url('/bg_pic_dark_5.png'),
-    url('/bg_pic_dark_5.png');
-  background-position: 
-    10% 15%,  /* 1 */
-    20% 60%,  /* 2 */
-    25% 45%,  /* 3 */
-    45% 25%,  /* 4 */
-    35% 25%,  /* 5 */
-    50% 70%,  /* 6 */
-    60% 50%,  /* 7 */
-    75% 15%,  /* 8 */
-    65% 40%,  /* 9 */
-    80% 10%,  /* 10 */
-    75% 65%,  /* 11 */
-    30% 75%,  /* 12 */
-    90% 55%,  /* 13 */
-    15% 75%,  /* 14 */
-    40% 10%,  /* 15 */
-    55% 78%,  /* 16 */
-    75% 30%,  /* 17 */
-    40% 78%,  /* 18 */
-    10% 50%,  /* 19 */
-    95% 70%;  /* 20 */
-  background-size: 
-    110px auto, 
-    90px auto, 
-    110px auto, 
-    90px auto, 
-    125px auto, 
-    100px auto, 
-    125px auto, 
-    100px auto, 
-    115px auto, 
-    80px auto, 
-    115px auto, 
-    80px auto, 
-    135px auto, 
-    95px auto, 
-    135px auto, 
-    95px auto, 
-    110px auto, 
-    105px auto, 
-    110px auto, 
-    105px auto;
-  opacity: 0.6;
-}
-
-/* Medium screens: 2 of each image (10 total) for dark mode */
-@media (max-width: 1024px) {
-  [data-theme-mode="dark"] body::before {
-    background-image: 
-      url('/bg_pic_dark_1.png'),
-      url('/bg_pic_dark_1.png'),
-      url('/bg_pic_dark_2.png'),
-      url('/bg_pic_dark_2.png'),
-      url('/bg_pic_dark_3.png'),
-      url('/bg_pic_dark_3.png'),
-      url('/bg_pic_dark_4.png'),
-      url('/bg_pic_dark_4.png'),
-      url('/bg_pic_dark_5.png'),
-      url('/bg_pic_dark_5.png');
-    background-position: 
-      15% 20%, /* 1 */
-      50% 60%, /* 2 */
-      80% 30%, /* 3 */
-      30% 78%, /* 4 */
-      70% 15%, /* 5 */
-      20% 70%, /* 6 */
-      60% 50%, /* 7 */
-      40% 78%, /* 8 */
-      90% 40%, /* 9 */
-      15% 30%; /* 10 */
-    background-size: 
-      60px auto, 
-      50px auto, 
-      65px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto, 
-      70px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto;
-  }
-}
-
-/* Small screens: 2 of each image (10 total) for dark mode */
-@media (max-width: 768px) {
-  [data-theme-mode="dark"] body::before {
-    background-image: 
-      url('/bg_pic_dark_1.png'),
-      url('/bg_pic_dark_1.png'),
-      url('/bg_pic_dark_2.png'),
-      url('/bg_pic_dark_2.png'),
-      url('/bg_pic_dark_3.png'),
-      url('/bg_pic_dark_3.png'),
-      url('/bg_pic_dark_4.png'),
-      url('/bg_pic_dark_4.png'),
-      url('/bg_pic_dark_5.png'),
-      url('/bg_pic_dark_5.png');
-    background-position: 
-      15% 25%, /* 1 */
-      25% 70%, /* 2 */
-      50% 60%, /* 3 */
-      60% 20%, /* 4 */
-      85% 35%, /* 5 */
-      90% 75%, /* 6 */
-      30% 75%, /* 7 */
-      40% 15%, /* 8 */
-      70% 15%, /* 9 */
-      75% 65%; /* 10 */
-    background-size: 
-      45px auto, 
-      45px auto, 
-      40px auto, 
-      40px auto, 
-      50px auto, 
-      50px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto;
-  }
-}
+/* Dark mode uses the same light images with different theme colors (set via CSS vars above) */
 
 * {
   font-family: "Special Elite", system-ui, monospace;
@@ -355,5 +389,24 @@ i, em, .italic {
 /* Arial font for recipe content */
 .arial-font {
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Logo colorization - uses the light logo as base and applies theme color */
+.logo-colorized {
+  /* Use the image as a mask to show the background color through */
+  background-color: var(--theme-image-color);
+  -webkit-mask-image: url('/logo_light.png');
+  mask-image: url('/logo_light.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* Hide the actual image in the logo container when using colorization */
+.logo-colorized img {
+  opacity: 0;
 }
 
