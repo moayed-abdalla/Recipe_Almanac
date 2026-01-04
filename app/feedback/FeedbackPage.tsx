@@ -185,8 +185,8 @@ function FeedbackPageContent() {
     <div className="container mx-auto px-4 py-10 max-w-3xl">
       <div className="mb-6">
         <p className="text-sm uppercase font-semibold tracking-wide text-primary">Feedback</p>
-        <h1 className="text-4xl font-bold mt-2 leading-tight">Report a bug or request a feature</h1>
-        <p className="mt-2 text-base opacity-80">
+        <h1 className="text-4xl font-bold mt-2 leading-tight text-base-content">Report a bug or request a feature</h1>
+        <p className="mt-2 text-base opacity-80 text-base-content">
           Help us improve Recipe Almanac. Choose the type, add details, and (optionally) include a screenshot.
         </p>
       </div>

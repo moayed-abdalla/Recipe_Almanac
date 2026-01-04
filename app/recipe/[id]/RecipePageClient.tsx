@@ -581,7 +581,7 @@ export default function RecipePageClient({
       {/* Recipe Title and Actions */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-3 sm:gap-4">
-          <h1 className="text-3xl sm:text-4xl font-bold flex-1 special-elite-regular break-words">{recipe.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold flex-1 special-elite-regular break-words text-base-content">{recipe.title}</h1>
           <div className="flex gap-2 flex-shrink-0">
             {/* Fork Button */}
             <button
