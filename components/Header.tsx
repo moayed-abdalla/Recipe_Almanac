@@ -259,7 +259,7 @@ export default function Header() {
                 className="w-full h-full"
               />
             </div>
-            <span className="special-elite-regular text-[0.8em] lg:text-xl mr-0 pr-0">Recipe Almanac</span>
+            <span className="special-elite-regular text-[0.8em] lg:text-xl mr-0 pr-0 text-base-content">Recipe Almanac</span>
           </Link>
         </div>
         
@@ -279,7 +279,7 @@ export default function Header() {
                     />
                   ) : (
                     <div className="w-full h-full rounded-full bg-base-300 flex items-center justify-center">
-                      <span className="text-xs font-bold">
+                      <span className="text-xs font-bold text-base-content">
                         {profile?.username?.charAt(0).toUpperCase() || user.user_metadata?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>

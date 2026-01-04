@@ -63,7 +63,7 @@ export default function Footer() {
         <div className="footer-content flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <span className="text-xl font-bold">Recipe Almanac</span>
+              <span className="text-xl font-bold text-base-content">Recipe Almanac</span>
             </Link>
           </div>
           
