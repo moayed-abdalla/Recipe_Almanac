@@ -33,6 +33,7 @@ export default function ProfileEditPage() {
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
+  const [currentThemeMode, setCurrentThemeMode] = useState<'light' | 'dark'>('light');
 
   /**
    * Fetch user profile data
@@ -218,6 +219,26 @@ export default function ProfileEditPage() {
   };
 
   /**
+   * Get current theme mode from localStorage or system preference
+   */
+  const getCurrentThemeMode = (): 'light' | 'dark' => {
+    if (typeof window === 'undefined') return 'light';
+    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
+    if (savedThemeMode) return savedThemeMode;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+
+  /**
+   * Apply theme preview immediately
+   */
+  const applyThemePreview = (lightTheme: LightThemeId, darkTheme: DarkThemeId) => {
+    const mode = getCurrentThemeMode();
+    const themeId = mode === 'light' ? lightTheme : darkTheme;
+    document.documentElement.setAttribute('data-theme', themeId);
+    document.documentElement.setAttribute('data-theme-mode', mode);
+  };
+
+  /**
    * Initialize: Check auth and fetch data
    */
   useEffect(() => {
@@ -239,11 +260,19 @@ export default function ProfileEditPage() {
           return;
         }
 
+        const themeMode = getCurrentThemeMode();
+        setCurrentThemeMode(themeMode);
+        
         setProfile(userProfile);
         setUsername(userProfile.username);
         setDescription(userProfile.profile_description || '');
-        setSelectedLightTheme(userProfile.default_light_theme || DEFAULT_LIGHT_THEME);
-        setSelectedDarkTheme(userProfile.default_dark_theme || DEFAULT_DARK_THEME);
+        const lightTheme = userProfile.default_light_theme || DEFAULT_LIGHT_THEME;
+        const darkTheme = userProfile.default_dark_theme || DEFAULT_DARK_THEME;
+        setSelectedLightTheme(lightTheme);
+        setSelectedDarkTheme(darkTheme);
+        
+        // Apply user's current theme preferences
+        applyThemePreview(lightTheme, darkTheme);
       } catch (err) {
         console.error('Error initializing profile page:', err);
       } finally {
@@ -412,8 +441,11 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => setSelectedLightTheme(theme.id as LightThemeId)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                        onClick={() => {
+                          setSelectedLightTheme(theme.id as LightThemeId);
+                          applyThemePreview(theme.id as LightThemeId, selectedDarkTheme);
+                        }}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-24 ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
@@ -431,7 +463,7 @@ export default function ProfileEditPage() {
                             />
                           </div>
                         </div>
-                        <span className="text-xs font-medium">{theme.name}</span>
+                        <span className="text-sm font-medium">{theme.name}</span>
                       </button>
                     ))}
                   </div>
@@ -445,8 +477,11 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => setSelectedDarkTheme(theme.id as DarkThemeId)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                        onClick={() => {
+                          setSelectedDarkTheme(theme.id as DarkThemeId);
+                          applyThemePreview(selectedLightTheme, theme.id as DarkThemeId);
+                        }}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-24 ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
@@ -464,7 +499,7 @@ export default function ProfileEditPage() {
                             />
                           </div>
                         </div>
-                        <span className="text-xs font-medium">{theme.name}</span>
+                        <span className="text-sm font-medium">{theme.name}</span>
                       </button>
                     ))}
                   </div>

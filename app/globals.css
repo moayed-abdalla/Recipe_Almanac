@@ -26,6 +26,11 @@
   --theme-bg-opacity: 0.15;
 }
 
+[data-theme="light-coffee"] {
+  --theme-image-color: #6D4C41;
+  --theme-bg-opacity: 0.15;
+}
+
 /* Dark themes */
 [data-theme="dark-orange"] {
   --theme-image-color: #FFA500;
@@ -39,6 +44,11 @@
 
 [data-theme="dark-red"] {
   --theme-image-color: #FC8181;
+  --theme-bg-opacity: 0.2;
+}
+
+[data-theme="dark-purple"] {
+  --theme-image-color: #B794F6;
   --theme-bg-opacity: 0.2;
 }
 
