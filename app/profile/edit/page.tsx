@@ -205,9 +205,6 @@ export default function ProfileEditPage() {
       // Dispatch event to notify header (and other components) that profile was updated
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       
-      // Show success message
-      alert('Profile updated successfully!');
-      
       // Redirect to profile page
       router.push('/profile');
     } catch (err: any) {
@@ -445,7 +442,7 @@ export default function ProfileEditPage() {
                           setSelectedLightTheme(theme.id as LightThemeId);
                           applyThemePreview(theme.id as LightThemeId, selectedDarkTheme);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-24 ${
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-36 ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
@@ -481,7 +478,7 @@ export default function ProfileEditPage() {
                           setSelectedDarkTheme(theme.id as DarkThemeId);
                           applyThemePreview(selectedLightTheme, theme.id as DarkThemeId);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-24 ${
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-36 ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
