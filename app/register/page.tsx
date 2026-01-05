@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
+import { containsBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +18,12 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+
+    // Validate username doesn't contain bad words
+    if (containsBadWords(username)) {
+      setError(getBadWordErrorMessage());
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
