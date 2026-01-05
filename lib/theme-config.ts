@@ -52,7 +52,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'light-grey',
-    name: 'Bland',
+    name: 'Pepper',
     type: 'light',
     colors: {
       'base-100': '#FFFFFF', // White main background
