@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
 import type { Profile } from '@/types';
+import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 
 interface ProfileEdit extends Profile {
   id: string;
@@ -162,6 +163,13 @@ export default function ProfileEditPage() {
     setUsernameError(null);
     
     try {
+      // Validate username doesn't contain bad words
+      if (containsBadWords(username)) {
+        setUsernameError(getBadWordErrorMessage());
+        setSaving(false);
+        return;
+      }
+
       // Check if username is already taken (if changed)
       if (username !== profile.username) {
         const { data: existingProfile } = await supabaseClient
@@ -178,12 +186,15 @@ export default function ProfileEditPage() {
         }
       }
       
+      // Censor bad words in description before saving
+      const censoredDescription = censorBadWords(description.trim() || '');
+      
       // Update profile
       const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({
           username: username.trim(),
-          profile_description: description.trim() || null,
+          profile_description: censoredDescription || null,
           default_light_theme: selectedLightTheme,
           default_dark_theme: selectedDarkTheme,
         })
@@ -193,14 +204,17 @@ export default function ProfileEditPage() {
         throw new Error(`Failed to update profile: ${updateError.message}`);
       }
       
-      // Update local state
+      // Update local state (use censored description)
       setProfile({
         ...profile,
         username: username.trim(),
-        profile_description: description.trim() || null,
+        profile_description: censoredDescription || null,
         default_light_theme: selectedLightTheme,
         default_dark_theme: selectedDarkTheme,
       });
+      
+      // Update description state to show censored version
+      setDescription(censoredDescription);
       
       // Dispatch event to notify header (and other components) that profile was updated
       window.dispatchEvent(new CustomEvent('profileUpdated'));
