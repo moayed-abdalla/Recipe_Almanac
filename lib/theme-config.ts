@@ -5,8 +5,8 @@
  * Themes are organized into light and dark categories.
  */
 
-export type LightThemeId = 'light-orange' | 'light-grey' | 'light-beige';
-export type DarkThemeId = 'dark-orange' | 'dark-blue' | 'dark-red';
+export type LightThemeId = 'light-orange' | 'light-grey' | 'light-beige' | 'light-coffee';
+export type DarkThemeId = 'dark-orange' | 'dark-blue' | 'dark-red' | 'dark-purple';
 export type ThemeId = LightThemeId | DarkThemeId;
 
 export interface ThemeColors {
@@ -35,7 +35,7 @@ export interface ThemeDefinition {
 export const LIGHT_THEMES: ThemeDefinition[] = [
   {
     id: 'light-orange',
-    name: 'Orange & White',
+    name: 'Tangarine',
     type: 'light',
     colors: {
       'base-100': '#F7F7F7', // White main background
@@ -52,7 +52,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'light-grey',
-    name: 'White & Grey',
+    name: 'Bland',
     type: 'light',
     colors: {
       'base-100': '#FFFFFF', // White main background
@@ -69,7 +69,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'light-beige',
-    name: 'Beige & Blue',
+    name: 'Lobster',
     type: 'light',
     colors: {
       'base-100': '#F5F5DC', // Beige main background
@@ -84,6 +84,23 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
     color1: '#F5F5DC', // Beige
     color2: '#4299E1', // Blue
   },
+  {
+    id: 'light-coffee',
+    name: 'Coffee',
+    type: 'light',
+    colors: {
+      'base-100': '#F5E6D3', // Light beige main background
+      'base-200': '#E8D5C0', // Medium beige secondary
+      'base-300': '#D4C4B0', // Darker beige
+      'base-content': '#5D4037', // Dark brown text
+      'primary': '#6D4C41', // Brown primary
+      'secondary': '#8D6E63', // Medium brown secondary
+      'accent': '#A1887F', // Light brown accent
+      'neutral': '#8D6E63', // Brown neutral
+    },
+    color1: '#F5E6D3', // Beige
+    color2: '#6D4C41', // Brown
+  },
 ];
 
 /**
@@ -92,7 +109,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
 export const DARK_THEMES: ThemeDefinition[] = [
   {
     id: 'dark-orange',
-    name: 'Orange & Black',
+    name: 'Lemon',
     type: 'dark',
     colors: {
       'base-100': '#1A1A1A', // Dark background (inverse of white)
@@ -109,7 +126,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'dark-blue',
-    name: 'Blue & Dark Grey',
+    name: 'Ice',
     type: 'dark',
     colors: {
       'base-100': '#2D3748', // Dark grey-blue background
@@ -126,7 +143,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'dark-red',
-    name: 'Black & Red',
+    name: 'Tomato',
     type: 'dark',
     colors: {
       'base-100': '#1A1A1A', // Black background
@@ -140,6 +157,23 @@ export const DARK_THEMES: ThemeDefinition[] = [
     },
     color1: '#000000', // Black
     color2: '#E53E3E', // Red
+  },
+  {
+    id: 'dark-purple',
+    name: 'Egg plant',
+    type: 'dark',
+    colors: {
+      'base-100': '#2D1B3D', // Deep purple background
+      'base-200': '#1A0F26', // Darker purple secondary
+      'base-300': '#3D2A4D', // Medium dark purple
+      'base-content': '#E6D5FF', // Light lavender text
+      'primary': '#B794F6', // Lavender primary
+      'secondary': '#9F7AEA', // Medium lavender secondary
+      'accent': '#805AD5', // Purple accent
+      'neutral': '#9F7AEA', // Lavender neutral
+    },
+    color1: '#2D1B3D', // Deep purple
+    color2: '#E6D5FF', // Light lavender
   },
 ];
 
