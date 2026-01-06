@@ -160,7 +160,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
   },
   {
     id: 'dark-purple',
-    name: 'Egg plant',
+    name: 'Eggplant',
     type: 'dark',
     colors: {
       'base-100': '#2D1B3D', // Deep purple background

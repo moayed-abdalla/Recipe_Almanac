@@ -456,7 +456,7 @@ export default function ProfileEditPage() {
                           setSelectedLightTheme(theme.id as LightThemeId);
                           applyThemePreview(theme.id as LightThemeId, selectedDarkTheme);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-36 ${
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
@@ -492,7 +492,7 @@ export default function ProfileEditPage() {
                           setSelectedDarkTheme(theme.id as DarkThemeId);
                           applyThemePreview(selectedLightTheme, theme.id as DarkThemeId);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-36 ${
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
