@@ -32,7 +32,7 @@ export interface Recipe {
   image_url: string | null;
   description: string | null;
   view_count: number;
-  favorite_count?: number | null;
+  favorite_count?: number | null | Array<{ count: number }>;
   tags: string[];
   is_public: boolean;
   method_steps: string[];
@@ -46,7 +46,6 @@ export interface Recipe {
  */
 export interface RecipeWithProfile extends Recipe {
   profiles: Profile | Profile[] | null;
-  favorite_count?: Array<{ count: number }> | number | null;
   saved_recipes?: Array<{ count: number }> | null;
 }
 
