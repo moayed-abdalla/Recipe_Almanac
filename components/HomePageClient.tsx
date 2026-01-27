@@ -108,6 +108,7 @@ interface Recipe {
   image_url: string | null;
   description: string | null;
   view_count: number;
+  favorite_count: number;
   created_at: string;
   tags: string[];
   profiles: {
