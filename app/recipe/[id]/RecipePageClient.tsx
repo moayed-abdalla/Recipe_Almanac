@@ -392,6 +392,16 @@ export default function RecipePageClient({
     return { amount, unit, showWarning };
   };
 
+  const isHiddenUnit = (unit: string): boolean => {
+    const normalized = unit.trim().toLowerCase();
+    return normalized === 'other' || normalized.length === 0;
+  };
+
+  const formatAmountOnly = (amount: number): string => {
+    const rounded = Math.round(amount * 100) / 100;
+    return `${rounded}`;
+  };
+
   /**
    * Get available units for an ingredient based on its original unit type
    */
@@ -750,6 +760,10 @@ export default function RecipePageClient({
             const isChecked = checkedIngredients.has(ingredient.id);
             const availableUnits = getAvailableUnits(ingredient);
             const currentUnit = ingredientUnits[ingredient.id] || ingredient.unit;
+            const hideUnit = isHiddenUnit(ingredient.unit);
+            const displayText = isHiddenUnit(unit)
+              ? formatAmountOnly(amount)
+              : formatMeasurement(amount, unit);
 
             return (
               <li key={ingredient.id} className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -760,25 +774,27 @@ export default function RecipePageClient({
                   className="checkbox flex-shrink-0"
                 />
                 <span className={`${isChecked ? 'line-through opacity-50 flex-1 min-w-0' : 'flex-1 min-w-0'} arial-font break-words`}>
-                  {formatMeasurement(amount, unit)} {ingredient.name}
+                  {displayText} {ingredient.name}
                   {showWarning && (
                     <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
                       *
                     </span>
                   )}
                 </span>
-                <select
-                  value={currentUnit}
-                  onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
-                  className="select select-bordered select-sm max-w-xs arial-font flex-shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {availableUnits.map((unitOption) => (
-                    <option key={unitOption} value={unitOption}>
-                      {unitOption}
-                    </option>
-                  ))}
-                </select>
+                {!hideUnit && (
+                  <select
+                    value={currentUnit}
+                    onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
+                    className="select select-bordered select-sm max-w-xs arial-font flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {availableUnits.map((unitOption) => (
+                      <option key={unitOption} value={unitOption}>
+                        {unitOption}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </li>
             );
           })}
