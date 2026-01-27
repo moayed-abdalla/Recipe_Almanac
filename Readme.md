@@ -153,11 +153,10 @@ Recipe_Almanac/
 ├── utils/                        # Utility functions
 │   └── unitConverter.ts         # Unit conversion utilities
 ├── public/                       # Static assets
-│   ├── bg_pic_dark_*.png        # Dark mode background images
-│   ├── bg_pic_light_*.png       # Light mode background images
+│   ├── bg_pic_*.png             # Background images
 │   ├── BuyMeACoffee_*.png       # Support images
 │   ├── favicon_*.ico            # Favicons
-│   └── logo_*.png               # Logo images
+│   └── logo.png                 # Logo image
 ├── middleware.ts                 # Next.js middleware (auth handling)
 ├── next.config.js                # Next.js configuration
 ├── package.json                  # Dependencies and scripts
