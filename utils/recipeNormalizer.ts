@@ -7,6 +7,27 @@
 
 import type { RecipeWithProfile, NormalizedRecipe } from '@/types';
 
+const extractFavoriteCount = (recipe: RecipeWithProfile): number => {
+  const candidate =
+    recipe.favorite_count ??
+    recipe.saved_recipes ??
+    (recipe as unknown as { saved_recipes?: Array<{ count: number }> | null }).saved_recipes;
+
+  if (typeof candidate === 'number') {
+    return candidate;
+  }
+
+  if (Array.isArray(candidate)) {
+    return candidate[0]?.count ?? 0;
+  }
+
+  if (candidate && typeof candidate === 'object' && 'count' in candidate) {
+    return (candidate as { count?: number }).count ?? 0;
+  }
+
+  return 0;
+};
+
 /**
  * Normalize recipe data from Supabase
  * Handles cases where profiles may be an array, single object, or null
@@ -37,6 +58,7 @@ export function normalizeRecipe(recipe: RecipeWithProfile): NormalizedRecipe | n
     image_url: recipe.image_url,
     description: recipe.description,
     view_count: recipe.view_count,
+    favorite_count: extractFavoriteCount(recipe),
     tags: recipe.tags,
     is_public: recipe.is_public,
     profiles,

@@ -19,6 +19,7 @@ const RECIPE_SELECT_FIELDS = `
   image_url,
   description,
   view_count,
+  favorite_count:saved_recipes(count),
   tags,
   is_public,
   profiles:user_id (
