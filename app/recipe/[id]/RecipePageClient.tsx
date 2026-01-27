@@ -93,6 +93,11 @@ export default function RecipePageClient({
       });
     }
   }, [isOwner, recipe.id, recipe.slug, owner.username]);
+
+  // Wake Lock support detection
+  useEffect(() => {
+    setWakeLockSupported(typeof navigator !== 'undefined' && 'wakeLock' in navigator);
+  }, []);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [isFavorited, setIsFavorited] = useState(false);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
@@ -101,6 +106,9 @@ export default function RecipePageClient({
   const [viewCount, setViewCount] = useState<number>(recipe.view_count);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   const viewTrackingRef = useRef<boolean>(false); // Ref to prevent multiple API calls
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const [wakeLockSupported, setWakeLockSupported] = useState<boolean>(false);
+  const [wakeLockActive, setWakeLockActive] = useState<boolean>(false);
 
   // Sync view count when recipe prop changes
   useEffect(() => {
@@ -108,6 +116,75 @@ export default function RecipePageClient({
     setViewTracked(false);
     viewTrackingRef.current = false; // Reset ref when recipe changes
   }, [recipe.id, recipe.view_count]);
+
+  const requestWakeLock = async () => {
+    if (!wakeLockSupported || wakeLockRef.current) return;
+
+    try {
+      const sentinel = await navigator.wakeLock.request('screen');
+      wakeLockRef.current = sentinel;
+      setWakeLockActive(true);
+
+      sentinel.addEventListener('release', () => {
+        wakeLockRef.current = null;
+        setWakeLockActive(false);
+      });
+    } catch (error) {
+      console.error('Wake Lock request failed:', error);
+      wakeLockRef.current = null;
+      setWakeLockActive(false);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    if (!wakeLockRef.current) return;
+
+    try {
+      await wakeLockRef.current.release();
+    } catch (error) {
+      console.error('Wake Lock release failed:', error);
+    } finally {
+      wakeLockRef.current = null;
+      setWakeLockActive(false);
+    }
+  };
+
+  const toggleWakeLock = async () => {
+    if (wakeLockActive) {
+      await releaseWakeLock();
+    } else {
+      await requestWakeLock();
+    }
+  };
+
+  // Re-acquire the wake lock when returning to the tab
+  useEffect(() => {
+    if (!wakeLockSupported) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && wakeLockActive && !wakeLockRef.current) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [wakeLockActive, wakeLockSupported]);
+
+  // Release wake lock on unmount
+  useEffect(() => {
+    return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch((error) => {
+          console.error('Wake Lock release failed during cleanup:', error);
+        });
+        wakeLockRef.current = null;
+      }
+    };
+  }, []);
   
   // Ingredient multiplier state (default 1x)
   const [multiplier, setMultiplier] = useState<number>(1);
@@ -593,6 +670,29 @@ export default function RecipePageClient({
         <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-3 sm:gap-4">
           <h1 className="text-3xl sm:text-4xl font-bold flex-1 special-elite-regular break-words text-base-content">{recipe.title}</h1>
           <div className="flex gap-2 flex-shrink-0">
+            {/* Wake Lock Button */}
+            <button
+              onClick={toggleWakeLock}
+              className={`btn btn-circle ${wakeLockActive ? 'btn-primary' : 'btn-ghost'}`}
+              aria-pressed={wakeLockActive}
+              aria-label={wakeLockActive ? 'Disable always on' : 'Enable always on'}
+              title={wakeLockSupported ? (wakeLockActive ? 'Always on enabled' : 'Keep screen awake') : 'Always on not supported'}
+              disabled={!wakeLockSupported}
+            >
+              <svg
+                className="w-6 h-6"
+                fill={wakeLockActive ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707M17.657 17.657l.707.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z"
+                />
+              </svg>
+            </button>
             {/* Fork Button */}
             <button
               onClick={handleFork}
