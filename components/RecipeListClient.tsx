@@ -24,6 +24,7 @@ interface Recipe {
   image_url: string | null;
   description: string | null;
   view_count: number;
+  favorite_count: number;
   tags: string[];
   profiles: {
     username: string;
@@ -98,6 +99,7 @@ export default function RecipeListClient({ recipes }: RecipeListClientProps) {
             description={recipe.description}
             username={recipe.profiles.username}
             viewCount={recipe.view_count}
+            favoriteCount={recipe.favorite_count}
             tags={recipe.tags}
           />
         ))}

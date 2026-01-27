@@ -43,6 +43,7 @@ export default function RecipeGrid({
           description={recipe.description}
           username={recipe.profiles.username}
           viewCount={recipe.view_count}
+          favoriteCount={recipe.favorite_count}
           tags={recipe.tags}
         />
       ))}

@@ -45,6 +45,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       image_url,
       description,
       view_count,
+      favorite_count:saved_recipes(count),
       tags,
       is_public,
       profiles:user_id (
@@ -75,6 +76,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     image_url: string | null;
     description: string | null;
     view_count: number;
+    favorite_count?: number;
     tags: string[];
     is_public: boolean;
     created_at: string;
@@ -99,6 +101,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       image_url: recipe.image_url,
       description: recipe.description,
       view_count: recipe.view_count,
+      favorite_count: recipe.favorite_count ?? 0,
       tags: recipe.tags,
       is_public: recipe.is_public,
       profiles: {
@@ -125,6 +128,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           image_url,
           description,
           view_count,
+          favorite_count:saved_recipes(count),
           tags,
           is_public,
           profiles:user_id (
