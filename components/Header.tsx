@@ -252,7 +252,7 @@ export default function Header() {
           <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0 flex items-center">
             <div className="logo-colorized mr-2 w-9 h-9 sm:w-10 sm:h-10">
               <Image
-                src="/logo_light.png"
+                src="/logo.png"
                 alt="Recipe Almanac"
                 width={40}
                 height={40}

@@ -83,71 +83,71 @@ body::after {
 body::before {
   background-color: var(--theme-image-color);
   opacity: var(--theme-bg-opacity);
-  /* Use light images as mask - the images act as cutouts showing the color */
+  /* Use background images as a mask - the images act as cutouts showing the color */
   -webkit-mask-image: 
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png');
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png');
   mask-image: 
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_1.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_2.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_3.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_4.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png'),
-    url('/bg_pic_light_5.png');
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_1.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_2.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_3.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_4.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png'),
+    url('/bg_pic_5.png');
   /* Positions map 1-20 to the image list (x% y%). Y <= 80% keeps clear of footer. */
   -webkit-mask-position: 
-    10% 15%,   /* 1: bg_pic_light_1 */
-    20% 60%,   /* 2: bg_pic_light_1 */
-    25% 45%,   /* 3: bg_pic_light_1 */
-    45% 25%,   /* 4: bg_pic_light_1 */
-    35% 25%,   /* 5: bg_pic_light_2 */
-    50% 65%,   /* 6: bg_pic_light_2 */
-    60% 50%,   /* 7: bg_pic_light_2 */
-    75% 15%,   /* 8: bg_pic_light_2 */
-    65% 40%,   /* 9: bg_pic_light_3 */
-    80% 10%,   /* 10: bg_pic_light_3 */
-    75% 65%,   /* 11: bg_pic_light_3 */
-    30% 70%,   /* 12: bg_pic_light_3 */
-    80% 55%,   /* 13: bg_pic_light_4 */
-    15% 70%,   /* 14: bg_pic_light_4 */
-    40% 10%,   /* 15: bg_pic_light_4 */
-    55% 75%,   /* 16: bg_pic_light_4 */
-    75% 30%,   /* 17: bg_pic_light_5 */
-    40% 78%,   /* 18: bg_pic_light_5 */
-    10% 50%,   /* 19: bg_pic_light_5 */
-    95% 70%;   /* 20: bg_pic_light_5 */
+    10% 15%,   /* 1: bg_pic_1 */
+    20% 60%,   /* 2: bg_pic_1 */
+    25% 45%,   /* 3: bg_pic_1 */
+    45% 25%,   /* 4: bg_pic_1 */
+    35% 25%,   /* 5: bg_pic_2 */
+    50% 65%,   /* 6: bg_pic_2 */
+    60% 50%,   /* 7: bg_pic_2 */
+    75% 15%,   /* 8: bg_pic_2 */
+    65% 40%,   /* 9: bg_pic_3 */
+    80% 10%,   /* 10: bg_pic_3 */
+    75% 65%,   /* 11: bg_pic_3 */
+    30% 70%,   /* 12: bg_pic_3 */
+    80% 55%,   /* 13: bg_pic_4 */
+    15% 70%,   /* 14: bg_pic_4 */
+    40% 10%,   /* 15: bg_pic_4 */
+    55% 75%,   /* 16: bg_pic_4 */
+    75% 30%,   /* 17: bg_pic_5 */
+    40% 78%,   /* 18: bg_pic_5 */
+    10% 50%,   /* 19: bg_pic_5 */
+    95% 70%;   /* 20: bg_pic_5 */
   mask-position: 
     10% 15%,
     20% 60%,
@@ -225,27 +225,27 @@ body::after {
 @media (max-width: 1024px) {
   body::before {
     -webkit-mask-image: 
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_5.png'),
-      url('/bg_pic_light_5.png');
+      url('/bg_pic_1.png'),
+      url('/bg_pic_1.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_5.png'),
+      url('/bg_pic_5.png');
     mask-image: 
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_5.png'),
-      url('/bg_pic_light_5.png');
+      url('/bg_pic_1.png'),
+      url('/bg_pic_1.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_5.png'),
+      url('/bg_pic_5.png');
     /* Positions map 1-10; keep y <= 80% to avoid footer */
     -webkit-mask-position: 
       15% 20%,  /* 1 */
@@ -298,27 +298,27 @@ body::after {
 @media (max-width: 768px) {
   body::before {
     -webkit-mask-image: 
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_5.png'),
-      url('/bg_pic_light_5.png');
+      url('/bg_pic_1.png'),
+      url('/bg_pic_1.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_5.png'),
+      url('/bg_pic_5.png');
     mask-image: 
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_1.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_2.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_3.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_4.png'),
-      url('/bg_pic_light_5.png'),
-      url('/bg_pic_light_5.png');
+      url('/bg_pic_1.png'),
+      url('/bg_pic_1.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_2.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_3.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_4.png'),
+      url('/bg_pic_5.png'),
+      url('/bg_pic_5.png');
     /* Positions map 1-10; y capped at 80% */
     -webkit-mask-position: 
       15% 25%, /* 1 */
@@ -371,7 +371,7 @@ body::after {
   background-color: #1A1A1A;
 }
 
-/* Dark mode uses the same light images with different theme colors (set via CSS vars above) */
+/* Dark mode uses the same background images with different theme colors (set via CSS vars above) */
 
 * {
   font-family: "Special Elite", system-ui, monospace;
@@ -404,8 +404,8 @@ i, em, .italic {
 .logo-colorized {
   /* Use the image as a mask to show the background color through */
   background-color: var(--theme-image-color);
-  -webkit-mask-image: url('/logo_light.png');
-  mask-image: url('/logo_light.png');
+  -webkit-mask-image: url('/logo.png');
+  mask-image: url('/logo.png');
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -418,4 +418,5 @@ i, em, .italic {
 .logo-colorized img {
   opacity: 0;
 }
+
 
