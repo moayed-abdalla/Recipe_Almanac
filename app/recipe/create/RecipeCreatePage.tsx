@@ -518,7 +518,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           <label className="label">
             <span className="label-text text-lg font-bold">Ingredients</span>
           </label>
-          {ingredients.map((ing, index) => (
+          {ingredients.map((ing, index) => {
+            const isOtherUnit = ing.unit === 'other';
+            return (
             <div key={index} className="flex flex-wrap gap-2 mb-2">
               <input
                 type="number"
@@ -529,9 +531,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
-                className="select select-bordered flex-shrink-0 min-w-[120px]"
+                className={`select select-bordered flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'min-w-[120px]'}`}
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
+                aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
               >
                 <optgroup label="Weight - Metric">
                   <option value="g">g (grams)</option>
@@ -548,6 +551,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                   <option value="ml">ml (milliliters)</option>
                   <option value="fl oz">fl oz (fluid ounces)</option>
                   <option value="l">l (liters)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="other">Other</option>
                 </optgroup>
               </select>
               <input
@@ -568,7 +574,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 </button>
               )}
             </div>
-          ))}
+          )})}
           <button
             type="button"
             onClick={addIngredient}
