@@ -21,6 +21,86 @@ import RecipeListClient from './RecipeListClient';
 type SortBy = 'view_count' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
+const tokenize = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .split(/[^a-z0-9]+/i)
+    .filter(Boolean);
+
+const maxDistanceForLength = (length: number) => {
+  if (length <= 4) return 1;
+  if (length <= 7) return 2;
+  return Math.min(3, Math.max(2, Math.floor(length * 0.34)));
+};
+
+const levenshtein = (a: string, b: string, maxDistance: number) => {
+  if (a === b) return 0;
+  const lengthDiff = Math.abs(a.length - b.length);
+  if (lengthDiff > maxDistance) return maxDistance + 1;
+
+  const rows = new Array(a.length + 1).fill(0);
+  const cols = new Array(b.length + 1).fill(0);
+  for (let i = 0; i <= a.length; i++) rows[i] = i;
+  for (let j = 0; j <= b.length; j++) cols[j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    let rowMin = rows[i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      const next = Math.min(
+        rows[j] + 1,
+        cols[j - 1] + 1,
+        rows[j - 1] + cost
+      );
+      cols[j] = next;
+      rowMin = Math.min(rowMin, next);
+    }
+    if (rowMin > maxDistance) return maxDistance + 1;
+    for (let j = 0; j <= b.length; j++) {
+      rows[j] = cols[j];
+    }
+  }
+
+  return rows[b.length];
+};
+
+const fuzzyMatch = (query: string, candidate: string) => {
+  if (!candidate) return false;
+  if (candidate.includes(query)) return true;
+
+  const queryTokens = tokenize(query);
+  const candidateTokens = tokenize(candidate);
+  if (candidateTokens.length === 0) return false;
+
+  const tokenMatch = (token: string) => {
+    if (!token) return false;
+    const tokenMaxDistance = maxDistanceForLength(token.length);
+    return candidateTokens.some((candidateToken) => {
+      if (candidateToken.includes(token)) return true;
+      return (
+        levenshtein(token, candidateToken, tokenMaxDistance) <= tokenMaxDistance
+      );
+    });
+  };
+
+  if (queryTokens.length > 1) {
+    return queryTokens.every(tokenMatch);
+  }
+
+  const singleToken = queryTokens[0] ?? query;
+  const queryMaxDistance = maxDistanceForLength(singleToken.length);
+  const comparableCandidate =
+    candidate.length <= singleToken.length + queryMaxDistance ? candidate : '';
+
+  return (
+    tokenMatch(singleToken) ||
+    (comparableCandidate &&
+      levenshtein(singleToken, comparableCandidate, queryMaxDistance) <=
+        queryMaxDistance)
+  );
+};
+
 interface Recipe {
   id: string;
   slug: string;
@@ -81,12 +161,11 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
     const searchLower = searchTerm.toLowerCase().trim();
 
     return sorted.filter((recipe) => {
-      // Check if title contains the search term
-      const titleMatch = recipe.title.toLowerCase().includes(searchLower);
+      const titleValue = recipe.title.toLowerCase();
+      const titleMatch = fuzzyMatch(searchLower, titleValue);
 
-      // Check if any tag contains the search term
       const tagMatch = recipe.tags.some((tag) =>
-        tag.toLowerCase().includes(searchLower)
+        fuzzyMatch(searchLower, tag.toLowerCase())
       );
 
       return titleMatch || tagMatch;
