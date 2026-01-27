@@ -43,10 +43,21 @@ interface Recipe {
   method_steps: string[];
   notes: string[];
   view_count: number;
+  favorite_count: number;
   is_public: boolean;
   created_at: string;
   updated_at: string;
 }
+
+const extractFavoriteCount = (recipe: any): number => {
+  const candidate = recipe.favorite_count ?? recipe.saved_recipes;
+  if (typeof candidate === 'number') return candidate;
+  if (Array.isArray(candidate)) return candidate[0]?.count ?? 0;
+  if (candidate && typeof candidate === 'object' && 'count' in candidate) {
+    return candidate.count ?? 0;
+  }
+  return 0;
+};
 
 export default async function ProfileViewPage({ params }: ProfileViewPageProps) {
   const supabase = await createServerClient();
@@ -72,7 +83,10 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
   // Users can see their own private recipes in "My Almanac"
   const { data: recipes, error: recipesError } = await supabase
     .from('recipes')
-    .select('*')
+    .select(`
+      *,
+      favorite_count:saved_recipes(count)
+    `)
     .eq('user_id', typedProfile.id)
     .eq('is_public', true) // Only show public recipes
     .order('created_at', { ascending: false }); // Most recent first
@@ -83,7 +97,10 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
   }
 
   // Type assertion for recipes array
-  const typedRecipes = (recipes || []) as Recipe[];
+  const typedRecipes = (recipes || []).map((recipe: any) => ({
+    ...recipe,
+    favorite_count: extractFavoriteCount(recipe),
+  })) as Recipe[];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -135,6 +152,7 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
                 description={recipe.description}
                 username={typedProfile.username}
                 viewCount={recipe.view_count}
+                favoriteCount={recipe.favorite_count}
                 tags={recipe.tags}
               />
             ))}

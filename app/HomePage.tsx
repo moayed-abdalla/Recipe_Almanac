@@ -22,12 +22,23 @@ interface Recipe {
   image_url: string | null;
   description: string | null;
   view_count: number;
+  favorite_count: number;
   created_at: string;
   tags: string[];
   profiles: {
     username: string;
   };
 }
+
+const extractFavoriteCount = (recipe: any): number => {
+  const candidate = recipe.favorite_count ?? recipe.saved_recipes;
+  if (typeof candidate === 'number') return candidate;
+  if (Array.isArray(candidate)) return candidate[0]?.count ?? 0;
+  if (candidate && typeof candidate === 'object' && 'count' in candidate) {
+    return candidate.count ?? 0;
+  }
+  return 0;
+};
 
 export default async function HomePage() {
   // Create Supabase client for server-side data fetching
@@ -45,6 +56,7 @@ export default async function HomePage() {
       image_url,
       description,
       view_count,
+      favorite_count:saved_recipes(count),
       created_at,
       tags,
       profiles:user_id (
@@ -68,6 +80,7 @@ export default async function HomePage() {
     
     return {
       ...recipe,
+      favorite_count: extractFavoriteCount(recipe),
       profiles: profile || { username: 'Unknown' },
     };
   }) as Recipe[];
