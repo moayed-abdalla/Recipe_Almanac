@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 import type { Profile } from '@/types';
 import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 
@@ -16,6 +17,7 @@ interface ProfileEdit extends Profile {
   avatar_url: string | null;
   default_light_theme?: LightThemeId | null;
   default_dark_theme?: DarkThemeId | null;
+  default_unit?: string | null;
 }
 
 export default function ProfileEditPage() {
@@ -34,6 +36,7 @@ export default function ProfileEditPage() {
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
+  const [selectedUnit, setSelectedUnit] = useState<string>(DEFAULT_UNIT);
   const [currentThemeMode, setCurrentThemeMode] = useState<'light' | 'dark'>('light');
 
   /**
@@ -197,6 +200,7 @@ export default function ProfileEditPage() {
           profile_description: censoredDescription || null,
           default_light_theme: selectedLightTheme,
           default_dark_theme: selectedDarkTheme,
+          default_unit: selectedUnit,
         })
         .eq('id', user.id);
       
@@ -211,6 +215,7 @@ export default function ProfileEditPage() {
         profile_description: censoredDescription || null,
         default_light_theme: selectedLightTheme,
         default_dark_theme: selectedDarkTheme,
+        default_unit: selectedUnit,
       });
       
       // Update description state to show censored version
@@ -279,8 +284,10 @@ export default function ProfileEditPage() {
         setDescription(userProfile.profile_description || '');
         const lightTheme = userProfile.default_light_theme || DEFAULT_LIGHT_THEME;
         const darkTheme = userProfile.default_dark_theme || DEFAULT_DARK_THEME;
+        const defaultUnit = userProfile.default_unit || DEFAULT_UNIT;
         setSelectedLightTheme(lightTheme);
         setSelectedDarkTheme(darkTheme);
+        setSelectedUnit(defaultUnit);
         
         // Apply user's current theme preferences
         applyThemePreview(lightTheme, darkTheme);
@@ -513,8 +520,43 @@ export default function ProfileEditPage() {
                         <span className="text-sm font-medium">{theme.name}</span>
                       </button>
                     ))}
-                  </div>
                 </div>
+              </div>
+            </div>
+
+              {/* Default Unit of Measurement */}
+              <div className="form-control mb-6">
+                <label className="label">
+                  <span className="label-text font-semibold text-lg">Default Unit of Measurement</span>
+                </label>
+                <label className="label">
+                  <span className="label-text-alt">Pre-selected when creating new recipes</span>
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                >
+                  <optgroup label="Weight - Metric">
+                    <option value="g">g (grams)</option>
+                    <option value="kg">kg (kilograms)</option>
+                  </optgroup>
+                  <optgroup label="Weight - Imperial">
+                    <option value="oz">oz (ounces)</option>
+                    <option value="lb">lb (pounds)</option>
+                  </optgroup>
+                  <optgroup label="Volume">
+                    <option value="cups">cups</option>
+                    <option value="tbsp">tbsp (tablespoon)</option>
+                    <option value="tsp">tsp (teaspoon)</option>
+                    <option value="ml">ml (milliliters)</option>
+                    <option value="fl oz">fl oz (fluid ounces)</option>
+                    <option value="l">l (liters)</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="other">Other</option>
+                  </optgroup>
+                </select>
               </div>
 
               {/* Submit Button */}
