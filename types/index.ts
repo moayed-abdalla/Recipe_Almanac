@@ -17,6 +17,7 @@ export interface Profile {
   avatar_url: string | null;
   default_light_theme?: LightThemeId | null;
   default_dark_theme?: DarkThemeId | null;
+  default_unit?: string | null;
   created_at?: string;
   updated_at?: string;
 }
