@@ -23,6 +23,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   // Loading state for form submission
   const [loading, setLoading] = useState(false);
   
+  // Loading state for delete
+  const [deleting, setDeleting] = useState(false);
+  
   // Error message state
   const [error, setError] = useState('');
   
@@ -315,6 +318,48 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} recipe:`, err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Handle recipe deletion
+   * Only available in edit mode for recipe owners
+   */
+  const handleDelete = async () => {
+    if (!recipe) return;
+    if (!confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
+      return;
+    }
+
+    setError('');
+    setDeleting(true);
+
+    try {
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+      if (userError || !user) {
+        throw new Error('You must be logged in to delete a recipe');
+      }
+      if (user.id !== recipe.user_id) {
+        throw new Error('You do not have permission to delete this recipe');
+      }
+
+      const { error: deleteError } = await supabaseClient
+        .from('recipes')
+        .delete()
+        .eq('id', recipe.id);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete recipe: ${deleteError.message}`);
+      }
+
+      // Redirect to almanac (user's recipe collection)
+      await router.replace('/almanac');
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete recipe. Please try again.');
+      console.error('Error deleting recipe:', err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -753,7 +798,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading}
+              disabled={loading || deleting}
             >
               {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Recipe' : 'Create Recipe')}
             </button>
@@ -762,12 +807,32 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 type="button"
                 onClick={() => router.push(`/recipe/${recipe!.slug}`)}
                 className="btn btn-ghost"
-                disabled={loading}
+                disabled={loading || deleting}
               >
                 Cancel
               </button>
             )}
           </div>
+
+          {isEditMode && (
+            <>
+              <div className="divider my-8" />
+              <div className="border border-error/30 rounded-lg p-4 bg-error/5">
+              <p className="text-sm font-medium text-error mb-2">Danger zone</p>
+              <p className="text-sm opacity-80 mb-3">
+                Deleting this recipe is permanent and cannot be undone. All ingredients, method steps, and notes will be removed.
+              </p>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="btn btn-error btn-outline btn-sm"
+                disabled={loading || deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete Recipe'}
+              </button>
+            </div>
+            </>
+          )}
         </div>
       </form>
     </div>
