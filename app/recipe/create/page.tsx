@@ -250,7 +250,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         }
 
         // Step 7a: Redirect to the updated recipe page using slug
-        router.push(`/recipe/${slug}`);
+        // Use replace() so back button doesn't return to edit form
+        // Must await navigation so router.refresh() runs on the new page, not the edit page
+        await router.replace(`/recipe/${slug}`);
         router.refresh();
       } else {
         // Step 4b: Create new recipe record
@@ -304,7 +306,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         }
 
         // Step 6b: Redirect to the newly created recipe page using slug
-        router.push(`/recipe/${slug}`);
+        await router.push(`/recipe/${slug}`);
+        router.refresh();
       }
     } catch (err: any) {
       // Display error message to user
