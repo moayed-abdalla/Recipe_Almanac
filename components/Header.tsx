@@ -264,6 +264,10 @@ export default function Header() {
         </div>
         
         <div className="flex-none gap-2 flex items-center">
+          {/* Leaderboard Link - visible to all users */}
+          <Link href="/leaderboard" className="btn btn-ghost">
+            Leaderboard
+          </Link>
           {/* Profile Icon / Login Button */}
           {user ? (
             <div className="dropdown dropdown-end">
