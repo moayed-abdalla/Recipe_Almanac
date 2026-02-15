@@ -418,9 +418,18 @@ export default function RecipePageClient({
 
   /**
    * Get display amount for an ingredient based on selected unit and multiplier
+   * "Other" units are not converted - amount is multiplied only
    */
   const getDisplayAmount = (ingredient: Ingredient): { amount: number; unit: string; showWarning: boolean } => {
     const selectedUnit = ingredientUnits[ingredient.id] || ingredient.unit;
+    const isOtherUnit = (u: string) => u.trim().toLowerCase() === 'other';
+    
+    // "Other" units: no conversion, just apply multiplier to stored amount
+    if (isOtherUnit(ingredient.unit) || isOtherUnit(selectedUnit)) {
+      const amount = ingredient.amount_grams * multiplier;
+      return { amount, unit: 'other', showWarning: false };
+    }
+    
     const originalIsVolume = VOLUME_UNITS[ingredient.unit.toLowerCase()] !== undefined;
     const currentIsVolume = VOLUME_UNITS[selectedUnit.toLowerCase()] !== undefined;
     const showWarning = originalIsVolume !== currentIsVolume;
@@ -483,6 +492,10 @@ export default function RecipePageClient({
    * Get available units for an ingredient based on its original unit type
    */
   const getAvailableUnits = (ingredient: Ingredient): string[] => {
+    // "Other" units cannot be converted - unit selector is hidden for these
+    if (ingredient.unit.trim().toLowerCase() === 'other') {
+      return ['other'];
+    }
     const originalIsVolume = VOLUME_UNITS[ingredient.unit.toLowerCase()] !== undefined;
     const hasDensity = INGREDIENT_DENSITIES[ingredient.name.toLowerCase()] !== undefined;
     
