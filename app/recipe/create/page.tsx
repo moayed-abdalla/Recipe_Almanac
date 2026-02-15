@@ -333,9 +333,15 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   /**
    * Convert any unit to grams
    * Handles both volume and weight units
+   * "Other" units are not converted - amount is stored as-is (multiplier still applies on display)
    */
   const convertToGrams = (amount: number, unit: string, ingredientName: string): number => {
     const unitLower = unit.toLowerCase();
+    
+    // "Other" - no conversion, store amount as-is (multiplier will apply when displaying)
+    if (unitLower === 'other') {
+      return amount;
+    }
     
     // Check if it's a volume unit
     if (VOLUME_UNITS[unitLower] !== undefined) {
@@ -473,8 +479,37 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           <label className="label">
             <span className="label-text text-lg font-bold">Ingredients</span>
           </label>
-          {ingredients.map((ing, index) => (
-            <div key={index} className="flex flex-wrap gap-2 mb-2">
+          {ingredients.map((ing, index) => {
+            const isOtherUnit = ing.unit === 'other';
+            return (
+            <div
+              key={index}
+              className="flex flex-wrap gap-2 mb-2 items-center group"
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+                e.currentTarget.classList.add('opacity-50');
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.classList.remove('opacity-50');
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                if (fromIndex !== index) {
+                  const newIngredients = [...ingredients];
+                  const [moved] = newIngredients.splice(fromIndex, 1);
+                  newIngredients.splice(index, 0, moved);
+                  setIngredients(newIngredients);
+                }
+              }}
+            >
+              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
               <input
                 type="number"
                 step="0.25"
@@ -484,9 +519,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
-                className="select select-bordered flex-shrink-0 min-w-[120px]"
+                className={`select select-bordered flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'min-w-[120px]'}`}
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
+                aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
               >
                 <optgroup label="Weight - Metric">
                   <option value="g">g (grams)</option>
@@ -503,6 +539,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                   <option value="ml">ml (milliliters)</option>
                   <option value="fl oz">fl oz (fluid ounces)</option>
                   <option value="l">l (liters)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="other">Other</option>
                 </optgroup>
               </select>
               <input
@@ -523,7 +562,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 </button>
               )}
             </div>
-          ))}
+          )})}
           <button
             type="button"
             onClick={addIngredient}
@@ -539,28 +578,57 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             <span className="label-text text-lg font-bold">Method Steps</span>
           </label>
           {methodSteps.map((step, index) => (
-            <div key={index} className="mb-2">
-              <div className="flex justify-between items-center mb-1">
-                <label className="label">
-                  <span className="label-text">Step {index + 1}</span>
-                </label>
-                {methodSteps.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeMethodStep(index)}
-                    className="btn btn-xs btn-ghost"
-                    aria-label="Remove step"
-                  >
-                    ×
-                  </button>
-                )}
+            <div
+              key={index}
+              className="mb-2 flex items-start gap-2"
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+                e.currentTarget.classList.add('opacity-50');
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.classList.remove('opacity-50');
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                if (fromIndex !== index) {
+                  const newSteps = [...methodSteps];
+                  const [moved] = newSteps.splice(fromIndex, 1);
+                  newSteps.splice(index, 0, moved);
+                  setMethodSteps(newSteps);
+                }
+              }}
+            >
+              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0 mt-3" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="label">
+                    <span className="label-text">Step {index + 1}</span>
+                  </label>
+                  {methodSteps.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeMethodStep(index)}
+                      className="btn btn-xs btn-ghost"
+                      aria-label="Remove step"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  className="textarea textarea-bordered w-full"
+                  value={step}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
+                  rows={2}
+                />
               </div>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                value={step}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
-                rows={2}
-              />
             </div>
           ))}
           <button
@@ -578,28 +646,57 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             <span className="label-text text-lg font-bold">Notes</span>
           </label>
           {notes.map((note, index) => (
-            <div key={index} className="mb-2">
-              <div className="flex justify-between items-center mb-1">
-                <label className="label">
-                  <span className="label-text">Note {index + 1}</span>
-                </label>
-                {notes.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeNote(index)}
-                    className="btn btn-xs btn-ghost"
-                    aria-label="Remove note"
-                  >
-                    ×
-                  </button>
-                )}
+            <div
+              key={index}
+              className="mb-2 flex items-start gap-2"
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+                e.currentTarget.classList.add('opacity-50');
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.classList.remove('opacity-50');
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                if (fromIndex !== index) {
+                  const newNotes = [...notes];
+                  const [moved] = newNotes.splice(fromIndex, 1);
+                  newNotes.splice(index, 0, moved);
+                  setNotes(newNotes);
+                }
+              }}
+            >
+              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0 mt-3" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="label">
+                    <span className="label-text">Note {index + 1}</span>
+                  </label>
+                  {notes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeNote(index)}
+                      className="btn btn-xs btn-ghost"
+                      aria-label="Remove note"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  className="textarea textarea-bordered w-full"
+                  value={note}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
+                  rows={2}
+                />
               </div>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                value={note}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
-                rows={2}
-              />
             </div>
           ))}
           <button
