@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
 import { containsBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
+  const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -77,6 +79,7 @@ export default function RegisterPage() {
             username,
             default_light_theme: selectedLightTheme,
             default_dark_theme: selectedDarkTheme,
+            default_unit: selectedUnit,
           })
           .eq('id', data.user.id);
 
@@ -238,6 +241,41 @@ export default function RegisterPage() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Default Unit of Measurement */}
+            <div className="form-control mt-6">
+              <label className="label">
+                <span className="label-text font-semibold text-lg">Default Unit of Measurement</span>
+              </label>
+              <label className="label">
+                <span className="label-text-alt">This will be pre-selected when you create recipes</span>
+              </label>
+              <select
+                className="select select-bordered"
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value as UnitValue)}
+              >
+                <optgroup label="Weight - Metric">
+                  <option value="g">g (grams)</option>
+                  <option value="kg">kg (kilograms)</option>
+                </optgroup>
+                <optgroup label="Weight - Imperial">
+                  <option value="oz">oz (ounces)</option>
+                  <option value="lb">lb (pounds)</option>
+                </optgroup>
+                <optgroup label="Volume">
+                  <option value="cups">cups</option>
+                  <option value="tbsp">tbsp (tablespoon)</option>
+                  <option value="tsp">tsp (teaspoon)</option>
+                  <option value="ml">ml (milliliters)</option>
+                  <option value="fl oz">fl oz (fluid ounces)</option>
+                  <option value="l">l (liters)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="other">Other</option>
+                </optgroup>
+              </select>
             </div>
 
             <div className="form-control mt-6">
