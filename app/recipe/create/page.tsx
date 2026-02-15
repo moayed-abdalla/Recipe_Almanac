@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
+import { DEFAULT_UNIT } from '@/lib/unit-config';
 import type { Recipe, Ingredient } from '@/types';
 
 interface RecipeFormProps {
@@ -39,6 +40,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
     recipe?.notes && recipe.notes.length > 0 ? recipe.notes : ['']
   );
   
+  // User's default unit from profile (used when creating new recipes)
+  const [defaultUnit, setDefaultUnit] = useState<string>(DEFAULT_UNIT);
+  const [hasFetchedDefaultUnit, setHasFetchedDefaultUnit] = useState(false);
+  
   // Form state - ingredients (pre-filled if editing)
   const [ingredients, setIngredients] = useState<Array<{
     name: string;
@@ -51,8 +56,39 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           amount: ing.display_amount,
           unit: ing.unit,
         }))
-      : [{ name: '', amount: 0, unit: 'cups' }] // Default to one empty ingredient field
+      : [{ name: '', amount: 0, unit: DEFAULT_UNIT }] // Default to one empty ingredient field
   );
+
+  // Fetch user's default unit from profile when in create mode
+  useEffect(() => {
+    if (isEditMode) return;
+    const fetchDefaultUnit = async () => {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('default_unit')
+        .eq('id', user.id)
+        .single();
+      if (profile?.default_unit) {
+        setDefaultUnit(profile.default_unit);
+      }
+      setHasFetchedDefaultUnit(true);
+    };
+    fetchDefaultUnit();
+  }, [isEditMode]);
+
+  // Apply user's default unit to empty initial ingredient once profile data is loaded
+  useEffect(() => {
+    if (isEditMode || !hasFetchedDefaultUnit) return;
+    setIngredients(prev => {
+      const first = prev[0];
+      if (first && first.name === '' && first.amount === 0 && first.unit === DEFAULT_UNIT) {
+        return [{ ...first, unit: defaultUnit }, ...prev.slice(1)];
+      }
+      return prev;
+    });
+  }, [hasFetchedDefaultUnit, defaultUnit, isEditMode]);
   
   // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -300,7 +336,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   };
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', amount: 0, unit: 'cups' }]);
+    setIngredients([...ingredients, { name: '', amount: 0, unit: defaultUnit }]);
   };
 
   const removeIngredient = (index: number) => {
