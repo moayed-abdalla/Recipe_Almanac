@@ -264,9 +264,25 @@ export default function Header() {
         </div>
         
         <div className="flex-none gap-2 flex items-center">
-          {/* Leaderboard Link - visible to all users */}
-          <Link href="/leaderboard" className="btn btn-ghost">
-            Leaderboard
+          {/* Leaderboard Link - icon on small screens, text on larger to avoid clutter */}
+          <Link
+            href="/leaderboard"
+            className="btn btn-ghost btn-circle sm:rounded-btn sm:w-auto sm:h-auto sm:aspect-auto sm:px-4"
+            aria-label="Leaderboard"
+          >
+            <svg
+              className="w-5 h-5 shrink-0"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.166 2.621v.858c-1.035.148-2.059.33-3.122.543a.75.75 0 00-.165.673 8.25 8.25 0 006.5 0 .75.75 0 00-.165-.673c-1.063-.213-2.087-.395-3.122-.543V2.62a.75.75 0 00-.658-.744 49.38 49.38 0 00-6.684 0 .75.75 0 00-.657.744zm0 2.629c.721 0 1.43.086 2.1.243 1.82.455 3.52 1.23 4.92 2.08 1.4 1.15 2.5 2.5 2.5 2.5s1.1-1.35 2.5-2.5c1.4-.85 3.1-1.625 4.92-2.08.67-.157 1.38-.243 2.1-.243v.858a.75.75 0 01-.658.744 49.38 49.38 0 01-6.684 0 .75.75 0 01-.657-.744v-.858zm12 0v.858a.75.75 0 01-.657.744 49.38 49.38 0 01-6.684 0 .75.75 0 01-.658-.744v-.858c.721 0 1.43.086 2.1.243 1.82.455 3.52 1.23 4.92 2.08 1.4 1.15 2.5 2.5 2.5 2.5s1.1-1.35 2.5-2.5c1.4-.85 3.1-1.625 4.92-2.08.67-.157 1.38-.243 2.1-.243z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="hidden sm:inline">Leaderboard</span>
           </Link>
           {/* Profile Icon / Login Button */}
           {user ? (
