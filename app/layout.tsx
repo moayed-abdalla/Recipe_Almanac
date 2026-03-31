@@ -3,6 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BackgroundMaskPositions from '@/components/BackgroundMaskPositions';
 
 export const metadata: Metadata = {
   title: 'Recipe Almanac',
@@ -23,6 +24,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-base-100 text-base-content min-h-screen flex flex-col">
+        <BackgroundMaskPositions />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-VXFFHEPYS9"
           strategy="afterInteractive"
