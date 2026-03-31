@@ -16,8 +16,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light">
+    <html lang="en" data-theme="light-orange" suppressHydrationWarning>
       <head>
+        <Script id="theme-boot" strategy="beforeInteractive">
+          {`(function(){try{var s=localStorage.getItem('theme-mode');var mode=s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var id=mode==='dark'?'dark-orange':'light-orange';document.documentElement.setAttribute('data-theme',id);document.documentElement.setAttribute('data-theme-mode',mode);}catch(e){}})();`}
+        </Script>
         <link rel="icon" href="/favicon_light.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
