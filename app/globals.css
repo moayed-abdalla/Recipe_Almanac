@@ -8,19 +8,19 @@
 :root {
   --theme-image-color: #CC5500; /* Default orange for light-orange */
   --theme-bg-opacity: 0.15;
-  /* Fallback mask positions before client randomization (y kept <= ~78% for footer) */
-  --bg-mask-pos-1: 10% 15%;
-  --bg-mask-pos-2: 22% 58%;
-  --bg-mask-pos-3: 28% 42%;
-  --bg-mask-pos-4: 46% 24%;
-  --bg-mask-pos-5: 36% 28%;
-  --bg-mask-pos-6: 52% 62%;
-  --bg-mask-pos-7: 62% 48%;
-  --bg-mask-pos-8: 76% 14%;
-  --bg-mask-pos-9: 66% 38%;
-  --bg-mask-pos-10: 82% 12%;
-  --bg-mask-pos-11: 74% 64%;
-  --bg-mask-pos-12: 32% 68%;
+  /* Fallback mask positions (no JS): side-heavy, spaced; client overwrites with randomised layout */
+  --bg-mask-pos-1: 11% 12%;
+  --bg-mask-pos-2: 13% 27%;
+  --bg-mask-pos-3: 9% 42%;
+  --bg-mask-pos-4: 15% 58%;
+  --bg-mask-pos-5: 10% 73%;
+  --bg-mask-pos-6: 89% 16%;
+  --bg-mask-pos-7: 86% 32%;
+  --bg-mask-pos-8: 91% 48%;
+  --bg-mask-pos-9: 84% 64%;
+  --bg-mask-pos-10: 88% 76%;
+  --bg-mask-pos-11: 5% 40%;
+  --bg-mask-pos-12: 95% 52%;
 }
 
 /* Light themes */
