@@ -353,4 +353,17 @@ i, em, .italic {
   opacity: 0;
 }
 
+/* Leaderboard nav icon — PNG as mask, fills with current text color */
+.leaderboard-icon-mask {
+  background-color: currentColor;
+  -webkit-mask-image: url('/leaderboard-icon.png');
+  mask-image: url('/leaderboard-icon.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
 

@@ -285,12 +285,8 @@ export default function Header() {
             className="btn btn-ghost btn-circle sm:rounded-btn sm:w-auto sm:h-auto sm:aspect-auto sm:px-4"
             aria-label="Leaderboard"
           >
-            <Image
-              src="/leaderboard-icon.png"
-              alt=""
-              width={20}
-              height={20}
-              className="w-5 h-5 shrink-0"
+            <span
+              className="leaderboard-icon-mask inline-block w-5 h-5 shrink-0"
               aria-hidden
             />
             <span className="hidden sm:inline">Leaderboard</span>
