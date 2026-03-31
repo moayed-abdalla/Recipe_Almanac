@@ -1,8 +1,10 @@
 /**
  * Loading Spinner Component
- * 
- * Reusable loading spinner component for consistent loading states across the app.
+ *
+ * Reusable loading state with kitchen icon sequence + spin transition (Motion).
  */
+
+import KitchenIconLoader from '@/components/ui/KitchenIconLoader';
 
 interface LoadingSpinnerProps {
   /**
@@ -34,7 +36,7 @@ export default function LoadingSpinner({
         className="flex flex-col justify-center items-center gap-4"
         style={{ minHeight }}
       >
-        <span className={`loading loading-spinner loading-${size}`}></span>
+        <KitchenIconLoader size={size} />
         {message && (
           <p className="text-lg opacity-70">{message}</p>
         )}
