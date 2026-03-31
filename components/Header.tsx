@@ -22,7 +22,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, getThemeById, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
@@ -37,6 +37,10 @@ interface ProfileData {
 export default function Header() {
   // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  /** Mirrors `theme` for callbacks that must not read a stale closure (auth, profile events). */
+  const themeRef = useRef<'light' | 'dark'>(theme);
+  /** Skip first run of applyTheme sync: init effect applies first; otherwise stale 'light' overwrites. */
+  const applyThemeSyncReadyRef = useRef(false);
   
   // User state - current authenticated user
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { username?: string; avatar_url?: string } } | null>(null);
@@ -99,6 +103,10 @@ export default function Header() {
     document.documentElement.setAttribute('data-theme-mode', mode);
   }, [getThemeId]);
 
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
   /**
    * Initialize theme and user session on component mount
    */
@@ -110,9 +118,10 @@ export default function Header() {
       // Get saved theme mode from localStorage, or use system preference
       const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
       const initialThemeMode = savedThemeMode || systemPreference;
-      
+
+      themeRef.current = initialThemeMode;
       setTheme(initialThemeMode);
-      
+
       // Apply default theme initially (will be updated when profile loads)
       applyTheme(initialThemeMode, null);
 
@@ -141,12 +150,12 @@ export default function Header() {
         if (session?.user) {
           const profileData = await fetchProfile(session.user.id);
           setProfile(profileData);
-          // Apply user's theme preferences
-          applyTheme(theme, profileData);
+          // Apply user's theme preferences (use ref — not stale closure from mount)
+          applyTheme(themeRef.current, profileData);
         } else {
           setProfile(null);
           // Apply default theme when logged out
-          applyTheme(theme, null);
+          applyTheme(themeRef.current, null);
         }
       });
 
@@ -157,6 +166,7 @@ export default function Header() {
         const savedThemeMode = localStorage.getItem('theme-mode');
         if (!savedThemeMode) {
           const newMode = e.matches ? 'dark' : 'light';
+          themeRef.current = newMode;
           setTheme(newMode);
           // Get current profile from state
           supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -179,7 +189,7 @@ export default function Header() {
           const profileData = await fetchProfile(session.user.id);
           setProfile(profileData);
           // Apply updated theme preferences
-          applyTheme(theme, profileData);
+          applyTheme(themeRef.current, profileData);
         }
       };
 
@@ -223,11 +233,15 @@ export default function Header() {
   }, [theme]);
 
   /**
-   * Apply theme when profile or theme mode changes
+   * Apply theme when profile or theme mode changes (not on first mount — init effect applies first).
    */
   useEffect(() => {
+    if (!applyThemeSyncReadyRef.current) {
+      applyThemeSyncReadyRef.current = true;
+      return;
+    }
     applyTheme(theme, profile);
-  }, [theme, profile]);
+  }, [theme, profile, applyTheme]);
 
   /**
    * Toggle between light and dark theme mode
@@ -236,6 +250,7 @@ export default function Header() {
   const toggleTheme = () => {
     try {
       const newThemeMode = theme === 'light' ? 'dark' : 'light';
+      themeRef.current = newThemeMode;
       setTheme(newThemeMode);
       localStorage.setItem('theme-mode', newThemeMode);
       applyTheme(newThemeMode, profile);
