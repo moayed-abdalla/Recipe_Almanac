@@ -8,6 +8,19 @@
 :root {
   --theme-image-color: #CC5500; /* Default orange for light-orange */
   --theme-bg-opacity: 0.15;
+  /* Fallback mask positions before client randomization (y kept <= ~78% for footer) */
+  --bg-mask-pos-1: 10% 15%;
+  --bg-mask-pos-2: 22% 58%;
+  --bg-mask-pos-3: 28% 42%;
+  --bg-mask-pos-4: 46% 24%;
+  --bg-mask-pos-5: 36% 28%;
+  --bg-mask-pos-6: 52% 62%;
+  --bg-mask-pos-7: 62% 48%;
+  --bg-mask-pos-8: 76% 14%;
+  --bg-mask-pos-9: 66% 38%;
+  --bg-mask-pos-10: 82% 12%;
+  --bg-mask-pos-11: 74% 64%;
+  --bg-mask-pos-12: 32% 68%;
 }
 
 /* Light themes */
@@ -85,133 +98,84 @@ body::before {
   opacity: var(--theme-bg-opacity);
   /* Use background images as a mask - the images act as cutouts showing the color */
   -webkit-mask-image: 
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png');
+    url('/bg_pic_01.png'),
+    url('/bg_pic_02.png'),
+    url('/bg_pic_03.png'),
+    url('/bg_pic_04.png'),
+    url('/bg_pic_05.png'),
+    url('/bg_pic_06.png'),
+    url('/bg_pic_07.png'),
+    url('/bg_pic_08.png'),
+    url('/bg_pic_09.png'),
+    url('/bg_pic_10.png'),
+    url('/bg_pic_11.png'),
+    url('/bg_pic_12.png');
   mask-image: 
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_1.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_2.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_3.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_4.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png'),
-    url('/bg_pic_5.png');
-  /* Positions map 1-20 to the image list (x% y%). Y <= 80% keeps clear of footer. */
+    url('/bg_pic_01.png'),
+    url('/bg_pic_02.png'),
+    url('/bg_pic_03.png'),
+    url('/bg_pic_04.png'),
+    url('/bg_pic_05.png'),
+    url('/bg_pic_06.png'),
+    url('/bg_pic_07.png'),
+    url('/bg_pic_08.png'),
+    url('/bg_pic_09.png'),
+    url('/bg_pic_10.png'),
+    url('/bg_pic_11.png'),
+    url('/bg_pic_12.png');
   -webkit-mask-position: 
-    10% 15%,   /* 1: bg_pic_1 */
-    20% 60%,   /* 2: bg_pic_1 */
-    25% 45%,   /* 3: bg_pic_1 */
-    45% 25%,   /* 4: bg_pic_1 */
-    35% 25%,   /* 5: bg_pic_2 */
-    50% 65%,   /* 6: bg_pic_2 */
-    60% 50%,   /* 7: bg_pic_2 */
-    75% 15%,   /* 8: bg_pic_2 */
-    65% 40%,   /* 9: bg_pic_3 */
-    80% 10%,   /* 10: bg_pic_3 */
-    75% 65%,   /* 11: bg_pic_3 */
-    30% 70%,   /* 12: bg_pic_3 */
-    80% 55%,   /* 13: bg_pic_4 */
-    15% 70%,   /* 14: bg_pic_4 */
-    40% 10%,   /* 15: bg_pic_4 */
-    55% 75%,   /* 16: bg_pic_4 */
-    75% 30%,   /* 17: bg_pic_5 */
-    40% 78%,   /* 18: bg_pic_5 */
-    10% 50%,   /* 19: bg_pic_5 */
-    95% 70%;   /* 20: bg_pic_5 */
+    var(--bg-mask-pos-1),
+    var(--bg-mask-pos-2),
+    var(--bg-mask-pos-3),
+    var(--bg-mask-pos-4),
+    var(--bg-mask-pos-5),
+    var(--bg-mask-pos-6),
+    var(--bg-mask-pos-7),
+    var(--bg-mask-pos-8),
+    var(--bg-mask-pos-9),
+    var(--bg-mask-pos-10),
+    var(--bg-mask-pos-11),
+    var(--bg-mask-pos-12);
   mask-position: 
-    10% 15%,
-    20% 60%,
-    25% 45%,
-    45% 25%,
-    35% 25%,
-    50% 65%,
-    60% 50%,
-    75% 15%,
-    65% 40%,
-    80% 10%,
-    75% 65%,
-    30% 70%,
-    80% 55%,
-    15% 70%,
-    40% 10%,
-    55% 75%,
-    75% 30%,
-    40% 78%,
-    10% 50%,
-    95% 70%;
-  /* Sizes map to the images above (width px, height auto). Range 100-130px; max delta 30px. */
+    var(--bg-mask-pos-1),
+    var(--bg-mask-pos-2),
+    var(--bg-mask-pos-3),
+    var(--bg-mask-pos-4),
+    var(--bg-mask-pos-5),
+    var(--bg-mask-pos-6),
+    var(--bg-mask-pos-7),
+    var(--bg-mask-pos-8),
+    var(--bg-mask-pos-9),
+    var(--bg-mask-pos-10),
+    var(--bg-mask-pos-11),
+    var(--bg-mask-pos-12);
+  /* Uniform size for all 12 kitchen icons */
   -webkit-mask-size: 
-    120px auto, /* 1 */
-    110px auto, /* 2 */
-    120px auto, /* 3 */
-    110px auto, /* 4 */
-    125px auto, /* 5 */
-    115px auto, /* 6 */
-    125px auto, /* 7 */
-    115px auto, /* 8 */
-    120px auto, /* 9 */
-    100px auto, /* 10 */
-    120px auto, /* 11 */
-    100px auto, /* 12 */
-    130px auto, /* 13 */
-    110px auto, /* 14 */
-    130px auto, /* 15 */
-    110px auto, /* 16 */
-    120px auto, /* 17 */
-    115px auto, /* 18 */
-    120px auto, /* 19 */
-    115px auto; /* 20 */
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto;
   mask-size: 
-    120px auto,
-    110px auto,
-    120px auto,
-    110px auto,
-    125px auto,
-    115px auto,
-    125px auto,
-    115px auto,
-    120px auto,
-    100px auto,
-    120px auto,
-    100px auto,
-    130px auto,
-    110px auto,
-    130px auto,
-    110px auto,
-    120px auto,
-    115px auto,
-    120px auto,
-    115px auto;
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto,
+    118px auto;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
 }
@@ -221,149 +185,119 @@ body::after {
   display: none;
 }
 
-/* Medium screens: 2 of each image (10 total), smaller size */
+/* Medium screens: same 12 layers, smaller uniform size */
 @media (max-width: 1024px) {
   body::before {
     -webkit-mask-image: 
-      url('/bg_pic_1.png'),
-      url('/bg_pic_1.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_5.png'),
-      url('/bg_pic_5.png');
+      url('/bg_pic_01.png'),
+      url('/bg_pic_02.png'),
+      url('/bg_pic_03.png'),
+      url('/bg_pic_04.png'),
+      url('/bg_pic_05.png'),
+      url('/bg_pic_06.png'),
+      url('/bg_pic_07.png'),
+      url('/bg_pic_08.png'),
+      url('/bg_pic_09.png'),
+      url('/bg_pic_10.png'),
+      url('/bg_pic_11.png'),
+      url('/bg_pic_12.png');
     mask-image: 
-      url('/bg_pic_1.png'),
-      url('/bg_pic_1.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_5.png'),
-      url('/bg_pic_5.png');
-    /* Positions map 1-10; keep y <= 80% to avoid footer */
-    -webkit-mask-position: 
-      15% 20%,  /* 1 */
-      50% 60%,  /* 2 */
-      80% 30%,  /* 3 */
-      30% 78%,  /* 4 */
-      70% 15%,  /* 5 */
-      20% 70%,  /* 6 */
-      60% 50%,  /* 7 */
-      40% 78%,  /* 8 */
-      90% 40%,  /* 9 */
-      15% 30%;  /* 10 */
-    mask-position: 
-      15% 20%,
-      50% 60%,
-      80% 30%,
-      30% 78%,
-      70% 15%,
-      20% 70%,
-      60% 50%,
-      40% 78%,
-      90% 40%,
-      15% 30%;
+      url('/bg_pic_01.png'),
+      url('/bg_pic_02.png'),
+      url('/bg_pic_03.png'),
+      url('/bg_pic_04.png'),
+      url('/bg_pic_05.png'),
+      url('/bg_pic_06.png'),
+      url('/bg_pic_07.png'),
+      url('/bg_pic_08.png'),
+      url('/bg_pic_09.png'),
+      url('/bg_pic_10.png'),
+      url('/bg_pic_11.png'),
+      url('/bg_pic_12.png');
     -webkit-mask-size: 
-      60px auto, 
-      50px auto, 
-      65px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto, 
-      70px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto;
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto;
     mask-size: 
-      60px auto, 
-      50px auto, 
-      65px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto, 
-      70px auto, 
-      55px auto, 
-      65px auto, 
-      50px auto;
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto,
+      58px auto;
   }
 }
 
-/* Small screens: 2 of each image (10 total), even smaller */
+/* Small screens: same 12 layers, smaller uniform size */
 @media (max-width: 768px) {
   body::before {
     -webkit-mask-image: 
-      url('/bg_pic_1.png'),
-      url('/bg_pic_1.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_5.png'),
-      url('/bg_pic_5.png');
+      url('/bg_pic_01.png'),
+      url('/bg_pic_02.png'),
+      url('/bg_pic_03.png'),
+      url('/bg_pic_04.png'),
+      url('/bg_pic_05.png'),
+      url('/bg_pic_06.png'),
+      url('/bg_pic_07.png'),
+      url('/bg_pic_08.png'),
+      url('/bg_pic_09.png'),
+      url('/bg_pic_10.png'),
+      url('/bg_pic_11.png'),
+      url('/bg_pic_12.png');
     mask-image: 
-      url('/bg_pic_1.png'),
-      url('/bg_pic_1.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_2.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_3.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_4.png'),
-      url('/bg_pic_5.png'),
-      url('/bg_pic_5.png');
-    /* Positions map 1-10; y capped at 80% */
-    -webkit-mask-position: 
-      15% 25%, /* 1 */
-      25% 70%, /* 2 */
-      50% 60%, /* 3 */
-      60% 20%, /* 4 */
-      85% 35%, /* 5 */
-      90% 75%, /* 6 */
-      30% 75%, /* 7 */
-      40% 15%, /* 8 */
-      70% 15%, /* 9 */
-      75% 65%; /* 10 */
-    mask-position: 
-      15% 25%,
-      25% 70%,
-      50% 60%,
-      60% 20%,
-      85% 35%,
-      90% 75%,
-      30% 75%,
-      40% 15%,
-      70% 15%,
-      75% 65%;
+      url('/bg_pic_01.png'),
+      url('/bg_pic_02.png'),
+      url('/bg_pic_03.png'),
+      url('/bg_pic_04.png'),
+      url('/bg_pic_05.png'),
+      url('/bg_pic_06.png'),
+      url('/bg_pic_07.png'),
+      url('/bg_pic_08.png'),
+      url('/bg_pic_09.png'),
+      url('/bg_pic_10.png'),
+      url('/bg_pic_11.png'),
+      url('/bg_pic_12.png');
     -webkit-mask-size: 
-      45px auto, 
-      45px auto, 
-      40px auto, 
-      40px auto, 
-      50px auto, 
-      50px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto;
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto;
     mask-size: 
-      45px auto, 
-      45px auto, 
-      40px auto, 
-      40px auto, 
-      50px auto, 
-      50px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto, 
-      45px auto;
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto,
+      44px auto;
   }
 }
 

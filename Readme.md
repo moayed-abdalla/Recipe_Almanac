@@ -153,7 +153,7 @@ Recipe_Almanac/
 ├── utils/                        # Utility functions
 │   └── unitConverter.ts         # Unit conversion utilities
 ├── public/                       # Static assets
-│   ├── bg_pic_*.png             # Background images
+│   ├── bg_pic_01.png … bg_pic_12.png  # Background mask images (kitchen icons)
 │   ├── BuyMeACoffee_*.png       # Support images
 │   ├── favicon_*.ico            # Favicons
 │   └── logo.png                 # Logo image
