@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -74,8 +73,20 @@ export default function KitchenIconLoader({
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={index}
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+          className="absolute inset-0 text-base-content opacity-70"
+          style={{
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden',
+            backgroundColor: 'currentColor',
+            WebkitMaskImage: `url('${src}')`,
+            WebkitMaskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskImage: `url('${src}')`,
+            maskSize: 'contain',
+            maskRepeat: 'no-repeat',
+            maskPosition: 'center',
+          }}
           initial={
             prefersReducedMotion
               ? { opacity: 0 }
@@ -92,16 +103,7 @@ export default function KitchenIconLoader({
               : { rotateY: 88, opacity: 0 }
           }
           transition={transition}
-        >
-          <Image
-            src={src}
-            alt=""
-            width={px}
-            height={px}
-            className="pointer-events-none object-contain select-none"
-            draggable={false}
-          />
-        </motion.div>
+        />
       </AnimatePresence>
     </div>
   );
