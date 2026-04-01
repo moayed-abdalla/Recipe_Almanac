@@ -38,7 +38,7 @@ export default function LoadingSpinner({
       >
         <KitchenIconLoader size={size} />
         {message && (
-          <p className="text-lg opacity-70">{message}</p>
+          <p className="text-lg text-base-content opacity-70">{message}</p>
         )}
       </div>
     </div>
