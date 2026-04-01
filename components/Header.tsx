@@ -24,55 +24,27 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
-import type { Session } from '@supabase/supabase-js';
-import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, getThemeById, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
-
-interface ProfileData {
-  avatar_url: string | null;
-  username: string;
-  default_light_theme?: LightThemeId | null;
-  default_dark_theme?: DarkThemeId | null;
-}
+import { useProfileContext } from '@/contexts/ProfileContext';
+import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME } from '@/lib/theme-config';
+import type { Profile } from '@/types';
 
 export default function Header() {
+  const { user, profile } = useProfileContext();
+
   // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   /** Mirrors `theme` for callbacks that must not read a stale closure (auth, profile events). */
   const themeRef = useRef<'light' | 'dark'>(theme);
   /** Skip first run of applyTheme sync: init effect applies first; otherwise stale 'light' overwrites. */
   const applyThemeSyncReadyRef = useRef(false);
-  
-  // User state - current authenticated user
-  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { username?: string; avatar_url?: string } } | null>(null);
-  
-  // Profile data (avatar and username from profiles table)
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  
-  // Supabase client for authentication
+  /** Latest profile for async handlers (system theme change). */
+  const profileRef = useRef<Profile | null>(null);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
   const supabase = supabaseClient;
-
-  /**
-   * Fetch profile data from profiles table
-   */
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('avatar_url, username, default_light_theme, default_dark_theme')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      return data as ProfileData;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
-      return null;
-    }
-  };
 
   /**
    * Detect system theme preference
@@ -85,7 +57,7 @@ export default function Header() {
   /**
    * Get the theme ID to apply based on current mode and user preferences
    */
-  const getThemeId = useCallback((mode: 'light' | 'dark', profileData: ProfileData | null): string => {
+  const getThemeId = useCallback((mode: 'light' | 'dark', profileData: Profile | null): string => {
     if (mode === 'light') {
       return profileData?.default_light_theme || DEFAULT_LIGHT_THEME;
     } else {
@@ -96,7 +68,7 @@ export default function Header() {
   /**
    * Apply theme to document
    */
-  const applyTheme = useCallback((mode: 'light' | 'dark', profileData: ProfileData | null) => {
+  const applyTheme = useCallback((mode: 'light' | 'dark', profileData: Profile | null) => {
     const themeId = getThemeId(mode, profileData);
     document.documentElement.setAttribute('data-theme', themeId);
     // Also set data-theme-mode for CSS targeting
@@ -108,105 +80,40 @@ export default function Header() {
   }, [theme]);
 
   /**
-   * Initialize theme and user session on component mount
+   * Initialize theme mode from localStorage / system (profile themes come from ProfileProvider)
    */
   useEffect(() => {
     try {
-      // Detect system preference
       const systemPreference = getSystemThemePreference();
-      
-      // Get saved theme mode from localStorage, or use system preference
       const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
       const initialThemeMode = savedThemeMode || systemPreference;
 
       themeRef.current = initialThemeMode;
       setTheme(initialThemeMode);
-
-      // Apply default theme initially (will be updated when profile loads)
       applyTheme(initialThemeMode, null);
-
-      // Check for existing user session
-      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-        if (error) {
-          console.error('Error getting session:', error);
-        } else {
-          setUser(session?.user ?? null);
-          // Fetch profile if user is logged in
-          if (session?.user) {
-            const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
-            // Apply user's theme preferences
-            applyTheme(initialThemeMode, profileData);
-          } else {
-            setProfile(null);
-          }
-        }
-      });
-
-      // Listen for authentication state changes (login, logout, etc.)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
-        setUser(session?.user ?? null);
-        // Fetch profile when auth state changes
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
-          // Apply user's theme preferences (use ref — not stale closure from mount)
-          applyTheme(themeRef.current, profileData);
-        } else {
-          setProfile(null);
-          // Apply default theme when logged out
-          applyTheme(themeRef.current, null);
-        }
-      });
-
-      // Listen for system theme preference changes
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-        // Only auto-switch if user hasn't manually set a preference
-        const savedThemeMode = localStorage.getItem('theme-mode');
-        if (!savedThemeMode) {
-          const newMode = e.matches ? 'dark' : 'light';
-          themeRef.current = newMode;
-          setTheme(newMode);
-          // Get current profile from state
-          supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session?.user) {
-              const profileData = await fetchProfile(session.user.id);
-              applyTheme(newMode, profileData);
-            } else {
-              applyTheme(newMode, null);
-            }
-          });
-        }
-      };
-      mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-      // Listen for profile update events (dispatched from profile page)
-      const handleProfileUpdate = async () => {
-        // Get current user from session to avoid stale closure
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
-          // Apply updated theme preferences
-          applyTheme(themeRef.current, profileData);
-        }
-      };
-
-      window.addEventListener('profileAvatarUpdated', handleProfileUpdate);
-      window.addEventListener('profileUpdated', handleProfileUpdate);
-
-      // Cleanup: unsubscribe from auth state changes and remove event listener
-      return () => {
-        subscription.unsubscribe();
-        window.removeEventListener('profileAvatarUpdated', handleProfileUpdate);
-        window.removeEventListener('profileUpdated', handleProfileUpdate);
-        mediaQuery.removeEventListener('change', handleSystemThemeChange);
-      };
     } catch (error) {
       console.error('Error initializing header:', error);
     }
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time theme boot; profile applied in sync effect
+  }, []);
+
+  /**
+   * System color-scheme changes (only when user has not pinned light/dark in localStorage)
+   */
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      const savedThemeMode = localStorage.getItem('theme-mode');
+      if (!savedThemeMode) {
+        const newMode = e.matches ? 'dark' : 'light';
+        themeRef.current = newMode;
+        setTheme(newMode);
+        applyTheme(newMode, profileRef.current);
+      }
+    };
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, [applyTheme]);
 
   /**
    * Update favicon based on current theme mode
