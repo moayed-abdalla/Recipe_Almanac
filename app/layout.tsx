@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BackgroundMaskPositions from '@/components/BackgroundMaskPositions';
+import AppProviders from '@/components/providers/AppProviders';
 
 export const metadata: Metadata = {
   title: 'Recipe Almanac',
@@ -27,24 +28,26 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-base-100 text-base-content min-h-screen flex flex-col">
-        <BackgroundMaskPositions />
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-VXFFHEPYS9"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
+        <AppProviders>
+          <BackgroundMaskPositions />
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-VXFFHEPYS9"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', 'G-VXFFHEPYS9');
           `}
-        </Script>
-        <Header />
-        <main className="flex-1 relative z-10">
-          {children}
-        </main>
-        <Footer />
+          </Script>
+          <Header />
+          <main className="flex-1 relative z-10">
+            {children}
+          </main>
+          <Footer />
+        </AppProviders>
       </body>
     </html>
   );
