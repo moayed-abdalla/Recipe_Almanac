@@ -1,13 +1,13 @@
 /**
  * Profile Page Component
- * 
+ *
  * Displays the authenticated user's profile:
  * - Profile image
  * - Description
  * - Public recipes
  * - Favorite recipes
  * - Edit profile button (only visible when viewing own profile)
- * 
+ *
  * This is a Client Component because it needs to:
  * - Access user authentication state
  * - Handle user interactions
@@ -16,11 +16,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabaseClient } from '@/lib/supabase-client';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import { fetchPublicRecipes, fetchFavoriteRecipes } from '@/lib/recipeService';
-import type { NormalizedRecipe, Profile } from '@/types';
+import { profileMark, profileMeasure } from '@/lib/profile-performance';
+import type { NormalizedRecipe } from '@/types';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import Tabs from '@/components/navigation/Tabs';
 import RecipeGrid from '@/components/recipe/RecipeGrid';
@@ -29,73 +30,34 @@ import ErrorAlert from '@/components/ui/ErrorAlert';
 import EmptyState from '@/components/ui/EmptyState';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, error: authError } = useAuth({ requireAuth: true });
-  
-  // User's profile data
-  const [profile, setProfile] = useState<Profile | null>(null);
-  
-  // Active tab: 'public' or 'favorites'
+  const { user, loading: authLoading, error: authError, refetch: refetchAuth } = useAuth({
+    requireAuth: true,
+  });
+  const { profile, loading: profileLoading, refreshProfile } = useProfileContext();
+
   const [activeTab, setActiveTab] = useState<'public' | 'favorites'>('public');
-  
-  // User's public recipes
+
   const [publicRecipes, setPublicRecipes] = useState<NormalizedRecipe[]>([]);
-  
-  // User's favorited recipes
+
   const [favoriteRecipes, setFavoriteRecipes] = useState<NormalizedRecipe[]>([]);
-  
-  // Loading state for initial data fetch
+
   const [loading, setLoading] = useState(true);
-  
-  // Error state for displaying error messages
+
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Fetch user profile data
-   */
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      return data as Profile;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
-      return null;
-    }
-  };
-
-  /**
-   * Load profile and recipes
-   */
-  const loadData = async () => {
+  const loadRecipes = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setError(null);
       setLoading(true);
-      
-      const userProfile = await fetchProfile(user.id);
-      if (!userProfile) {
-        setError('Failed to load profile');
-        return;
-      }
-      
-      setProfile(userProfile);
-      
-      // Fetch all recipes
+      profileMark('profileRecipesFetchStart');
       const [publicRecs, favoriteRecs] = await Promise.all([
         fetchPublicRecipes(user.id),
         fetchFavoriteRecipes(user.id),
       ]);
-      
+      profileMark('profileRecipesFetchEnd');
+      profileMeasure('recipesParallel', 'profileRecipesFetchStart', 'profileRecipesFetchEnd');
       setPublicRecipes(publicRecs);
       setFavoriteRecipes(favoriteRecs);
     } catch (err) {
@@ -104,24 +66,36 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  /**
-   * Fetch user data and recipes on component mount
-   */
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
   }, [user]);
 
-  // Loading state: show spinner while fetching data
-  if (authLoading || loading) {
+  useEffect(() => {
+    if (!user || profileLoading) return;
+
+    if (!profile) {
+      setError('Failed to load profile');
+      setLoading(false);
+      return;
+    }
+
+    void loadRecipes();
+  }, [user, profile, profileLoading, loadRecipes]);
+
+  if (authLoading || profileLoading || loading) {
     return <LoadingSpinner message="Loading your profile..." />;
   }
 
-  // Not logged in: should have been redirected, but show message just in case
-  if (!user || !profile) {
+  if (authError) {
+    return (
+      <ErrorAlert
+        message={authError}
+        onRetry={() => {
+          void refetchAuth();
+        }}
+      />
+    );
+  }
+
+  if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="alert alert-warning">
@@ -131,12 +105,15 @@ export default function ProfilePage() {
     );
   }
 
-  // Error state: show error message if something went wrong
-  if (authError || error) {
+  if (!profile || error) {
     return (
-      <ErrorAlert 
-        message={authError || error || 'An unexpected error occurred'} 
-        onRetry={loadData}
+      <ErrorAlert
+        message={error || 'Failed to load profile'}
+        onRetry={async () => {
+          setError(null);
+          await refreshProfile();
+          await loadRecipes();
+        }}
       />
     );
   }
@@ -151,17 +128,14 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        {/* Profile Header */}
         <ProfileHeader profile={profile} showEditButton={true} />
 
-        {/* Tabs */}
-        <Tabs 
+        <Tabs
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={(tabId) => setActiveTab(tabId as 'public' | 'favorites')}
         />
 
-        {/* Recipe List */}
         {currentRecipes.length === 0 ? (
           <EmptyState
             message={
