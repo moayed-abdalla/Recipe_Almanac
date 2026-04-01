@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
+import { profileMark } from '@/lib/profile-performance';
 import type { Session, User } from '@supabase/supabase-js';
 
 interface UseAuthOptions {
@@ -51,28 +52,36 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   const fetchUser = async () => {
     try {
       setError(null);
-      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-      
-      if (userError) {
-        console.error('Error fetching user:', userError);
+      profileMark('authSessionStart');
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabaseClient.auth.getSession();
+
+      if (sessionError) {
+        console.error('Error fetching session:', sessionError);
         if (requireAuth && redirectToLogin) {
           router.push('/login');
         }
         setUser(null);
         return;
       }
-      
-      if (!user && requireAuth && redirectToLogin) {
+
+      const sessionUser = session?.user ?? null;
+
+      if (!sessionUser && requireAuth && redirectToLogin) {
         router.push('/login');
+        setUser(null);
         return;
       }
-      
-      setUser(user);
+
+      setUser(sessionUser);
     } catch (err) {
       console.error('Error in fetchUser:', err);
       setError('An unexpected error occurred');
       setUser(null);
     } finally {
+      profileMark('authSessionEnd');
       setLoading(false);
     }
   };

@@ -27,48 +27,94 @@ const RECIPE_SELECT_FIELDS = `
   )
 `;
 
+type FavoriteRpcRow = {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string | null;
+  description: string | null;
+  view_count: number;
+  tags: string[];
+  is_public: boolean;
+  creator_username: string;
+  favorite_count: number;
+};
+
+/**
+ * Two-step fetch (saved_recipes → recipes) — used when RPC is unavailable.
+ */
+async function fetchFavoriteRecipesLegacy(userId: string): Promise<NormalizedRecipe[]> {
+  const { data: savedData, error: savedError } = await supabaseClient
+    .from('saved_recipes')
+    .select('recipe_id')
+    .eq('user_id', userId)
+    .order('saved_at', { ascending: false });
+
+  if (savedError) {
+    console.error('Error fetching saved recipes:', savedError);
+    return [];
+  }
+
+  if (!savedData || savedData.length === 0) {
+    return [];
+  }
+
+  const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select(RECIPE_SELECT_FIELDS)
+    .in('id', recipeIds)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching favorite recipes:', error);
+    return [];
+  }
+
+  const recipes = (data || []) as RecipeWithProfile[];
+  return normalizeRecipes(recipes);
+}
+
 /**
  * Fetch all recipes that a user has favorited
- * 
+ *
  * @param userId - The user ID to fetch favorites for
  * @returns Array of normalized favorite recipes
  */
 export async function fetchFavoriteRecipes(userId: string): Promise<NormalizedRecipe[]> {
   try {
-    // Step 1: Get list of favorited recipe IDs
-    const { data: savedData, error: savedError } = await supabaseClient
-      .from('saved_recipes')
-      .select('recipe_id')
-      .eq('user_id', userId)
-      .order('saved_at', { ascending: false });
+    const { data, error } = await supabaseClient.rpc('get_user_favorite_recipes', {
+      p_user_id: userId,
+    });
 
-    if (savedError) {
-      console.error('Error fetching saved recipes:', savedError);
-      return [];
+    if (!error && Array.isArray(data)) {
+      if (data.length === 0) {
+        return [];
+      }
+      const recipes = (data as FavoriteRpcRow[]).map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        title: row.title,
+        image_url: row.image_url,
+        description: row.description,
+        view_count: Number(row.view_count),
+        favorite_count: Number(row.favorite_count),
+        tags: row.tags,
+        is_public: row.is_public,
+        profiles: {
+          username: row.creator_username,
+        },
+      })) as RecipeWithProfile[];
+      return normalizeRecipes(recipes);
     }
-
-    if (!savedData || savedData.length === 0) {
-      return [];
-    }
-
-    // Step 2: Fetch full recipe data for favorited recipes
-    const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
-    const { data, error } = await supabaseClient
-      .from('recipes')
-      .select(RECIPE_SELECT_FIELDS)
-      .in('id', recipeIds)
-      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching favorite recipes:', error);
-      return [];
+      console.warn('get_user_favorite_recipes RPC unavailable, using fallback:', error.message);
     }
-
-    const recipes = (data || []) as RecipeWithProfile[];
-    return normalizeRecipes(recipes);
+    return fetchFavoriteRecipesLegacy(userId);
   } catch (err) {
     console.error('Unexpected error fetching favorite recipes:', err);
-    return [];
+    return fetchFavoriteRecipesLegacy(userId);
   }
 }
 

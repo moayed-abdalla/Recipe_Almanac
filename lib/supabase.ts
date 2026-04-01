@@ -160,6 +160,23 @@ export type Database = {
           creator_username: string;
         }>;
       };
+      get_user_favorite_recipes: {
+        Args: {
+          p_user_id: string;
+        };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          title: string;
+          image_url: string | null;
+          description: string | null;
+          view_count: number;
+          tags: string[];
+          is_public: boolean;
+          creator_username: string;
+          favorite_count: number;
+        }>;
+      };
     };
   };
 };
