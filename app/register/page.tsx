@@ -98,9 +98,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8">Create Account</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-8">Create Account</h1>
         
         <form onSubmit={handleRegister} className="card bg-base-200 shadow-xl">
           <div className="card-body">
@@ -179,19 +179,19 @@ export default function RegisterPage() {
               {/* Light Themes */}
               <div className="mb-4">
                 <h3 className="text-md font-semibold mb-3">Light Theme</h3>
-                <div className="flex flex-wrap gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   {LIGHT_THEMES.map((theme) => (
                     <button
                       key={theme.id}
                       type="button"
                       onClick={() => setSelectedLightTheme(theme.id as LightThemeId)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
+                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                         selectedLightTheme === theme.id
                           ? 'border-primary bg-primary/10'
                           : 'border-base-300 hover:border-primary/50'
                       }`}
                     >
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
                         <div className="w-full h-full flex">
                           <div
                             className="w-1/2 h-full"
@@ -212,19 +212,19 @@ export default function RegisterPage() {
               {/* Dark Themes */}
               <div className="mb-4">
                 <h3 className="text-md font-semibold mb-3">Dark Theme</h3>
-                <div className="flex flex-wrap gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   {DARK_THEMES.map((theme) => (
                     <button
                       key={theme.id}
                       type="button"
                       onClick={() => setSelectedDarkTheme(theme.id as DarkThemeId)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
+                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                         selectedDarkTheme === theme.id
                           ? 'border-primary bg-primary/10'
                           : 'border-base-300 hover:border-primary/50'
                       }`}
                     >
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
                         <div className="w-full h-full flex">
                           <div
                             className="w-1/2 h-full"

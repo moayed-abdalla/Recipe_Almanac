@@ -448,8 +448,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
+    <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
@@ -482,7 +482,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
               <img
                 src={imagePreview || recipe?.image_url || ''}
                 alt="Recipe image"
-                className="w-64 h-48 object-cover rounded-lg"
+                className="w-full max-w-xs sm:max-w-sm h-40 sm:h-48 object-cover rounded-lg"
               />
               <p className="text-sm opacity-70 mt-1">
                 {imagePreview ? 'New image preview' : 'Current image'}
@@ -568,7 +568,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             return (
             <div
               key={index}
-              className="flex flex-wrap gap-2 mb-2 items-center group"
+              className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-2 items-stretch sm:items-center group w-full"
               draggable
               onDragStart={(e) => {
                 e.dataTransfer.setData('text/plain', index.toString());
@@ -593,6 +593,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 }
               }}
             >
+              <div className="flex gap-2 items-center w-full sm:w-auto">
               <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
               <input
                 type="number"
@@ -603,7 +604,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
-                className={`select select-bordered flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'min-w-[120px]'}`}
+                className={`select select-bordered flex-1 sm:flex-none flex-shrink-0 ${isOtherUnit ? 'sm:w-10 sm:min-w-[2.5rem] text-transparent' : 'sm:min-w-[120px]'}`}
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
                 aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
@@ -628,9 +629,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                   <option value="other">Other</option>
                 </optgroup>
               </select>
+              </div>
               <input
                 type="text"
-                className="input input-bordered flex-1 min-w-[150px]"
+                className="input input-bordered flex-1 min-w-0 w-full"
                 placeholder="Ingredient name"
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
@@ -794,10 +796,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
 
         {/* Submit */}
         <div className="form-control mt-6">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary w-full sm:w-auto"
               disabled={loading || deleting}
             >
               {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Recipe' : 'Create Recipe')}
@@ -806,7 +808,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
               <button
                 type="button"
                 onClick={() => router.push(`/recipe/${recipe!.slug}`)}
-                className="btn btn-ghost"
+                className="btn btn-ghost w-full sm:w-auto"
                 disabled={loading || deleting}
               >
                 Cancel

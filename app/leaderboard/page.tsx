@@ -92,13 +92,13 @@ export default async function LeaderboardPage() {
     .map((recipe, index) => ({ ...recipe, rank: index + 1 }));
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 typewriter text-base-content">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4 typewriter text-base-content">
             Leaderboard
           </h1>
-          <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-base-content/70 max-w-2xl mx-auto px-2">
             Top 100 recipes ranked by score. Favourites count as 4 points, views
             count as 1 point.
           </p>
@@ -110,14 +110,14 @@ export default async function LeaderboardPage() {
             a recipe!
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {recipesWithScores.map((recipe) => (
-              <div key={recipe.id} className="relative">
-                <div className="absolute -top-2 -left-2 z-10 flex items-center gap-2">
-                  <span className="badge badge-primary badge-lg font-bold">
+              <div key={recipe.id} className="relative pt-3">
+                <div className="absolute top-0 left-0 z-10 flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full">
+                  <span className="badge badge-primary badge-sm sm:badge-lg font-bold">
                     #{recipe.rank}
                   </span>
-                  <span className="badge badge-secondary badge-lg">
+                  <span className="badge badge-secondary badge-sm sm:badge-lg">
                     {recipe.score.toLocaleString()} pts
                   </span>
                 </div>
@@ -142,8 +142,8 @@ export default async function LeaderboardPage() {
                       </div>
                     )}
                   </figure>
-                  <div className="card-body">
-                    <h2 className="card-title arial-font text-base-content">
+                  <div className="card-body p-4 sm:p-6">
+                    <h2 className="card-title arial-font text-base-content text-base sm:text-lg line-clamp-2">
                       {recipe.title}
                     </h2>
                     {recipe.description && (
@@ -151,8 +151,8 @@ export default async function LeaderboardPage() {
                         {recipe.description}
                       </p>
                     )}
-                    <div className="card-actions justify-between items-center mt-4">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <div className="card-actions flex-col items-stretch gap-2 mt-3 sm:mt-4">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="text-sm opacity-60 special-elite-regular text-base-content">
                           by {recipe.profiles.username}
                         </span>

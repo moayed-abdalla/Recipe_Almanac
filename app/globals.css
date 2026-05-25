@@ -72,7 +72,13 @@ body {
   font-style: normal;
   background-color: #F7F7F7;
   position: relative;
+  overflow-x: clip;
   /* Color is handled by text-base-content class in layout.tsx */
+}
+
+/* Prevent horizontal overflow from long unbroken strings */
+html {
+  overflow-x: clip;
 }
 
 html[data-theme-mode="dark"] body {

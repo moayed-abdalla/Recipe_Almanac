@@ -126,8 +126,8 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <div className="max-w-4xl mx-auto min-w-0">
         <ProfileHeader profile={profile} showEditButton={true} />
 
         <Tabs

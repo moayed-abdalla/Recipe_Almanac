@@ -58,16 +58,16 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="footer bg-base-100 p-10 text-base-content border-t border-base-300">
-      <div className="container mx-auto">
-        <div className="footer-content flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-4">
+    <footer className="footer bg-base-100 p-6 sm:p-10 text-base-content border-t border-base-300">
+      <div className="container mx-auto px-2 sm:px-4">
+        <div className="footer-content flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-4">
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <span className="text-xl font-bold text-base-content">Recipe Almanac</span>
+              <span className="text-lg sm:text-xl font-bold text-base-content">Recipe Almanac</span>
             </Link>
           </div>
           
-          <nav className="flex items-center gap-4">
+          <nav className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             {user && (
               <>
                 <Link href="/feedback" className="link link-hover">Feedback</Link>
@@ -116,7 +116,7 @@ export default function Footer() {
           </nav>
         </div>
         
-        <div className="text-center mt-4 text-sm opacity-70">
+        <div className="text-center mt-4 text-xs sm:text-sm opacity-70 px-2">
           <p>© {new Date().getFullYear()} Recipe Almanac. No ads, no subscriptions, just recipes.</p>
         </div>
       </div>

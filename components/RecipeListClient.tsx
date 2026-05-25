@@ -107,7 +107,7 @@ export default function RecipeListClient({ recipes }: RecipeListClientProps) {
 
       {/* Pagination controls */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2">
+        <div className="flex flex-wrap justify-center items-center gap-2">
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
@@ -116,7 +116,11 @@ export default function RecipeListClient({ recipes }: RecipeListClientProps) {
             Previous
           </button>
           
-          <div className="flex gap-1">
+          <span className="text-sm opacity-70 px-2 sm:hidden">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <div className="hidden sm:flex gap-1 flex-wrap justify-center">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
               // Show first page, last page, current page, and pages around current
               if (
