@@ -660,29 +660,29 @@ export default function RecipePageClient({
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
       {/* Recipe Image */}
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
         {recipe.image_url ? (
           <Image
             src={recipe.image_url}
             alt={recipe.title}
             width={800}
             height={600}
-            className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg"
+            className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-lg"
           />
         ) : (
-          <div className="w-full h-64 sm:h-80 lg:h-96 bg-base-300 rounded-lg flex items-center justify-center">
-            <span className="text-base-content opacity-50 text-lg sm:text-xl">No Image</span>
+          <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-base-300 rounded-lg flex items-center justify-center">
+            <span className="text-base-content opacity-50 text-base sm:text-lg">No Image</span>
           </div>
         )}
       </div>
 
       {/* Recipe Title and Actions */}
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-3 sm:gap-4">
-          <h1 className="text-3xl sm:text-4xl font-bold flex-1 special-elite-regular break-words text-base-content">{recipe.title}</h1>
-          <div className="flex gap-2 flex-shrink-0">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col gap-3 mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold special-elite-regular break-words text-base-content">{recipe.title}</h1>
+          <div className="flex gap-1.5 sm:gap-2 flex-wrap">
             {/* Wake Lock Button */}
             <button
               onClick={toggleWakeLock}
@@ -778,11 +778,11 @@ export default function RecipePageClient({
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-lg opacity-70 arial-font">by</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-base sm:text-lg opacity-70 arial-font">by</span>
           <Link
             href={`/profile/${owner.username}`}
-            className="link link-primary text-lg arial-font"
+            className="link link-primary text-base sm:text-lg arial-font break-all"
           >
             {owner.username}
           </Link>
@@ -808,13 +808,13 @@ export default function RecipePageClient({
 
       {/* Description */}
       {recipe.description && (
-        <p className="mb-8 text-lg arial-font">{recipe.description}</p>
+        <p className="mb-6 sm:mb-8 text-base sm:text-lg arial-font break-words">{recipe.description}</p>
       )}
 
       {/* Ingredients Section */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-4">
-          <h2 className="text-2xl font-bold special-elite-regular">Ingredients</h2>
+          <h2 className="text-xl sm:text-2xl font-bold special-elite-regular">Ingredients</h2>
           {/* Multiplier Controls */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm opacity-70 arial-font mr-2 w-full sm:w-auto">Scale:</span>
@@ -879,26 +879,28 @@ export default function RecipePageClient({
               : formatMeasurement(amount, unit);
 
             return (
-              <li key={ingredient.id} className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => toggleIngredient(ingredient.id)}
-                  className="checkbox flex-shrink-0"
-                />
-                <span className={`${isChecked ? 'line-through opacity-50 flex-1 min-w-0' : 'flex-1 min-w-0'} arial-font break-words`}>
-                  {displayText} {ingredient.name}
-                  {showWarning && (
-                    <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
-                      *
-                    </span>
-                  )}
-                </span>
+              <li key={ingredient.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleIngredient(ingredient.id)}
+                    className="checkbox flex-shrink-0 mt-0.5"
+                  />
+                  <span className={`${isChecked ? 'line-through opacity-50' : ''} arial-font break-words flex-1 min-w-0 text-sm sm:text-base`}>
+                    {displayText} {ingredient.name}
+                    {showWarning && (
+                      <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
+                        *
+                      </span>
+                    )}
+                  </span>
+                </div>
                 {!hideUnit && (
                   <select
                     value={currentUnit}
                     onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
-                    className="select select-bordered select-sm max-w-xs arial-font flex-shrink-0"
+                    className="select select-bordered select-sm w-full sm:w-auto sm:max-w-xs arial-font flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {availableUnits.map((unitOption) => (
@@ -924,10 +926,10 @@ export default function RecipePageClient({
 
       {/* Method Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 special-elite-regular">Method</h2>
-        <ol className="list-decimal list-inside space-y-3">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Method</h2>
+        <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-3">
           {recipe.method_steps.map((step, index) => (
-            <li key={index} className="text-lg arial-font">
+            <li key={index} className="text-base sm:text-lg arial-font break-words pl-1">
               {step}
             </li>
           ))}
@@ -937,10 +939,10 @@ export default function RecipePageClient({
       {/* Notes Section */}
       {recipe.notes.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 special-elite-regular">Notes</h2>
-          <ol className="list-decimal list-inside space-y-2">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Notes</h2>
+          <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-2">
             {recipe.notes.map((note, index) => (
-              <li key={index} className="opacity-80 arial-font">
+              <li key={index} className="opacity-80 arial-font break-words pl-1 text-sm sm:text-base">
                 {note}
               </li>
             ))}

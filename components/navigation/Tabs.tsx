@@ -36,19 +36,21 @@ interface TabsProps {
 
 export default function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps) {
   return (
-    <div className={`tabs tabs-boxed mb-6 ${className}`}>
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          className={`tab ${activeTab === tab.id ? 'tab-active' : ''}`}
-          onClick={() => !tab.disabled && onTabChange(tab.id)}
-          disabled={tab.disabled}
-          title={tab.title}
-        >
-          {tab.label}
-          {tab.count !== undefined && ` (${tab.count})`}
-        </button>
-      ))}
+    <div className={`overflow-x-auto -mx-1 px-1 pb-1 mb-6 ${className}`}>
+      <div className="tabs tabs-boxed w-max min-w-full sm:w-auto sm:min-w-0">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab whitespace-nowrap text-sm sm:text-base ${activeTab === tab.id ? 'tab-active' : ''}`}
+            onClick={() => !tab.disabled && onTabChange(tab.id)}
+            disabled={tab.disabled}
+            title={tab.title ?? tab.label}
+          >
+            {tab.label}
+            {tab.count !== undefined && ` (${tab.count})`}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

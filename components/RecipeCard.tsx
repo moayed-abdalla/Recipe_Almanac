@@ -45,7 +45,7 @@ export default function RecipeCard({
   tags = [],
 }: RecipeCardProps) {
   return (
-    <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+    <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow h-full">
       <figure>
         {imageUrl ? (
           <Image
@@ -53,26 +53,26 @@ export default function RecipeCard({
             alt={title}
             width={400}
             height={300}
-            className="w-full h-48 object-cover"
+            className="w-full h-40 sm:h-48 object-cover"
           />
         ) : (
-          <div className="w-full h-48 bg-base-300 flex items-center justify-center">
+          <div className="w-full h-40 sm:h-48 bg-base-300 flex items-center justify-center">
             <span className="text-base-content opacity-50">No Image</span>
           </div>
         )}
       </figure>
-      <div className="card-body">
-        <h2 className="card-title arial-font text-base-content">{title}</h2>
+      <div className="card-body p-4 sm:p-6">
+        <h2 className="card-title arial-font text-base-content text-base sm:text-lg line-clamp-2">{title}</h2>
         {description && (
           <p className="text-sm opacity-70 line-clamp-2 arial-font text-base-content">{description}</p>
         )}
-        <div className="card-actions justify-between items-center mt-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm opacity-60 special-elite-regular text-base-content">by {username}</span>
-            <span className="text-sm opacity-60">•</span>
-            <span className="text-sm opacity-60">{viewCount.toLocaleString()} views</span>
-            <span className="text-sm opacity-60">•</span>
-            <span className="text-sm opacity-60">{favoriteCount.toLocaleString()} favorites</span>
+        <div className="card-actions flex-col items-stretch gap-2 mt-3 sm:mt-4">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-xs sm:text-sm opacity-60 special-elite-regular text-base-content">by {username}</span>
+            <span className="text-xs sm:text-sm opacity-60">•</span>
+            <span className="text-xs sm:text-sm opacity-60">{viewCount.toLocaleString()} views</span>
+            <span className="text-xs sm:text-sm opacity-60">•</span>
+            <span className="text-xs sm:text-sm opacity-60">{favoriteCount.toLocaleString()} favorites</span>
           </div>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1">

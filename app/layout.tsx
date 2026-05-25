@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import Header from '@/components/Header';
@@ -9,6 +9,11 @@ import AppProviders from '@/components/providers/AppProviders';
 export const metadata: Metadata = {
   title: 'Recipe Almanac',
   description: 'Your digital recipe book you can share, browse and write your own. No ads, no subscriptions, just recipes.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -43,7 +48,7 @@ export default function RootLayout({
           `}
           </Script>
           <Header />
-          <main className="flex-1 relative z-10">
+          <main className="flex-1 relative z-10 min-w-0 overflow-x-clip">
             {children}
           </main>
           <Footer />
