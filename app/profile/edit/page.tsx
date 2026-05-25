@@ -318,25 +318,25 @@ export default function ProfileEditPage() {
   const displayAvatarUrl = avatarPreview || profile.avatar_url;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <Link href="/profile" className="link link-primary">
+        <div className="mb-4 sm:mb-6">
+          <Link href="/profile" className="link link-primary text-sm sm:text-base">
             ← Back to Profile
           </Link>
         </div>
         
-        <h1 className="text-4xl font-bold mb-8">Edit Profile</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8">Edit Profile</h1>
         
         <div className="card bg-base-200 shadow-xl">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <form onSubmit={handleSubmit}>
               {/* Avatar Section */}
               <div className="mb-6">
                 <label className="label">
                   <span className="label-text font-semibold">Profile Picture</span>
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                   <div className="relative">
                     <div className="avatar">
                       <div className="w-24 rounded-full bg-base-300 ring ring-primary ring-offset-base-100 ring-offset-2">
@@ -454,7 +454,7 @@ export default function ProfileEditPage() {
                 {/* Light Themes */}
                 <div className="mb-4">
                   <h3 className="text-md font-semibold mb-3">Light Themes</h3>
-                  <div className="flex flex-wrap gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {LIGHT_THEMES.map((theme) => (
                       <button
                         key={theme.id}
@@ -463,13 +463,13 @@ export default function ProfileEditPage() {
                           setSelectedLightTheme(theme.id as LightThemeId);
                           applyThemePreview(theme.id as LightThemeId, selectedDarkTheme);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
+                        className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
                         }`}
                       >
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
                           <div className="w-full h-full flex">
                             <div
                               className="w-1/2 h-full"
@@ -490,7 +490,7 @@ export default function ProfileEditPage() {
                 {/* Dark Themes */}
                 <div className="mb-4">
                   <h3 className="text-md font-semibold mb-3">Dark Themes</h3>
-                  <div className="flex flex-wrap gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {DARK_THEMES.map((theme) => (
                       <button
                         key={theme.id}
@@ -499,13 +499,13 @@ export default function ProfileEditPage() {
                           setSelectedDarkTheme(theme.id as DarkThemeId);
                           applyThemePreview(selectedLightTheme, theme.id as DarkThemeId);
                         }}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all w-30 ${
+                        className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
                             : 'border-base-300 hover:border-primary/50'
                         }`}
                       >
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
                           <div className="w-full h-full flex">
                             <div
                               className="w-1/2 h-full"
@@ -560,13 +560,13 @@ export default function ProfileEditPage() {
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-end gap-4">
-                <Link href="/profile" className="btn btn-ghost">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+                <Link href="/profile" className="btn btn-ghost w-full sm:w-auto">
                   Cancel
                 </Link>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn btn-primary w-full sm:w-auto"
                   disabled={saving}
                 >
                   {saving ? (

@@ -46,18 +46,20 @@ export default function ProfileViewClient({
   const tabs = [
     { 
       id: 'recipes', 
-      label: `${profile.username}'s Recipes`, 
-      count: publicRecipes.length 
+      label: 'Recipes', 
+      count: publicRecipes.length,
+      title: `${profile.username}'s Recipes`,
     },
     { 
       id: 'favorites', 
-      label: `${profile.username}'s Favorites`, 
-      count: favoriteRecipes.length
+      label: 'Favorites', 
+      count: favoriteRecipes.length,
+      title: `${profile.username}'s Favorites`,
     },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto min-w-0 w-full">
       {/* Profile Header */}
       <ProfileHeader 
         profile={profile} 

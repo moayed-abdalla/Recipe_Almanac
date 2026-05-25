@@ -118,10 +118,10 @@ export default function AlmanacPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold leading-none flex items-center">My Almanac</h1>
-        <Link href="/recipe/create" className="btn btn-primary">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold leading-tight">My Almanac</h1>
+        <Link href="/recipe/create" className="btn btn-primary w-full sm:w-auto">
           + Add Recipe
         </Link>
       </div>

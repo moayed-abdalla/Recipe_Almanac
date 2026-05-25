@@ -86,14 +86,14 @@ export default async function HomePage() {
   }) as Recipe[];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
         {/* Hero section with site branding */}
-        <div className="text-center mb-12 relative">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 typewriter text-base-content">
+        <div className="text-center mb-8 sm:mb-12 relative">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 typewriter text-base-content">
             Recipe Almanac
           </h1>
-          <p className="text-center mb-8 text-lg max-w-2xl mx-auto italic text-base-content/60">
+          <p className="text-center mb-6 sm:mb-8 text-base sm:text-lg max-w-2xl mx-auto italic text-base-content/60 px-2">
             A digital recipe book you can share, browse and write your own.
             <br />
             No ads, no subscriptions, just recipes.

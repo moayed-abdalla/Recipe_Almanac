@@ -43,13 +43,13 @@ export default function SearchBar({ onSearchChange }: SearchBarProps) {
   };
 
   return (
-    <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto">
+    <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto px-1">
       <div className="form-control">
-        <div className="input-group flex">
+        <div className="input-group flex w-full">
           <input
             type="text"
-            placeholder="Search recipes by name or tags..."
-            className="input input-bordered flex-1 typewriter"
+            placeholder="Search recipes..."
+            className="input input-bordered flex-1 min-w-0 typewriter text-sm sm:text-base"
             value={searchTerm}
             onChange={handleInputChange}
           />

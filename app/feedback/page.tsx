@@ -158,7 +158,7 @@ function FeedbackPageContent() {
 
     if (!user) {
       return (
-        <div className="alert alert-warning">
+        <div className="alert alert-warning flex-col sm:flex-row gap-3">
           <div>
             <span>You need to log in to submit feedback.</span>
           </div>
@@ -182,11 +182,11 @@ function FeedbackPageContent() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-3xl">
-      <div className="mb-6">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-3xl">
+      <div className="mb-4 sm:mb-6">
         <p className="text-sm uppercase font-semibold tracking-wide text-primary">Feedback</p>
-        <h1 className="text-4xl font-bold mt-2 leading-tight">Report a bug or request a feature</h1>
-        <p className="mt-2 text-base opacity-80">
+        <h1 className="text-2xl sm:text-4xl font-bold mt-2 leading-tight">Report a bug or request a feature</h1>
+        <p className="mt-2 text-sm sm:text-base opacity-80">
           Help us improve Recipe Almanac. Choose the type, add details, and (optionally) include a screenshot.
         </p>
       </div>
@@ -194,7 +194,7 @@ function FeedbackPageContent() {
       {renderStatus()}
 
       <form onSubmit={handleSubmit} className="card bg-base-100 shadow-lg border border-base-300">
-        <div className="card-body space-y-4">
+        <div className="card-body space-y-4 p-4 sm:p-6">
           {error && (
             <div className="alert alert-error">
               <span>{error}</span>

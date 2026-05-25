@@ -160,7 +160,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
       <ProfileViewClient
         profile={typedProfile}
         initialPublicRecipes={normalizedRecipes}
