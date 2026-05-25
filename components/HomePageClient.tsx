@@ -176,15 +176,15 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
   return (
     <>
       {/* Search bar for finding recipes */}
-      <div className="mb-12">
+      <div className="mb-8 sm:mb-12">
         <SearchBar onSearchChange={setSearchTerm} />
       </div>
 
       {/* Sort controls */}
-      <div className="mb-6 flex flex-wrap items-center gap-4 justify-between">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium opacity-70 text-base-content">Sort by:</span>
+      <div className="mb-6 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-sm font-medium opacity-70 text-base-content shrink-0">Sort by:</span>
             <div className="dropdown dropdown-bottom">
               <label tabIndex={0} className="btn btn-sm btn-outline">
                 {sortBy === 'view_count' ? 'View Count' : 'Date Created'}
@@ -213,20 +213,22 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium opacity-70 text-base-content">Order:</span>
-            <div className="btn-group">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-sm font-medium opacity-70 text-base-content shrink-0">Order:</span>
+            <div className="btn-group w-full sm:w-auto">
               <button
                 onClick={() => setSortOrder('desc')}
-                className={`btn btn-sm ${sortOrder === 'desc' ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm flex-1 sm:flex-none ${sortOrder === 'desc' ? 'btn-primary' : 'btn-outline'}`}
               >
-                Descending
+                <span className="sm:hidden">Desc</span>
+                <span className="hidden sm:inline">Descending</span>
               </button>
               <button
                 onClick={() => setSortOrder('asc')}
-                className={`btn btn-sm ${sortOrder === 'asc' ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm flex-1 sm:flex-none ${sortOrder === 'asc' ? 'btn-primary' : 'btn-outline'}`}
               >
-                Ascending
+                <span className="sm:hidden">Asc</span>
+                <span className="hidden sm:inline">Ascending</span>
               </button>
             </div>
           </div>

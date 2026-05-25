@@ -168,11 +168,11 @@ export default function Header() {
   };
 
   return (
-    <header className="navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50">
-      <div className="container mx-auto flex items-center">
-        <div className="flex-1 flex items-center">
-          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-0 flex items-center">
-            <div className="logo-colorized mr-2 w-9 h-9 sm:w-10 sm:h-10">
+    <header className="navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50 min-h-14 px-3 sm:px-4">
+      <div className="w-full max-w-7xl mx-auto flex items-center gap-1 sm:gap-2">
+        <div className="flex-1 flex items-center min-w-0">
+          <Link href="/" className="btn btn-ghost normal-case text-xl typewriter px-1 sm:px-2 flex items-center min-w-0 max-w-[55vw] sm:max-w-none">
+            <div className="logo-colorized mr-1.5 sm:mr-2 w-8 h-8 sm:w-10 sm:h-10 shrink-0">
               <Image
                 src="/logo.png"
                 alt="Recipe Almanac"
@@ -181,11 +181,11 @@ export default function Header() {
                 className="w-full h-full"
               />
             </div>
-            <span className="special-elite-regular text-[0.8em] lg:text-xl mr-0 pr-0 text-base-content">Recipe Almanac</span>
+            <span className="special-elite-regular text-sm sm:text-base lg:text-xl truncate text-base-content">Recipe Almanac</span>
           </Link>
         </div>
         
-        <div className="flex-none gap-2 flex items-center">
+        <div className="flex-none gap-1 sm:gap-2 flex items-center shrink-0">
           {/* Leaderboard Link - icon on small screens, text on larger to avoid clutter */}
           <Link
             href="/leaderboard"
@@ -265,7 +265,7 @@ export default function Header() {
               </ul>
             </div>
           ) : (
-            <Link href="/login" className="btn btn-primary">
+            <Link href="/login" className="btn btn-primary btn-sm sm:btn">
               Log In
             </Link>
           )}
