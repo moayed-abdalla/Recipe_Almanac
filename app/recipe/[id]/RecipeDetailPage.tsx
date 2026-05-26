@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase';
 import RecipePageClient from './RecipePageClient';
-import type { Recipe, Profile, RecipeWithProfile } from '@/types';
+import type { Recipe, Profile, RecipeWithProfile, Ingredient } from '@/types';
 
 interface RecipeDetailPageProps {
   params: {
@@ -83,11 +83,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   }
   
   // Fetch ingredients
-  const { data: ingredients } = await supabase
+  const { data: rawIngredients } = await supabase
     .from('ingredients')
     .select('*')
     .eq('recipe_id', typedRecipe.id)
     .order('order_index');
+  const ingredients = (rawIngredients || []) as Ingredient[];
 
   // Check if current user is the recipe owner
   const { data: { user } } = await supabase.auth.getUser();
@@ -138,7 +139,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     },
     datePublished: typedRecipe.created_at,
     dateModified: typedRecipe.updated_at,
-    recipeIngredient: (ingredients || []).map(
+    recipeIngredient: ingredients.map(
       (ing) => `${ing.display_amount} ${ing.unit} ${ing.name}`
     ),
     recipeInstructions: (typedRecipe.method_steps || []).map((step, i) => ({
@@ -163,7 +164,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
       />
       <RecipePageClient
         recipe={typedRecipe}
-        ingredients={ingredients || []}
+        ingredients={ingredients}
         owner={owner}
         isOwner={isOwner}
       />
