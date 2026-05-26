@@ -15,6 +15,11 @@
 import { createServerClient } from '@/lib/supabase';
 import HomePageClient from '@/components/HomePageClient';
 
+// Always render on demand so missing/changing env vars or DB outages
+// never poison a static build of the home page.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface Recipe {
   id: string;
   slug: string;
@@ -41,49 +46,52 @@ const extractFavoriteCount = (recipe: any): number => {
 };
 
 export default async function HomePage() {
-  // Create Supabase client for server-side data fetching
-  const supabase = await createServerClient();
+  // Defensively fetch recipes — any failure (env vars missing during a
+  // misconfigured prerender, DB outage, etc.) falls back to an empty grid
+  // instead of throwing and breaking the whole page.
+  let typedRecipes: Recipe[] = [];
 
-  // Fetch all public recipes from the database
-  // Default sort: by view count (most popular first)
-  // Client-side sorting will allow users to change this
-  const { data: recipes, error } = await supabase
-    .from('recipes')
-    .select(`
-      id,
-      slug,
-      title,
-      image_url,
-      description,
-      view_count,
-      favorite_count:saved_recipes(count),
-      created_at,
-      tags,
-      profiles:user_id (
-        username
-      )
-    `)
-    .eq('is_public', true)
-    .order('view_count', { ascending: false }); // Default: most views to least views
+  try {
+    const supabase = await createServerClient();
 
-  // Handle errors gracefully
-  if (error) {
-    console.error('Error fetching recipes:', error);
+    const { data: recipes, error } = await supabase
+      .from('recipes')
+      .select(`
+        id,
+        slug,
+        title,
+        image_url,
+        description,
+        view_count,
+        favorite_count:saved_recipes(count),
+        created_at,
+        tags,
+        profiles:user_id (
+          username
+        )
+      `)
+      .eq('is_public', true)
+      .order('view_count', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching recipes:', error);
+    }
+
+    typedRecipes = (recipes || []).map((recipe: any) => {
+      const profile = Array.isArray(recipe.profiles)
+        ? recipe.profiles[0]
+        : recipe.profiles;
+
+      return {
+        ...recipe,
+        favorite_count: extractFavoriteCount(recipe),
+        profiles: profile || { username: 'Unknown' },
+      };
+    }) as Recipe[];
+  } catch (err) {
+    console.error('HomePage fatal fetch error (rendering empty grid):', err);
+    typedRecipes = [];
   }
-
-  // Type assertion for recipes data
-  // Handle profiles as array or single object
-  const typedRecipes = (recipes || []).map((recipe: any) => {
-    const profile = Array.isArray(recipe.profiles) 
-      ? recipe.profiles[0] 
-      : recipe.profiles;
-    
-    return {
-      ...recipe,
-      favorite_count: extractFavoriteCount(recipe),
-      profiles: profile || { username: 'Unknown' },
-    };
-  }) as Recipe[];
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
