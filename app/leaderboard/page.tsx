@@ -32,10 +32,37 @@ const extractFavoriteCount = (recipe: {
   return 0;
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+
 export const metadata: Metadata = {
-  title: 'Leaderboard | Recipe Almanac',
+  title: 'Leaderboard',
   description:
-    'Top 100 recipes ranked by views and favourites. Discover the most popular recipes on Recipe Almanac.',
+    'Top 100 recipes ranked by community views and favourites. Discover the most popular, most-shared recipes on Recipe Almanac — the digital recipe book.',
+  keywords: [
+    'recipe leaderboard',
+    'top recipes',
+    'popular recipes',
+    'most shared recipes',
+    'best recipes online',
+    'Recipe Almanac leaderboard',
+  ],
+  openGraph: {
+    type: 'website',
+    url: `${siteUrl}/leaderboard`,
+    title: 'Leaderboard | Recipe Almanac',
+    description:
+      'Top 100 recipes ranked by community views and favourites. Discover the most popular recipes on Recipe Almanac.',
+    siteName: 'Recipe Almanac',
+    images: [{ url: `${siteUrl}/og-image.png`, width: 1200, height: 630, alt: 'Recipe Almanac Leaderboard' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Leaderboard | Recipe Almanac',
+    description: 'Top 100 community-ranked recipes on Recipe Almanac.',
+  },
+  alternates: {
+    canonical: `${siteUrl}/leaderboard`,
+  },
 };
 
 export default async function LeaderboardPage() {
