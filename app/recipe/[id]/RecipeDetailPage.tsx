@@ -123,12 +123,50 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   //     console.error('Error incrementing view count:', err);
   //   });
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: typedRecipe.title,
+    description: typedRecipe.description ?? undefined,
+    image: typedRecipe.image_url ? [typedRecipe.image_url] : undefined,
+    author: {
+      '@type': 'Person',
+      name: owner.username,
+      url: `${siteUrl}/profile/${encodeURIComponent(owner.username)}`,
+    },
+    datePublished: typedRecipe.created_at,
+    dateModified: typedRecipe.updated_at,
+    recipeIngredient: (ingredients || []).map(
+      (ing) => `${ing.display_amount} ${ing.unit} ${ing.name}`
+    ),
+    recipeInstructions: (typedRecipe.method_steps || []).map((step, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      text: step,
+    })),
+    keywords: (typedRecipe.tags || []).join(', '),
+    url: `${siteUrl}/recipe/${typedRecipe.slug}`,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Recipe Almanac',
+      url: siteUrl,
+    },
+  };
+
   return (
-    <RecipePageClient
-      recipe={typedRecipe}
-      ingredients={ingredients || []}
-      owner={owner}
-      isOwner={isOwner}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <RecipePageClient
+        recipe={typedRecipe}
+        ingredients={ingredients || []}
+        owner={owner}
+        isOwner={isOwner}
+      />
+    </>
   );
 }
