@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function AlmanacLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <>{children}</>;
 }
