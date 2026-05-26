@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createServerClient } from '@/lib/supabase';
+import type { RecipeWithProfile } from '@/types';
 import RecipeDetailPage from './RecipeDetailPage';
 
 interface Props {
@@ -10,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
   const supabase = await createServerClient();
 
-  const { data: recipe } = await supabase
+  const { data: rawRecipe } = await supabase
     .from('recipes')
     .select(`
       title,
@@ -23,6 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('slug', params.id)
     .eq('is_public', true)
     .single();
+
+  const recipe = rawRecipe as RecipeWithProfile | null;
 
   if (!recipe) {
     return {
