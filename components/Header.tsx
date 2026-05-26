@@ -238,13 +238,13 @@ export default function Header() {
                 }}
               >
                 <li>
-                  <Link href="/profile" className="block">Profile</Link>
+                  <Link href="/profile">Profile</Link>
                 </li>
                 <li>
-                  <Link href="/almanac" className="block">My Almanac</Link>
+                  <Link href="/almanac">My Almanac</Link>
                 </li>
                 <li>
-                  <Link href="/recipe/create" className="block">Create Recipe</Link>
+                  <Link href="/recipe/create">Create Recipe</Link>
                 </li>
                 <li>
                   <button 
@@ -265,7 +265,7 @@ export default function Header() {
               </ul>
             </div>
           ) : (
-            <Link href="/login" className="btn btn-primary btn-sm sm:btn">
+            <Link href="/login" className="btn btn-primary btn-sm sm:btn text-primary-content">
               Log In
             </Link>
           )}
