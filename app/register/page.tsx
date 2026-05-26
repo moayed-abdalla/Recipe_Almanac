@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,6 +95,27 @@ export default function RegisterPage() {
       setError(err.message || 'An error occurred during registration');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?next=/`;
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: unknown) {
+      const oauthError = err as { message?: string };
+      setError(oauthError.message || 'An error occurred during Google sign up');
+      setGoogleLoading(false);
     }
   };
 
@@ -282,9 +304,22 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
                 {loading ? 'Creating account...' : 'Register'}
+              </button>
+            </div>
+
+            <div className="divider my-2">OR</div>
+
+            <div className="form-control">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={handleGoogleRegister}
+                disabled={loading || googleLoading}
+              >
+                {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
               </button>
             </div>
 
