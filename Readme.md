@@ -265,3 +265,5 @@ If you encounter issues setting up or running the application, please refer to t
 ---
 
 **Built with ❤️ for chefs and bakers who just want great recipes without the hassle.**
+**No emails or user information will ever be shared or taken off platform**
+**No ads will be used to fund the website, I would rather take the site down than add advertisments**
