@@ -15,6 +15,7 @@ export interface ThemeColors {
   'base-300': string;
   'base-content': string;
   'primary': string;
+  'primary-content': string;
   'secondary': string;
   'accent': string;
   'neutral': string;
@@ -43,6 +44,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
       'base-300': '#D3D3D3', // Medium grey
       'base-content': '#CC5500', // Dark orange text
       'primary': '#CC5500', // Orange primary
+      'primary-content': '#FFFFFF', // White text on orange button
       'secondary': '#FFA500', // Orange secondary
       'accent': '#87CEEB', // Light blue accent
       'neutral': '#808080', // Grey neutral
@@ -60,6 +62,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
       'base-300': '#E0E0E0', // Light grey
       'base-content': '#424242', // Dark grey text
       'primary': '#616161', // Medium grey primary
+      'primary-content': '#FFFFFF', // White text on grey button
       'secondary': '#9E9E9E', // Light grey secondary
       'accent': '#757575', // Grey accent
       'neutral': '#757575', // Grey neutral
@@ -77,6 +80,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
       'base-300': '#D3D3C0', // Medium beige
       'base-content': '#4A5568', // Dark blue-grey text
       'primary': '#4A5568', // Blue-grey primary
+      'primary-content': '#FFFFFF', // White text on blue-grey button
       'secondary': '#718096', // Medium blue-grey secondary
       'accent': '#4299E1', // Blue accent
       'neutral': '#718096', // Blue-grey neutral
@@ -94,6 +98,7 @@ export const LIGHT_THEMES: ThemeDefinition[] = [
       'base-300': '#D4C4B0', // Darker beige
       'base-content': '#5D4037', // Dark brown text
       'primary': '#6D4C41', // Brown primary
+      'primary-content': '#FFFFFF', // White text on brown button
       'secondary': '#8D6E63', // Medium brown secondary
       'accent': '#A1887F', // Light brown accent
       'neutral': '#8D6E63', // Brown neutral
@@ -117,6 +122,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
       'base-300': '#404040', // Medium dark grey
       'base-content': '#FFA500', // Orange text (inverse of dark orange)
       'primary': '#FFA500', // Orange primary
+      'primary-content': '#1A1A1A', // Dark text on bright orange button
       'secondary': '#FFA500', // Orange secondary
       'accent': '#87CEEB', // Light blue accent
       'neutral': '#666666', // Light grey neutral
@@ -134,6 +140,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
       'base-300': '#4A5568', // Medium dark grey-blue
       'base-content': '#90CDF4', // Light blue text
       'primary': '#63B3ED', // Blue primary
+      'primary-content': '#1A202C', // Dark text on light blue button
       'secondary': '#4299E1', // Medium blue secondary
       'accent': '#3182CE', // Darker blue accent
       'neutral': '#718096', // Grey-blue neutral
@@ -151,6 +158,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
       'base-300': '#401F1F', // Medium dark red-tinted
       'base-content': '#F56565', // Light red text
       'primary': '#FC8181', // Red primary
+      'primary-content': '#1A1A1A', // Dark text on light red button
       'secondary': '#E53E3E', // Dark red secondary
       'accent': '#C53030', // Darker red accent
       'neutral': '#718096', // Grey neutral
@@ -168,6 +176,7 @@ export const DARK_THEMES: ThemeDefinition[] = [
       'base-300': '#3D2A4D', // Medium dark purple
       'base-content': '#E6D5FF', // Light lavender text
       'primary': '#B794F6', // Lavender primary
+      'primary-content': '#2D1B3D', // Dark text on light lavender button
       'secondary': '#9F7AEA', // Medium lavender secondary
       'accent': '#805AD5', // Purple accent
       'neutral': '#9F7AEA', // Lavender neutral
