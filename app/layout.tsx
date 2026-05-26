@@ -6,9 +6,72 @@ import Footer from '@/components/Footer';
 import BackgroundMaskPositions from '@/components/BackgroundMaskPositions';
 import AppProviders from '@/components/providers/AppProviders';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+
 export const metadata: Metadata = {
-  title: 'Recipe Almanac',
-  description: 'Your digital recipe book you can share, browse and write your own. No ads, no subscriptions, just recipes.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'Recipe Almanac — Your Digital Recipe Book',
+    template: '%s | Recipe Almanac',
+  },
+  description:
+    'Recipe Almanac is the ultimate digital recipe book to write, share, copy, and discover recipes. Browse community recipes, check the leaderboard, and build your personal cookbook — no ads, no subscriptions.',
+  keywords: [
+    'Recipe Almanac',
+    'digital recipe book',
+    'recipe sharing',
+    'online cookbook',
+    'share recipes',
+    'copy recipes',
+    'recipe leaderboard',
+    'free recipe website',
+    'community recipes',
+    'write recipes online',
+    'personal recipe collection',
+    'recipe organiser',
+  ],
+  authors: [{ name: 'Recipe Almanac', url: siteUrl }],
+  creator: 'Recipe Almanac',
+  publisher: 'Recipe Almanac',
+  category: 'food',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    siteName: 'Recipe Almanac',
+    title: 'Recipe Almanac — Your Digital Recipe Book',
+    description:
+      'Write, share, discover and copy recipes. Build your personal digital cookbook on Recipe Almanac — the community recipe website with no ads and no subscriptions.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Recipe Almanac — Your Digital Recipe Book',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Recipe Almanac — Your Digital Recipe Book',
+    description:
+      'Write, share, discover and copy recipes. Build your personal digital cookbook on Recipe Almanac.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
 };
 
 export const viewport: Viewport = {
