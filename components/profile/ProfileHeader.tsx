@@ -63,7 +63,7 @@ export default function ProfileHeader({
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-2">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content break-words">{profile.username}</h1>
               {showEditButton && (
-                <Link href="/profile/edit" className="btn btn-primary btn-sm sm:btn w-full md:w-auto">
+                <Link href="/profile/edit" className="btn btn-primary w-full md:w-auto btn-sm sm:btn">
                   Edit Profile
                 </Link>
               )}
