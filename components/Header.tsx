@@ -265,7 +265,7 @@ export default function Header() {
               </ul>
             </div>
           ) : (
-            <Link href="/login" className="btn btn-primary btn-sm sm:btn text-base-content">
+            <Link href="/login" className="btn btn-primary btn-sm sm:btn text-base-100">
               Log In
             </Link>
           )}
