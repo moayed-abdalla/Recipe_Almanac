@@ -25,7 +25,7 @@ import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME } from '@/lib/theme-config';
+import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
 import type { Profile } from '@/types';
 
 export default function Header() {
@@ -59,10 +59,11 @@ export default function Header() {
    */
   const getThemeId = useCallback((mode: 'light' | 'dark', profileData: Profile | null): string => {
     if (mode === 'light') {
-      return profileData?.default_light_theme || DEFAULT_LIGHT_THEME;
-    } else {
-      return profileData?.default_dark_theme || DEFAULT_DARK_THEME;
+      const guestLightTheme = localStorage.getItem('guest-light-theme') as LightThemeId | null;
+      return profileData?.default_light_theme || guestLightTheme || DEFAULT_LIGHT_THEME;
     }
+    const guestDarkTheme = localStorage.getItem('guest-dark-theme') as DarkThemeId | null;
+    return profileData?.default_dark_theme || guestDarkTheme || DEFAULT_DARK_THEME;
   }, []);
 
   /**
@@ -95,6 +96,26 @@ export default function Header() {
       console.error('Error initializing header:', error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time theme boot; profile applied in sync effect
+  }, []);
+
+  /**
+   * Keep header toggle in sync when theme mode changes elsewhere (e.g. register page preview)
+   */
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const currentThemeMode = document.documentElement.getAttribute('data-theme-mode') as 'light' | 'dark' | null;
+      if (currentThemeMode && currentThemeMode !== themeRef.current) {
+        themeRef.current = currentThemeMode;
+        setTheme(currentThemeMode);
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme-mode'],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   /**
