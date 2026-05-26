@@ -135,8 +135,7 @@ export default function RegisterPage() {
           console.error('Error updating profile:', profileError);
         }
 
-        router.push('/');
-        router.refresh();
+        router.push(`/register/confirm?email=${encodeURIComponent(email.trim())}`);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration');
