@@ -35,15 +35,6 @@ function ConfirmContent() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
 
-        {/* Branding */}
-        <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="logo-colorized w-16 h-16">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Recipe Almanac logo" className="w-full h-full" />
-          </div>
-          <span className="special-elite-regular text-2xl text-base-content">Recipe Almanac</span>
-        </div>
-
         {/* Card */}
         <div className="card bg-base-200 shadow-xl border border-base-300">
           <div className="card-body gap-6 px-8 py-10">
