@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { createServerClient } from '@/lib/supabase';
 
+type RecipeSlugRow = { slug: string; updated_at: string };
+type ProfileUsernameRow = { username: string; updated_at: string };
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
 
@@ -18,14 +21,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('updated_at', { ascending: false }),
   ]);
 
-  const recipeUrls: MetadataRoute.Sitemap = (recipesResult.data || []).map((recipe) => ({
+  const recipes = (recipesResult.data || []) as RecipeSlugRow[];
+  const profiles = (profilesResult.data || []) as ProfileUsernameRow[];
+
+  const recipeUrls: MetadataRoute.Sitemap = recipes.map((recipe) => ({
     url: `${siteUrl}/recipe/${recipe.slug}`,
     lastModified: recipe.updated_at ? new Date(recipe.updated_at) : new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
 
-  const profileUrls: MetadataRoute.Sitemap = (profilesResult.data || [])
+  const profileUrls: MetadataRoute.Sitemap = profiles
     .filter((p) => p.username)
     .map((profile) => ({
       url: `${siteUrl}/profile/${encodeURIComponent(profile.username)}`,
