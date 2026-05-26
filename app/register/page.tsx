@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
@@ -20,6 +20,53 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  const getCurrentThemeMode = (): 'light' | 'dark' => {
+    if (typeof window === 'undefined') return 'light';
+    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
+    if (savedThemeMode) return savedThemeMode;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+
+  const updateFavicon = (mode: 'light' | 'dark') => {
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = mode === 'dark' ? '/favicon_dark.ico' : '/favicon_light.ico';
+  };
+
+  const applyThemePreview = (
+    lightTheme: LightThemeId,
+    darkTheme: DarkThemeId,
+    mode: 'light' | 'dark'
+  ) => {
+    const themeId = mode === 'light' ? lightTheme : darkTheme;
+    document.documentElement.setAttribute('data-theme', themeId);
+    document.documentElement.setAttribute('data-theme-mode', mode);
+    localStorage.setItem('theme-mode', mode);
+    localStorage.setItem('guest-light-theme', lightTheme);
+    localStorage.setItem('guest-dark-theme', darkTheme);
+    updateFavicon(mode);
+  };
+
+  const handleSelectLightTheme = (themeId: LightThemeId) => {
+    setSelectedLightTheme(themeId);
+    applyThemePreview(themeId, selectedDarkTheme, 'light');
+  };
+
+  const handleSelectDarkTheme = (themeId: DarkThemeId) => {
+    setSelectedDarkTheme(themeId);
+    applyThemePreview(selectedLightTheme, themeId, 'dark');
+  };
+
+  useEffect(() => {
+    const mode = getCurrentThemeMode();
+    applyThemePreview(selectedLightTheme, selectedDarkTheme, mode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apply guest defaults once on mount
+  }, []);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -206,7 +253,7 @@ export default function RegisterPage() {
                     <button
                       key={theme.id}
                       type="button"
-                      onClick={() => setSelectedLightTheme(theme.id as LightThemeId)}
+                      onClick={() => handleSelectLightTheme(theme.id as LightThemeId)}
                       className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                         selectedLightTheme === theme.id
                           ? 'border-primary bg-primary/10'
@@ -239,7 +286,7 @@ export default function RegisterPage() {
                     <button
                       key={theme.id}
                       type="button"
-                      onClick={() => setSelectedDarkTheme(theme.id as DarkThemeId)}
+                      onClick={() => handleSelectDarkTheme(theme.id as DarkThemeId)}
                       className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                         selectedDarkTheme === theme.id
                           ? 'border-primary bg-primary/10'
