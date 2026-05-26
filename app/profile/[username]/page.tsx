@@ -16,11 +16,13 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   const supabase = await createServerClient();
   const decodedUsername = decodeURIComponent(params.username);
 
-  const { data: profile } = await supabase
+  const { data: rawProfile } = await supabase
     .from('profiles')
-    .select('username, profile_description, avatar_url')
+    .select('*')
     .eq('username', decodedUsername)
     .single();
+
+  const profile = rawProfile as Profile | null;
 
   if (!profile) {
     return { title: 'Profile Not Found' };
