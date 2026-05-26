@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,6 +35,27 @@ export default function LoginPage() {
       setError(error.message || 'An error occurred during login');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?next=/`;
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: unknown) {
+      const oauthError = err as { message?: string };
+      setError(oauthError.message || 'An error occurred during Google sign in');
+      setGoogleLoading(false);
     }
   };
 
@@ -82,9 +104,22 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
                 {loading ? 'Logging in...' : 'Log In'}
+              </button>
+            </div>
+
+            <div className="divider my-2">OR</div>
+
+            <div className="form-control">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={handleGoogleLogin}
+                disabled={loading || googleLoading}
+              >
+                {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
               </button>
             </div>
 
