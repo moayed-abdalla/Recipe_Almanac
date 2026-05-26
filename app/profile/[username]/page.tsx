@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { normalizeRecipes } from '@/utils/recipeNormalizer';
@@ -7,6 +8,54 @@ import ProfileViewClient from './ProfileViewClient';
 interface ProfilePageProps {
   params: {
     username: string;
+  };
+}
+
+export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+  const supabase = await createServerClient();
+  const decodedUsername = decodeURIComponent(params.username);
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username, profile_description, avatar_url')
+    .eq('username', decodedUsername)
+    .single();
+
+  if (!profile) {
+    return { title: 'Profile Not Found' };
+  }
+
+  const title = `${profile.username}'s Recipes`;
+  const description =
+    profile.profile_description ||
+    `Browse ${profile.username}'s recipe collection on Recipe Almanac — the digital recipe book for sharing and discovering recipes.`;
+  const canonicalUrl = `${siteUrl}/profile/${encodeURIComponent(profile.username)}`;
+
+  const images = profile.avatar_url
+    ? [{ url: profile.avatar_url, width: 400, height: 400, alt: `${profile.username}'s avatar` }]
+    : [{ url: `${siteUrl}/og-image.png`, width: 1200, height: 630, alt: 'Recipe Almanac' }];
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'profile',
+      url: canonicalUrl,
+      title: `${title} | Recipe Almanac`,
+      description,
+      images,
+      siteName: 'Recipe Almanac',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${title} | Recipe Almanac`,
+      description,
+      images: images.map((i) => i.url),
+    },
+    alternates: {
+      canonical: canonicalUrl,
+    },
   };
 }
 
