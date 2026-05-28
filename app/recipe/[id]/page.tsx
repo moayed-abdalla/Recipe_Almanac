@@ -12,7 +12,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
   // Wrap the whole metadata fetch in a try/catch so a metadata failure can
   // never break the route itself — the page will still render via the default
