@@ -121,9 +121,14 @@ export default function AlmanacPage() {
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-4xl font-bold leading-tight">My Almanac</h1>
-        <Link href="/recipe/create" className="btn btn-primary w-full sm:w-auto">
-          + Add Recipe
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Link href="/recipe/create" className="btn btn-primary w-full sm:w-auto">
+            + Add Recipe
+          </Link>
+          <Link href="/prepare_almanac" className="btn btn-outline btn-primary w-full sm:w-auto">
+            Download Your Recipe Book
+          </Link>
+        </div>
       </div>
       
       {/* Filter Tabs */}
