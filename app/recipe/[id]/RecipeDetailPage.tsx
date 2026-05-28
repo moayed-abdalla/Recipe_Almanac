@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase';
 import RecipePageClient from './RecipePageClient';
 import type { Recipe, Profile, RecipeWithProfile, Ingredient } from '@/types';
+import { getTotalTimeMinutes, minutesToIso8601Duration, toPositiveInt } from '@/utils/recipeTime';
 
 interface RecipeDetailPageProps {
   params: {
@@ -126,6 +127,20 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
+  // Optional servings / timing fields. Each is only added to the structured
+  // data when a usable positive value is present.
+  const servingsValue = toPositiveInt(typedRecipe.servings);
+  const prepIso = minutesToIso8601Duration(typedRecipe.prep_time_minutes);
+  const cookIso = minutesToIso8601Duration(typedRecipe.cook_time_minutes);
+  const totalTimeMinutes = getTotalTimeMinutes(
+    typedRecipe.prep_time_minutes,
+    typedRecipe.cook_time_minutes
+  );
+  const totalIso =
+    typedRecipe.prep_time_minutes != null && typedRecipe.cook_time_minutes != null
+      ? minutesToIso8601Duration(totalTimeMinutes)
+      : undefined;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Recipe',
@@ -139,6 +154,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     },
     datePublished: typedRecipe.created_at,
     dateModified: typedRecipe.updated_at,
+    recipeYield: servingsValue
+      ? `${servingsValue} ${servingsValue === 1 ? 'serving' : 'servings'}`
+      : undefined,
+    prepTime: prepIso,
+    cookTime: cookIso,
+    totalTime: totalIso,
     recipeIngredient: ingredients.map(
       (ing) => `${ing.display_amount} ${ing.unit} ${ing.name}`
     ),

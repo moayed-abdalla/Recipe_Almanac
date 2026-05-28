@@ -13,6 +13,7 @@ import { createServerClient } from '@/lib/supabase';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { NormalizedRecipe } from '@/types';
+import { getTotalTimeMinutes } from '@/utils/recipeTime';
 
 interface RecipeWithScore extends NormalizedRecipe {
   score: number;
@@ -79,6 +80,8 @@ export default async function LeaderboardPage() {
       view_count,
       favorite_count:saved_recipes(count),
       tags,
+      prep_time_minutes,
+      cook_time_minutes,
       profiles:user_id (
         username
       )
@@ -191,6 +194,18 @@ export default async function LeaderboardPage() {
                         <span className="text-sm opacity-60">
                           {recipe.favorite_count.toLocaleString()} favorites
                         </span>
+                        {(() => {
+                          const totalTime = getTotalTimeMinutes(
+                            recipe.prep_time_minutes,
+                            recipe.cook_time_minutes
+                          );
+                          return totalTime != null ? (
+                            <>
+                              <span className="text-sm opacity-60">•</span>
+                              <span className="text-sm opacity-60">{totalTime} min</span>
+                            </>
+                          ) : null;
+                        })()}
                       </div>
                       {recipe.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">

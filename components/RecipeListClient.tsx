@@ -16,6 +16,7 @@
 
 import { useState, useEffect } from 'react';
 import RecipeCard from './RecipeCard';
+import { getTotalTimeMinutes } from '@/utils/recipeTime';
 
 interface Recipe {
   id: string;
@@ -26,6 +27,8 @@ interface Recipe {
   view_count: number;
   favorite_count: number;
   tags: string[];
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
   profiles: {
     username: string;
   };
@@ -101,6 +104,7 @@ export default function RecipeListClient({ recipes }: RecipeListClientProps) {
             viewCount={recipe.view_count}
             favoriteCount={recipe.favorite_count}
             tags={recipe.tags}
+            totalTimeMinutes={getTotalTimeMinutes(recipe.prep_time_minutes, recipe.cook_time_minutes)}
           />
         ))}
       </div>
