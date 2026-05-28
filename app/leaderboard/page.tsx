@@ -32,7 +32,7 @@ const extractFavoriteCount = (recipe: {
   return 0;
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
 export const metadata: Metadata = {
   title: 'Leaderboard',
