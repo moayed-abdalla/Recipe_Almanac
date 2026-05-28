@@ -109,6 +109,8 @@ interface Recipe {
   description: string | null;
   view_count: number;
   favorite_count: number;
+  average_rating?: number | null;
+  rating_count?: number | null;
   created_at: string;
   tags: string[];
   prep_time_minutes?: number | null;

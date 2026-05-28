@@ -34,6 +34,8 @@ export interface Recipe {
   description: string | null;
   view_count: number;
   favorite_count?: number | null | Array<{ count: number }>;
+  average_rating?: number | null;
+  rating_count?: number | null;
   tags: string[];
   is_public: boolean;
   method_steps: string[];
@@ -51,6 +53,10 @@ export interface Recipe {
 export interface RecipeWithProfile extends Recipe {
   profiles: Profile | Profile[] | null;
   saved_recipes?: Array<{ count: number }> | null;
+  recipe_rating_stats?:
+    | { rating_count: number; average_rating: number }
+    | Array<{ rating_count: number; average_rating: number }>
+    | null;
 }
 
 /**
@@ -65,6 +71,8 @@ export interface NormalizedRecipe {
   description: string | null;
   view_count: number;
   favorite_count: number;
+  average_rating: number;
+  rating_count: number;
   tags: string[];
   is_public: boolean;
   servings?: number | null;
