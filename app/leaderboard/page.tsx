@@ -111,7 +111,7 @@ export default async function LeaderboardPage() {
     .map((recipe) => {
       const favoriteCount = recipe.favorite_count ?? 0;
       const viewCount = recipe.view_count ?? 0;
-      const score = favoriteCount * 4 + viewCount * 1;
+      const score = favoriteCount * 10 + viewCount * 1;
       return { ...recipe, score };
     })
     .sort((a, b) => b.score - a.score)
@@ -126,7 +126,7 @@ export default async function LeaderboardPage() {
             Leaderboard
           </h1>
           <p className="text-base sm:text-lg text-base-content/70 max-w-2xl mx-auto px-2">
-            Top 100 recipes ranked by score. Favourites count as 4 points, views
+            Top 100 recipes ranked by score. Favourites count as 10 points, views
             count as 1 point.
           </p>
         </div>
