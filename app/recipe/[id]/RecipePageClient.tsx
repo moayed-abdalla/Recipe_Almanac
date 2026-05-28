@@ -30,11 +30,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
+import StepTimers from '@/components/recipe/StepTimers';
+import { RecipeTimerContext } from '@/components/recipe/timerContext';
 
 interface Ingredient {
   id: string;
@@ -114,6 +116,34 @@ export default function RecipePageClient({
   const [wakeLockSupported, setWakeLockSupported] = useState<boolean>(false);
   const [wakeLockActive, setWakeLockActive] = useState<boolean>(false);
 
+  // Tracks whether the user explicitly enabled the Wake Lock via the toggle.
+  // When true, automatic timer-driven release is suppressed.
+  const manualWakeLockRef = useRef<boolean>(false);
+  // IDs of timers currently counting down, used to coordinate the Wake Lock
+  // across every inline step timer on the page.
+  const runningTimersRef = useRef<Set<string>>(new Set());
+
+  // Chime mute preference, persisted in localStorage.
+  const [timerMuted, setTimerMuted] = useState<boolean>(false);
+  useEffect(() => {
+    try {
+      setTimerMuted(localStorage.getItem('recipe-timer-muted') === 'true');
+    } catch {
+      // Ignore storage access errors (e.g. privacy mode).
+    }
+  }, []);
+  const toggleTimerMute = useCallback(() => {
+    setTimerMuted((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('recipe-timer-muted', String(next));
+      } catch {
+        // Ignore storage access errors.
+      }
+      return next;
+    });
+  }, []);
+
   // Sync view count when recipe prop changes
   useEffect(() => {
     setViewCount(recipe.view_count);
@@ -121,7 +151,7 @@ export default function RecipePageClient({
     viewTrackingRef.current = false; // Reset ref when recipe changes
   }, [recipe.id, recipe.view_count]);
 
-  const requestWakeLock = async () => {
+  const requestWakeLock = useCallback(async () => {
     if (!wakeLockSupported || wakeLockRef.current) return;
 
     try {
@@ -138,9 +168,9 @@ export default function RecipePageClient({
       wakeLockRef.current = null;
       setWakeLockActive(false);
     }
-  };
+  }, [wakeLockSupported]);
 
-  const releaseWakeLock = async () => {
+  const releaseWakeLock = useCallback(async () => {
     if (!wakeLockRef.current) return;
 
     try {
@@ -151,15 +181,48 @@ export default function RecipePageClient({
       wakeLockRef.current = null;
       setWakeLockActive(false);
     }
-  };
+  }, []);
 
-  const toggleWakeLock = async () => {
+  const toggleWakeLock = useCallback(async () => {
     if (wakeLockActive) {
+      // Manual disable: also clear the manual flag so timers regain control.
+      manualWakeLockRef.current = false;
       await releaseWakeLock();
     } else {
+      // Manual enable: keep the lock held until the user turns it off, even
+      // after all timers finish.
+      manualWakeLockRef.current = true;
       await requestWakeLock();
     }
-  };
+  }, [wakeLockActive, requestWakeLock, releaseWakeLock]);
+
+  // Called by each inline step timer when it starts or stops counting down.
+  // The Wake Lock is requested as soon as any timer runs, and released once no
+  // timers are running unless the user enabled the lock manually.
+  const setTimerRunning = useCallback(
+    (id: string, running: boolean) => {
+      const timers = runningTimersRef.current;
+      if (running) {
+        timers.add(id);
+      } else {
+        timers.delete(id);
+      }
+
+      if (timers.size > 0) {
+        if (!wakeLockRef.current) {
+          requestWakeLock();
+        }
+      } else if (!manualWakeLockRef.current && wakeLockRef.current) {
+        releaseWakeLock();
+      }
+    },
+    [requestWakeLock, releaseWakeLock]
+  );
+
+  const timerContextValue = useMemo(
+    () => ({ muted: timerMuted, toggleMute: toggleTimerMute, setTimerRunning }),
+    [timerMuted, toggleTimerMute, setTimerRunning]
+  );
 
   // Re-acquire the wake lock when returning to the tab
   useEffect(() => {
@@ -176,7 +239,7 @@ export default function RecipePageClient({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [wakeLockActive, wakeLockSupported]);
+  }, [wakeLockActive, wakeLockSupported, requestWakeLock]);
 
   // Release wake lock on unmount
   useEffect(() => {
@@ -705,6 +768,7 @@ export default function RecipePageClient({
   };
 
   return (
+    <RecipeTimerContext.Provider value={timerContextValue}>
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
       {/* Recipe Image */}
       <div className="mb-4 sm:mb-6 lg:mb-8">
@@ -751,6 +815,43 @@ export default function RecipePageClient({
                 />
                 {wakeLockActive && (
                   <circle cx="12" cy="10" r="2" fill="currentColor" stroke="none" />
+                )}
+              </svg>
+            </button>
+            {/* Timer Chime Mute Toggle */}
+            <button
+              onClick={toggleTimerMute}
+              className={`btn btn-circle ${timerMuted ? 'btn-ghost' : 'btn-primary'}`}
+              aria-pressed={!timerMuted}
+              aria-label={timerMuted ? 'Unmute timer chime' : 'Mute timer chime'}
+              title={timerMuted ? 'Timer chime muted' : 'Timer chime on'}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5L6 9H2v6h4l5 4V5z"
+                />
+                {timerMuted ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M23 9l-6 6M17 9l6 6"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"
+                  />
                 )}
               </svg>
             </button>
@@ -1003,7 +1104,7 @@ export default function RecipePageClient({
         <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-3">
           {recipe.method_steps.map((step, index) => (
             <li key={index} className="text-base sm:text-lg arial-font break-words pl-1">
-              {step}
+              <StepTimers step={step} index={index} />
             </li>
           ))}
         </ol>
@@ -1023,5 +1124,6 @@ export default function RecipePageClient({
         </div>
       )}
     </div>
+    </RecipeTimerContext.Provider>
   );
 }
