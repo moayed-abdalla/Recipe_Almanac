@@ -6,6 +6,7 @@
  */
 
 import type { RecipeWithProfile, NormalizedRecipe } from '@/types';
+import { getTotalTimeMinutes, toPositiveInt } from '@/utils/recipeTime';
 
 const extractFavoriteCount = (recipe: RecipeWithProfile): number => {
   const candidate =
@@ -61,6 +62,10 @@ export function normalizeRecipe(recipe: RecipeWithProfile): NormalizedRecipe | n
     favorite_count: extractFavoriteCount(recipe),
     tags: recipe.tags,
     is_public: recipe.is_public,
+    servings: toPositiveInt(recipe.servings),
+    prep_time_minutes: toPositiveInt(recipe.prep_time_minutes),
+    cook_time_minutes: toPositiveInt(recipe.cook_time_minutes),
+    total_time_minutes: getTotalTimeMinutes(recipe.prep_time_minutes, recipe.cook_time_minutes),
     profiles,
   };
 }

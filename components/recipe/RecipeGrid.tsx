@@ -45,6 +45,7 @@ export default function RecipeGrid({
           viewCount={recipe.view_count}
           favoriteCount={recipe.favorite_count}
           tags={recipe.tags}
+          totalTimeMinutes={recipe.total_time_minutes}
         />
       ))}
     </div>

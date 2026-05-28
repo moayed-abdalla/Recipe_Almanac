@@ -31,6 +31,7 @@ interface RecipeCardProps {
   viewCount: number;
   favoriteCount: number;
   tags?: string[];
+  totalTimeMinutes?: number | null; // Combined prep + cook time, when known
 }
 
 export default function RecipeCard({
@@ -43,7 +44,9 @@ export default function RecipeCard({
   viewCount,
   favoriteCount,
   tags = [],
+  totalTimeMinutes = null,
 }: RecipeCardProps) {
+  const showTotalTime = typeof totalTimeMinutes === 'number' && totalTimeMinutes > 0;
   return (
     <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow h-full">
       <figure>
@@ -73,6 +76,12 @@ export default function RecipeCard({
             <span className="text-xs sm:text-sm opacity-60">{viewCount.toLocaleString()} views</span>
             <span className="text-xs sm:text-sm opacity-60">•</span>
             <span className="text-xs sm:text-sm opacity-60">{favoriteCount.toLocaleString()} favorites</span>
+            {showTotalTime && (
+              <>
+                <span className="text-xs sm:text-sm opacity-60">•</span>
+                <span className="text-xs sm:text-sm opacity-60">{totalTimeMinutes} min</span>
+              </>
+            )}
           </div>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1">

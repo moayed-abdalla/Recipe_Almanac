@@ -16,6 +16,7 @@
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import RecipeCard from '@/components/RecipeCard';
+import { getTotalTimeMinutes } from '@/utils/recipeTime';
 
 interface ProfileViewPageProps {
   params: {
@@ -45,6 +46,8 @@ interface Recipe {
   view_count: number;
   favorite_count: number;
   is_public: boolean;
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -154,6 +157,7 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
                 viewCount={recipe.view_count}
                 favoriteCount={recipe.favorite_count}
                 tags={recipe.tags}
+                totalTimeMinutes={getTotalTimeMinutes(recipe.prep_time_minutes, recipe.cook_time_minutes)}
               />
             ))}
           </div>

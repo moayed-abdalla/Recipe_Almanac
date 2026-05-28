@@ -22,6 +22,9 @@ const RECIPE_SELECT_FIELDS = `
   favorite_count:saved_recipes(count),
   tags,
   is_public,
+  servings,
+  prep_time_minutes,
+  cook_time_minutes,
   profiles:user_id (
     username
   )

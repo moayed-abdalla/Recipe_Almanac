@@ -38,6 +38,9 @@ export interface Recipe {
   is_public: boolean;
   method_steps: string[];
   notes: string[];
+  servings?: number | null;
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -64,6 +67,10 @@ export interface NormalizedRecipe {
   favorite_count: number;
   tags: string[];
   is_public: boolean;
+  servings?: number | null;
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
+  total_time_minutes?: number | null;
   profiles: {
     username: string;
   };
