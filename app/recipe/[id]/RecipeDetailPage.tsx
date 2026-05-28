@@ -124,7 +124,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   //     console.error('Error incrementing view count:', err);
   //   });
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
   const jsonLd = {
     '@context': 'https://schema.org',

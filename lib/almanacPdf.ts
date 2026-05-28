@@ -221,7 +221,7 @@ function drawFooter(ctx: PageContext, totalPages?: number) {
   doc.text(label, (PAGE_WIDTH - tw) / 2, PAGE_HEIGHT - MARGIN_BOTTOM + 9);
 
   // Brand attribution on the left
-  doc.text('recipealmanac.com', MARGIN_X, PAGE_HEIGHT - MARGIN_BOTTOM + 9);
+  doc.text('recipealmanac.xyz', MARGIN_X, PAGE_HEIGHT - MARGIN_BOTTOM + 9);
 }
 
 /** Add a new page and re-draw the running header for the same recipe. */

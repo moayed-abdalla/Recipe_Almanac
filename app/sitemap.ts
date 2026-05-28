@@ -39,7 +39,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: T): Promi
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
