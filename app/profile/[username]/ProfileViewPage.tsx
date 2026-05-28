@@ -45,6 +45,8 @@ interface Recipe {
   notes: string[];
   view_count: number;
   favorite_count: number;
+  average_rating: number;
+  rating_count: number;
   is_public: boolean;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
@@ -60,6 +62,20 @@ const extractFavoriteCount = (recipe: any): number => {
     return candidate.count ?? 0;
   }
   return 0;
+};
+
+const extractRatingStats = (
+  recipe: any
+): { average_rating: number; rating_count: number } => {
+  const candidate = recipe.recipe_rating_stats;
+  const row = Array.isArray(candidate) ? candidate[0] : candidate;
+  if (row && typeof row === 'object') {
+    return {
+      average_rating: Number(row.average_rating) || 0,
+      rating_count: Number(row.rating_count) || 0,
+    };
+  }
+  return { average_rating: 0, rating_count: 0 };
 };
 
 export default async function ProfileViewPage({ params }: ProfileViewPageProps) {
@@ -88,7 +104,11 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
     .from('recipes')
     .select(`
       *,
-      favorite_count:saved_recipes(count)
+      favorite_count:saved_recipes(count),
+      recipe_rating_stats (
+        rating_count,
+        average_rating
+      )
     `)
     .eq('user_id', typedProfile.id)
     .eq('is_public', true) // Only show public recipes
@@ -100,10 +120,15 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
   }
 
   // Type assertion for recipes array
-  const typedRecipes = (recipes || []).map((recipe: any) => ({
-    ...recipe,
-    favorite_count: extractFavoriteCount(recipe),
-  })) as Recipe[];
+  const typedRecipes = (recipes || []).map((recipe: any) => {
+    const ratingStats = extractRatingStats(recipe);
+    return {
+      ...recipe,
+      favorite_count: extractFavoriteCount(recipe),
+      average_rating: ratingStats.average_rating,
+      rating_count: ratingStats.rating_count,
+    };
+  }) as Recipe[];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -156,6 +181,8 @@ export default async function ProfileViewPage({ params }: ProfileViewPageProps) 
                 username={typedProfile.username}
                 viewCount={recipe.view_count}
                 favoriteCount={recipe.favorite_count}
+                averageRating={recipe.average_rating}
+                ratingCount={recipe.rating_count}
                 tags={recipe.tags}
                 totalTimeMinutes={getTotalTimeMinutes(recipe.prep_time_minutes, recipe.cook_time_minutes)}
               />

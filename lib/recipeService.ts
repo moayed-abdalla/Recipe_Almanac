@@ -20,6 +20,10 @@ const RECIPE_SELECT_FIELDS = `
   description,
   view_count,
   favorite_count:saved_recipes(count),
+  recipe_rating_stats (
+    rating_count,
+    average_rating
+  ),
   tags,
   is_public,
   servings,

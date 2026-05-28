@@ -29,6 +29,22 @@ const extractFavoriteCount = (recipe: RecipeWithProfile): number => {
   return 0;
 };
 
+const extractRatingStats = (
+  recipe: RecipeWithProfile
+): { average_rating: number; rating_count: number } => {
+  const candidate = recipe.recipe_rating_stats;
+  const row = Array.isArray(candidate) ? candidate[0] : candidate;
+
+  if (row && typeof row === 'object') {
+    return {
+      average_rating: Number(row.average_rating) || 0,
+      rating_count: Number(row.rating_count) || 0,
+    };
+  }
+
+  return { average_rating: 0, rating_count: 0 };
+};
+
 /**
  * Normalize recipe data from Supabase
  * Handles cases where profiles may be an array, single object, or null
@@ -51,7 +67,9 @@ export function normalizeRecipe(recipe: RecipeWithProfile): NormalizedRecipe | n
     console.warn('Recipe missing profile data:', recipe.id);
     return null;
   }
-  
+
+  const ratingStats = extractRatingStats(recipe);
+
   return {
     id: recipe.id,
     slug: recipe.slug,
@@ -60,6 +78,8 @@ export function normalizeRecipe(recipe: RecipeWithProfile): NormalizedRecipe | n
     description: recipe.description,
     view_count: recipe.view_count,
     favorite_count: extractFavoriteCount(recipe),
+    average_rating: ratingStats.average_rating,
+    rating_count: ratingStats.rating_count,
     tags: recipe.tags,
     is_public: recipe.is_public,
     servings: toPositiveInt(recipe.servings),
