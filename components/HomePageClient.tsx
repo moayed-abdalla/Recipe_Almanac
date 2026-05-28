@@ -111,6 +111,8 @@ interface Recipe {
   favorite_count: number;
   created_at: string;
   tags: string[];
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
   profiles: {
     username: string;
   };

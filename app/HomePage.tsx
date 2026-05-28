@@ -30,6 +30,8 @@ interface Recipe {
   favorite_count: number;
   created_at: string;
   tags: string[];
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
   profiles: {
     username: string;
   };
@@ -66,6 +68,8 @@ export default async function HomePage() {
         favorite_count:saved_recipes(count),
         created_at,
         tags,
+        prep_time_minutes,
+        cook_time_minutes,
         profiles:user_id (
           username
         )
