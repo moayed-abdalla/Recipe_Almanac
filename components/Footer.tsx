@@ -6,9 +6,20 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+const PWA_INSTALL_DISMISSED_KEY = 'pwa-install-dismissed';
+
 export default function Footer() {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // PWA install prompt state - hint only shows once the browser offers install
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installHintVisible, setInstallHintVisible] = useState(false);
 
   useEffect(() => {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
@@ -56,6 +67,44 @@ export default function Footer() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  /**
+   * Capture the install prompt so we can offer an "install to use offline" hint,
+   * unless the user has already dismissed it.
+   */
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      if (localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === 'true') return;
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+      setInstallHintVisible(true);
+    };
+
+    const handleInstalled = () => {
+      setInstallPrompt(null);
+      setInstallHintVisible(false);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+    setInstallHintVisible(false);
+  };
+
+  const handleDismissInstall = () => {
+    localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, 'true');
+    setInstallHintVisible(false);
+  };
 
   return (
     <footer className="footer bg-base-100 p-6 sm:p-10 text-base-content border-t border-base-300">
@@ -116,6 +165,33 @@ export default function Footer() {
           </nav>
         </div>
         
+        {installHintVisible && (
+          <div className="mt-4 flex justify-center">
+            <div className="alert bg-base-200 border border-base-300 max-w-md flex-row items-center gap-3 py-2">
+              <span className="text-xs sm:text-sm text-base-content">
+                App is installable — install to use offline.
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleInstallClick}
+                  className="btn btn-primary btn-xs sm:btn-sm"
+                >
+                  Install
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDismissInstall}
+                  className="btn btn-ghost btn-xs sm:btn-sm"
+                  aria-label="Dismiss install hint"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center mt-4 text-xs sm:text-sm opacity-70 px-2">
           <p>© {new Date().getFullYear()} Recipe Almanac. No ads, no subscriptions, just recipes.</p>
         </div>

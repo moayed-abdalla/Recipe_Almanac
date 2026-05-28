@@ -31,6 +31,9 @@ import type { Profile } from '@/types';
 export default function Header() {
   const { user, profile } = useProfileContext();
 
+  // Online/offline state - drives the "Offline" pill
+  const [isOffline, setIsOffline] = useState(false);
+
   // Theme state - controls light/dark mode
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   /** Mirrors `theme` for callbacks that must not read a stale closure (auth, profile events). */
@@ -43,6 +46,20 @@ export default function Header() {
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
+
+  /**
+   * Track network connectivity so we can surface an "Offline" indicator.
+   */
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
+    updateOnlineStatus();
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
 
   const supabase = supabaseClient;
 
@@ -207,6 +224,20 @@ export default function Header() {
         </div>
         
         <div className="flex-none gap-1 sm:gap-2 flex items-center shrink-0">
+          {/* Offline indicator - only visible when the device has no network */}
+          {isOffline && (
+            <span
+              className="badge badge-warning badge-sm sm:badge-md gap-1 font-semibold"
+              role="status"
+              aria-live="polite"
+            >
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full bg-current"
+                aria-hidden
+              />
+              Offline
+            </span>
+          )}
           {/* Leaderboard Link - icon on small screens, text on larger to avoid clutter */}
           <Link
             href="/leaderboard"
