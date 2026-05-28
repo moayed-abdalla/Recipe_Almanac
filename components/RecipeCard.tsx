@@ -30,6 +30,8 @@ interface RecipeCardProps {
   username: string;
   viewCount: number;
   favoriteCount: number;
+  averageRating?: number | null;
+  ratingCount?: number | null;
   tags?: string[];
   totalTimeMinutes?: number | null; // Combined prep + cook time, when known
 }
@@ -43,10 +45,13 @@ export default function RecipeCard({
   username,
   viewCount,
   favoriteCount,
+  averageRating = null,
+  ratingCount = null,
   tags = [],
   totalTimeMinutes = null,
 }: RecipeCardProps) {
   const showTotalTime = typeof totalTimeMinutes === 'number' && totalTimeMinutes > 0;
+  const showRating = typeof ratingCount === 'number' && ratingCount > 0;
   return (
     <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow h-full">
       <figure>
@@ -72,6 +77,14 @@ export default function RecipeCard({
         <div className="card-actions flex-col items-stretch gap-2 mt-3 sm:mt-4">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-xs sm:text-sm opacity-60 special-elite-regular text-base-content">by {username}</span>
+            {showRating && (
+              <>
+                <span className="text-xs sm:text-sm opacity-60">•</span>
+                <span className="text-xs sm:text-sm opacity-60">
+                  <span className="text-warning">★</span> {(averageRating ?? 0).toFixed(1)} ({ratingCount})
+                </span>
+              </>
+            )}
             <span className="text-xs sm:text-sm opacity-60">•</span>
             <span className="text-xs sm:text-sm opacity-60">{viewCount.toLocaleString()} views</span>
             <span className="text-xs sm:text-sm opacity-60">•</span>
