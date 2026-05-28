@@ -36,6 +36,7 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
+import RecipeRatings from '@/components/recipe/RecipeRatings';
 import { RecipeTimerContext } from '@/components/recipe/timerContext';
 
 interface Ingredient {
@@ -57,6 +58,7 @@ interface Recipe {
   method_steps: string[];
   notes: string[];
   view_count: number;
+  is_public?: boolean;
   servings?: number | null;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
@@ -1123,6 +1125,13 @@ export default function RecipePageClient({
           </ol>
         </div>
       )}
+
+      {/* Ratings & Reviews Section */}
+      <RecipeRatings
+        recipeId={recipe.id}
+        isOwner={isOwner}
+        isPublic={recipe.is_public !== false}
+      />
     </div>
     </RecipeTimerContext.Provider>
   );

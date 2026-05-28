@@ -28,6 +28,8 @@ interface Recipe {
   description: string | null;
   view_count: number;
   favorite_count: number;
+  average_rating: number;
+  rating_count: number;
   created_at: string;
   tags: string[];
   prep_time_minutes?: number | null;
@@ -45,6 +47,20 @@ const extractFavoriteCount = (recipe: any): number => {
     return candidate.count ?? 0;
   }
   return 0;
+};
+
+const extractRatingStats = (
+  recipe: any
+): { average_rating: number; rating_count: number } => {
+  const candidate = recipe.recipe_rating_stats;
+  const row = Array.isArray(candidate) ? candidate[0] : candidate;
+  if (row && typeof row === 'object') {
+    return {
+      average_rating: Number(row.average_rating) || 0,
+      rating_count: Number(row.rating_count) || 0,
+    };
+  }
+  return { average_rating: 0, rating_count: 0 };
 };
 
 export default async function HomePage() {
@@ -66,6 +82,10 @@ export default async function HomePage() {
         description,
         view_count,
         favorite_count:saved_recipes(count),
+        recipe_rating_stats (
+          rating_count,
+          average_rating
+        ),
         created_at,
         tags,
         prep_time_minutes,
@@ -86,9 +106,13 @@ export default async function HomePage() {
         ? recipe.profiles[0]
         : recipe.profiles;
 
+      const ratingStats = extractRatingStats(recipe);
+
       return {
         ...recipe,
         favorite_count: extractFavoriteCount(recipe),
+        average_rating: ratingStats.average_rating,
+        rating_count: ratingStats.rating_count,
         profiles: profile || { username: 'Unknown' },
       };
     }) as Recipe[];

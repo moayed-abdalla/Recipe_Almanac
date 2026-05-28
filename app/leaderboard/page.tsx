@@ -2,7 +2,8 @@
  * Leaderboard Page
  *
  * Displays the top 100 recipes ranked by a score:
- * - Favourites: 4 points each (when a recipe is listed as a user's favourite)
+ * - Favourites: 10 points each (the dominant "super-like" signal)
+ * - Ratings: 2 points per rating, plus average × count (quality-weighted volume)
  * - Views: 1 point each
  *
  * Recipes are ordered from greatest to least score.
@@ -19,6 +20,23 @@ interface RecipeWithScore extends NormalizedRecipe {
   score: number;
   rank: number;
 }
+
+const extractRatingStats = (recipe: {
+  recipe_rating_stats?:
+    | { rating_count?: number; average_rating?: number }
+    | Array<{ rating_count?: number; average_rating?: number }>
+    | null;
+}): { average_rating: number; rating_count: number } => {
+  const candidate = recipe.recipe_rating_stats;
+  const row = Array.isArray(candidate) ? candidate[0] : candidate;
+  if (row && typeof row === 'object') {
+    return {
+      average_rating: Number(row.average_rating) || 0,
+      rating_count: Number(row.rating_count) || 0,
+    };
+  }
+  return { average_rating: 0, rating_count: 0 };
+};
 
 const extractFavoriteCount = (recipe: {
   favorite_count?: number | { count: number } | Array<{ count: number }>;
@@ -79,6 +97,10 @@ export default async function LeaderboardPage() {
       description,
       view_count,
       favorite_count:saved_recipes(count),
+      recipe_rating_stats (
+        rating_count,
+        average_rating
+      ),
       tags,
       prep_time_minutes,
       cook_time_minutes,
@@ -103,9 +125,14 @@ export default async function LeaderboardPage() {
     const profile = Array.isArray(recipe.profiles)
       ? recipe.profiles[0]
       : recipe.profiles;
+    const ratingStats = extractRatingStats(
+      recipe as Parameters<typeof extractRatingStats>[0]
+    );
     return {
       ...recipe,
       favorite_count: extractFavoriteCount(recipe as Parameters<typeof extractFavoriteCount>[0]),
+      average_rating: ratingStats.average_rating,
+      rating_count: ratingStats.rating_count,
       profiles: profile || { username: 'Unknown' },
     };
   }) as (NormalizedRecipe & { view_count: number })[];
@@ -114,7 +141,16 @@ export default async function LeaderboardPage() {
     .map((recipe) => {
       const favoriteCount = recipe.favorite_count ?? 0;
       const viewCount = recipe.view_count ?? 0;
-      const score = favoriteCount * 10 + viewCount * 1;
+      const ratingCount = recipe.rating_count ?? 0;
+      const averageRating = recipe.average_rating ?? 0;
+      // Favourites stay the strongest signal at 10 points each. Ratings add real
+      // weight (2 per rating + average × count) without overpowering favourites,
+      // and views still count for 1 each.
+      const score =
+        favoriteCount * 10 +
+        ratingCount * 2 +
+        Math.round(averageRating * ratingCount * 1) +
+        viewCount * 1;
       return { ...recipe, score };
     })
     .sort((a, b) => b.score - a.score)
@@ -129,8 +165,9 @@ export default async function LeaderboardPage() {
             Leaderboard
           </h1>
           <p className="text-base sm:text-lg text-base-content/70 max-w-2xl mx-auto px-2">
-            Top 100 recipes ranked by score. Favourites count as 10 points, views
-            count as 1 point.
+            Top 100 recipes ranked by score. Favourites are the strongest signal
+            at 10 points each, ratings add 2 points each plus a quality bonus
+            (average × number of ratings), and every view counts as 1 point.
           </p>
         </div>
 
@@ -194,6 +231,15 @@ export default async function LeaderboardPage() {
                         <span className="text-sm opacity-60">
                           {recipe.favorite_count.toLocaleString()} favorites
                         </span>
+                        {recipe.rating_count > 0 && (
+                          <>
+                            <span className="text-sm opacity-60">•</span>
+                            <span className="text-sm opacity-60">
+                              <span className="text-warning">★</span>{' '}
+                              {recipe.average_rating.toFixed(1)} ({recipe.rating_count})
+                            </span>
+                          </>
+                        )}
                         {(() => {
                           const totalTime = getTotalTimeMinutes(
                             recipe.prep_time_minutes,
