@@ -12,7 +12,7 @@ interface ProfilePageProps {
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
   const supabase = await createServerClient();
   const decodedUsername = decodeURIComponent(params.username);
 

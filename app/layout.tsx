@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import BackgroundMaskPositions from '@/components/BackgroundMaskPositions';
 import AppProviders from '@/components/providers/AppProviders';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
