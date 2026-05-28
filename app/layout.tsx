@@ -72,11 +72,18 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl,
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Recipe Almanac',
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#CC5500',
 };
 
 export default function RootLayout({

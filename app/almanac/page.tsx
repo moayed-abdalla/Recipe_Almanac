@@ -69,6 +69,29 @@ export default function AlmanacPage() {
     }
   }, [user]);
 
+  /**
+   * Ask the service worker to pre-cache favourite + own recipes (pages + images)
+   * so they can be opened offline. No-op until the SW controls the page.
+   */
+  useEffect(() => {
+    if (loading) return;
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    const controller = navigator.serviceWorker.controller;
+    if (!controller) return;
+
+    const recipes = [...favoriteRecipes, ...publicRecipes, ...privateRecipes];
+    const urls = recipes.flatMap((recipe) => {
+      const entries = [`/recipe/${recipe.slug}`];
+      if (recipe.image_url) entries.push(recipe.image_url);
+      return entries;
+    });
+
+    if (urls.length === 0) return;
+
+    controller.postMessage({ type: 'PRECACHE_RECIPES', urls });
+  }, [loading, favoriteRecipes, publicRecipes, privateRecipes]);
+
   // Loading state: show spinner while fetching data
   if (authLoading || loading) {
     return <LoadingSpinner message="Loading your almanac..." />;
