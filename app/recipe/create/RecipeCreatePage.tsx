@@ -40,6 +40,9 @@ interface Recipe {
   method_steps: string[];
   notes: string[];
   is_public: boolean;
+  servings?: number | null;
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
 }
 
 interface Ingredient {
@@ -75,6 +78,11 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   const [description, setDescription] = useState(recipe?.description || '');
   const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
   const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
+
+  // Optional servings / timing fields (stored as strings for controlled inputs)
+  const [servings, setServings] = useState(recipe?.servings != null ? String(recipe.servings) : '');
+  const [prepTime, setPrepTime] = useState(recipe?.prep_time_minutes != null ? String(recipe.prep_time_minutes) : '');
+  const [cookTime, setCookTime] = useState(recipe?.cook_time_minutes != null ? String(recipe.cook_time_minutes) : '');
   
   // Form state - recipe content (pre-filled if editing)
   const [methodSteps, setMethodSteps] = useState<string[]>(
@@ -113,6 +121,22 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
     setLoading(true);
 
     try {
+      // Step 0: Parse and validate optional numeric fields (servings/timing).
+      // Empty fields are allowed (stored as null); non-empty values must be
+      // non-negative whole numbers.
+      const parseOptionalInt = (raw: string, label: string): number | null => {
+        const trimmed = raw.trim();
+        if (trimmed === '') return null;
+        const parsed = Number(trimmed);
+        if (!Number.isInteger(parsed) || parsed < 0) {
+          throw new Error(`${label} must be a whole number that is zero or greater.`);
+        }
+        return parsed;
+      };
+      const servingsValue = parseOptionalInt(servings, 'Servings');
+      const prepTimeValue = parseOptionalInt(prepTime, 'Prep time');
+      const cookTimeValue = parseOptionalInt(cookTime, 'Cook time');
+
       // Step 1: Verify user is authenticated
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
       if (userError || !user) {
@@ -215,6 +239,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             method_steps: methodSteps.filter(Boolean),
             notes: notes.filter(Boolean),
             is_public: isPublic,
+            servings: servingsValue,
+            prep_time_minutes: prepTimeValue,
+            cook_time_minutes: cookTimeValue,
             updated_at: new Date().toISOString(),
           })
           .eq('id', recipe!.id);
@@ -275,6 +302,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             method_steps: methodSteps.filter(Boolean),
             notes: notes.filter(Boolean),
             is_public: isPublic,
+            servings: servingsValue,
+            prep_time_minutes: prepTimeValue,
+            cook_time_minutes: cookTimeValue,
           })
           .select()
           .single();
@@ -481,6 +511,63 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             rows={3}
           />
+        </div>
+
+        {/* Servings & Timing (all optional) */}
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text text-lg font-bold">Servings &amp; Timing</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text">Servings</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
+                className="input input-bordered w-full"
+                placeholder="e.g. 4"
+                value={servings}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setServings(e.target.value)}
+              />
+            </div>
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text">Prep time (min)</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
+                className="input input-bordered w-full"
+                placeholder="e.g. 15"
+                value={prepTime}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrepTime(e.target.value)}
+              />
+            </div>
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text">Cook time (min)</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
+                className="input input-bordered w-full"
+                placeholder="e.g. 45"
+                value={cookTime}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCookTime(e.target.value)}
+              />
+            </div>
+          </div>
+          <label className="label">
+            <span className="label-text-alt">All optional. Leave blank if not applicable.</span>
+          </label>
         </div>
 
         {/* Tags */}
