@@ -189,6 +189,23 @@ export default function RecipePageClient({
       }
     };
   }, []);
+
+  // In the installed/offline PWA, keep the screen awake by default so a recipe
+  // stays readable while cooking. The website keeps it off by default.
+  const autoWakeRequestedRef = useRef(false);
+  useEffect(() => {
+    if (!wakeLockSupported || autoWakeRequestedRef.current) return;
+
+    const isStandalone =
+      window.matchMedia?.('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+    if (!isStandalone) return;
+
+    autoWakeRequestedRef.current = true;
+    requestWakeLock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time default-on for installed PWA
+  }, [wakeLockSupported]);
   
   // Ingredient multiplier state (default 1x)
   const [multiplier, setMultiplier] = useState<number>(1);
