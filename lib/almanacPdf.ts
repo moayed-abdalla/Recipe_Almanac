@@ -2,14 +2,17 @@
  * Recipe Almanac PDF Generator
  *
  * Generates a branded multi-recipe PDF "almanac". Each recipe starts on a new
- * page and follows the site's visual identity (theme primary color, typewriter
- * headings, Arial body, colourised logo).
+ * page and follows the site's visual identity (theme primary color, Special Elite
+ * headings, Arial body, kitchen-icon background, colourised logo).
  *
- * The PDF is rendered client-side using jsPDF (no native fonts required —
- * built-in Courier mimics the "Special Elite" typewriter style).
+ * The PDF is rendered client-side using jsPDF with the embedded Special Elite font.
  */
 
 import { jsPDF } from 'jspdf';
+import {
+  buildAlmanacBackgroundDataUrl,
+  readMaskPositions,
+} from '@/lib/almanacBackground';
 
 /** Full recipe payload required to render a single PDF page. */
 export interface AlmanacRecipe {
@@ -40,9 +43,16 @@ export interface AlmanacBrand {
   text: string;
   /** Hex — image/logo tint colour (matches --theme-image-color) */
   imageColor: string;
+  /** Kitchen-icon background opacity (matches --theme-bg-opacity) */
+  bgOpacity: number;
   /** 'light' | 'dark' — used to pick contrast band colors */
   mode: 'light' | 'dark';
 }
+
+const SPECIAL_ELITE_FONT = 'SpecialElite';
+const SPECIAL_ELITE_FILE = 'SpecialElite-Regular.ttf';
+const PDF_FONT = SPECIAL_ELITE_FONT;
+type PdfFont = typeof SPECIAL_ELITE_FONT | 'helvetica' | 'times';
 
 interface RGB {
   r: number;
@@ -157,12 +167,56 @@ interface PageContext {
   doc: jsPDF;
   brand: AlmanacBrand;
   logoDataUrl: string | null;
+  backgroundDataUrl: string | null;
   /** Current Y cursor (mm) */
   y: number;
   /** Title of the recipe currently being rendered — used for the running header. */
   recipeTitle: string;
   /** Page index within this recipe (1-based) — used for "(continued)" markers. */
   recipePage: number;
+}
+
+async function registerSpecialEliteFont(doc: jsPDF): Promise<void> {
+  const response = await fetch('/fonts/SpecialElite-Regular.ttf');
+  if (!response.ok) {
+    throw new Error('Failed to load Special Elite font for PDF export.');
+  }
+
+  const buffer = await response.arrayBuffer();
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.split(',')[1] ?? '');
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(new Blob([buffer]));
+  });
+
+  doc.addFileToVFS(SPECIAL_ELITE_FILE, base64);
+  doc.addFont(SPECIAL_ELITE_FILE, SPECIAL_ELITE_FONT, 'normal');
+}
+
+/** Paint the themed kitchen-icon background behind page content. */
+function drawPageBackground(ctx: PageContext) {
+  if (!ctx.backgroundDataUrl) return;
+  try {
+    ctx.doc.addImage(
+      ctx.backgroundDataUrl,
+      'PNG',
+      0,
+      0,
+      PAGE_WIDTH,
+      PAGE_HEIGHT,
+      undefined,
+      'FAST'
+    );
+  } catch (err) {
+    console.warn('[almanacPdf] Could not add page background:', err);
+    const bg = hexToRgb(ctx.brand.background);
+    ctx.doc.setFillColor(bg.r, bg.g, bg.b);
+    ctx.doc.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, 'F');
+  }
 }
 
 /**
@@ -172,6 +226,8 @@ interface PageContext {
 function drawHeader(ctx: PageContext) {
   const { doc, brand, logoDataUrl } = ctx;
   const primary = hexToRgb(brand.primary);
+
+  drawPageBackground(ctx);
 
   // Thin colored top strip
   doc.setFillColor(primary.r, primary.g, primary.b);
@@ -188,7 +244,7 @@ function drawHeader(ctx: PageContext) {
   }
 
   // Wordmark
-  doc.setFont('courier', 'bold');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(11);
   doc.setTextColor(primary.r, primary.g, primary.b);
   doc.text('Recipe Almanac', MARGIN_X + 12.5, 14.5);
@@ -245,7 +301,7 @@ function truncate(text: string, max: number): string {
 }
 
 interface TextOptions {
-  font?: 'helvetica' | 'courier' | 'times';
+  font?: PdfFont;
   style?: 'normal' | 'bold' | 'italic' | 'bolditalic';
   size?: number;
   color?: RGB;
@@ -296,21 +352,25 @@ function writeText(ctx: PageContext, text: string, opts: TextOptions = {}) {
   }
 }
 
-/** Draw a section heading (typewriter font, primary colour, underline rule). */
+/** Draw a section heading (Special Elite, primary colour, underline rule). */
 function writeSectionHeading(ctx: PageContext, label: string) {
   const primary = hexToRgb(ctx.brand.primary);
-  ensureSpace(ctx, 12);
-  writeText(ctx, label, {
-    font: 'courier',
-    style: 'bold',
-    size: 14,
-    color: primary,
-  });
-  // Underline rule
-  ctx.doc.setDrawColor(primary.r, primary.g, primary.b);
-  ctx.doc.setLineWidth(0.4);
-  ctx.doc.line(MARGIN_X, ctx.y - 1, MARGIN_X + 35, ctx.y - 1);
-  ctx.y += 2;
+  const headingSize = 14;
+  const lh = lineHeightMm(headingSize);
+  ensureSpace(ctx, lh + 5);
+
+  const baselineY = ctx.y;
+  const { doc } = ctx;
+  doc.setFont(PDF_FONT, 'normal');
+  doc.setFontSize(headingSize);
+  doc.setTextColor(primary.r, primary.g, primary.b);
+  doc.text(label, MARGIN_X, baselineY);
+
+  doc.setDrawColor(primary.r, primary.g, primary.b);
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN_X, baselineY + 1.8, MARGIN_X + 35, baselineY + 1.8);
+
+  ctx.y = baselineY + lh + 2;
 }
 
 /** Format an ingredient as a single line of text. */
@@ -339,6 +399,8 @@ function drawCoverPage(ctx: PageContext, ownerName: string, recipeCount: number)
   const primary = hexToRgb(brand.primary);
   const text = hexToRgb(brand.text);
 
+  drawPageBackground(ctx);
+
   doc.setFillColor(primary.r, primary.g, primary.b);
   doc.rect(0, 0, PAGE_WIDTH, 4, 'F');
   doc.rect(0, PAGE_HEIGHT - 4, PAGE_WIDTH, 4, 'F');
@@ -364,7 +426,7 @@ function drawCoverPage(ctx: PageContext, ownerName: string, recipeCount: number)
     y += logoSize + 12;
   }
 
-  doc.setFont('courier', 'bold');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(32);
   doc.setTextColor(primary.r, primary.g, primary.b);
   const title = 'Recipe Almanac';
@@ -380,7 +442,7 @@ function drawCoverPage(ctx: PageContext, ownerName: string, recipeCount: number)
   doc.text(subtitle, (PAGE_WIDTH - subW) / 2, y);
   y += 10;
 
-  doc.setFont('courier', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(12);
   doc.setTextColor(text.r, text.g, text.b);
   const countLabel = `${recipeCount} ${recipeCount === 1 ? 'recipe' : 'recipes'}`;
@@ -420,8 +482,8 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
 
   // Recipe title
   writeText(ctx, recipe.title, {
-    font: 'courier',
-    style: 'bold',
+    font: PDF_FONT,
+    style: 'normal',
     size: 22,
     color: primary,
     paragraphSpacing: 1,
@@ -563,15 +625,18 @@ export async function generateAlmanacPdf(
   }
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-  const logoDataUrl = await colourizeLogo(
-    options.logoUrl || '/logo.png',
-    brand.primary
-  );
+  await registerSpecialEliteFont(doc);
+
+  const [logoDataUrl, backgroundDataUrl] = await Promise.all([
+    colourizeLogo(options.logoUrl || '/logo.png', brand.primary),
+    buildAlmanacBackgroundDataUrl(brand, readMaskPositions(), 840, 1188),
+  ]);
 
   const ctx: PageContext = {
     doc,
     brand,
     logoDataUrl,
+    backgroundDataUrl,
     y: MARGIN_TOP,
     recipeTitle: '',
     recipePage: 1,
