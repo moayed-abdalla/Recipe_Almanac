@@ -94,6 +94,21 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   // Check if current user is the recipe owner
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === typedRecipe.user_id;
+
+  // Nutrition estimation is opt-in per viewer (default off). Only fetch the
+  // preference when someone is logged in; signed-out visitors never see it.
+  let nutritionEnabled = false;
+  if (user) {
+    const { data: viewerProfile } = await supabase
+      .from('profiles')
+      .select('nutrition_estimation_enabled')
+      .eq('id', user.id)
+      .single();
+    const viewerPrefs = viewerProfile as unknown as
+      | { nutrition_estimation_enabled?: boolean | null }
+      | null;
+    nutritionEnabled = viewerPrefs?.nutrition_estimation_enabled === true;
+  }
   
   // Debug logging (remove in production)
   if (process.env.NODE_ENV === 'development') {
@@ -188,6 +203,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         ingredients={ingredients}
         owner={owner}
         isOwner={isOwner}
+        nutritionEnabled={nutritionEnabled}
       />
     </>
   );

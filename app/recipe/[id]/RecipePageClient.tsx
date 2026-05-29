@@ -37,6 +37,7 @@ import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } fr
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
 import RecipeRatings from '@/components/recipe/RecipeRatings';
+import NutritionPanel from '@/components/recipe/NutritionPanel';
 import { RecipeTimerContext } from '@/components/recipe/timerContext';
 
 interface Ingredient {
@@ -62,6 +63,7 @@ interface Recipe {
   servings?: number | null;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
+  nutrition_visible?: boolean | null;
 }
 
 interface Owner {
@@ -74,6 +76,7 @@ interface RecipePageClientProps {
   ingredients: Ingredient[];
   owner: Owner;
   isOwner: boolean;
+  nutritionEnabled: boolean;
 }
 
 // Available unit options for conversion
@@ -87,6 +90,7 @@ export default function RecipePageClient({
   ingredients,
   owner,
   isOwner,
+  nutritionEnabled,
 }: RecipePageClientProps) {
   const router = useRouter();
   
@@ -1111,6 +1115,17 @@ export default function RecipePageClient({
           ))}
         </ol>
       </div>
+
+      {/* Nutrition Section (viewer opt-in + creator opt-out) */}
+      {nutritionEnabled && recipe.nutrition_visible !== false && (
+        <NutritionPanel
+          ingredients={ingredients.map((ing) => ({
+            name: ing.name,
+            amount_grams: ing.amount_grams,
+          }))}
+          servings={baseServings ?? null}
+        />
+      )}
 
       {/* Notes Section */}
       {recipe.notes.length > 0 && (
