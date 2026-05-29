@@ -6,6 +6,10 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
 import { DEFAULT_UNIT } from '@/lib/unit-config';
 import type { Recipe, Ingredient } from '@/types';
+import {
+  fixSpecialCharacters,
+  fixSpecialCharactersInArray,
+} from '@/lib/fixSpecialCharacters';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -223,13 +227,13 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         const { error: recipeError } = await supabaseClient
           .from('recipes')
           .update({
-            title,
+            title: fixSpecialCharacters(title),
             slug,
-            description: description || null,
+            description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: methodSteps.filter(Boolean),
-            notes: notes.filter(Boolean),
+            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -260,7 +264,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: recipe!.id,
-              name: ing.name,
+              name: fixSpecialCharacters(ing.name),
               amount_grams: amountGrams,
               unit: ing.unit,
               display_amount: ing.amount,
@@ -289,13 +293,13 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           .from('recipes')
           .insert({
             user_id: user.id,
-            title,
+            title: fixSpecialCharacters(title),
             slug,
-            description: description || null,
+            description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: methodSteps.filter(Boolean),
-            notes: notes.filter(Boolean),
+            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -320,7 +324,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: newRecipe.id,
-              name: ing.name,
+              name: fixSpecialCharacters(ing.name),
               amount_grams: amountGrams,
               unit: ing.unit,
               display_amount: ing.amount,
@@ -551,7 +555,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             <span className="label-text text-lg font-bold">Description</span>
           </label>
           <textarea
-            className="textarea textarea-bordered"
+            className="textarea textarea-bordered arial-font"
             value={description}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             rows={3}
@@ -812,7 +816,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                   )}
                 </div>
                 <textarea
-                  className="textarea textarea-bordered w-full"
+                  className="textarea textarea-bordered w-full arial-font"
                   value={step}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
                   rows={2}
@@ -880,7 +884,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
                   )}
                 </div>
                 <textarea
-                  className="textarea textarea-bordered w-full"
+                  className="textarea textarea-bordered w-full arial-font"
                   value={note}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
                   rows={2}
