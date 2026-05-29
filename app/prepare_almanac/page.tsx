@@ -32,6 +32,10 @@ import {
 import { readBgOpacity } from '@/lib/almanacBackground';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { getThemeById, type ThemeId } from '@/lib/theme-config';
+import {
+  fixSpecialCharacters,
+  fixSpecialCharactersInArray,
+} from '@/lib/fixSpecialCharacters';
 
 /** Group label shown above each section in the selection list. */
 type RecipeGroup = 'public' | 'private' | 'favorites';
@@ -115,19 +119,21 @@ function normalizeRow(row: RawRecipeRow, group: RecipeGroup): ListRecipe {
     .slice()
     .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
     .map((ing) => ({
-      name: ing.name,
+      name: fixSpecialCharacters(ing.name),
       display_amount: ing.display_amount,
       unit: ing.unit,
     }));
 
   return {
     id: row.id,
-    title: row.title,
-    description: row.description,
+    title: fixSpecialCharacters(row.title),
+    description: row.description
+      ? fixSpecialCharacters(row.description)
+      : null,
     image_url: row.image_url,
     tags: row.tags || [],
-    method_steps: row.method_steps || [],
-    notes: row.notes || [],
+    method_steps: fixSpecialCharactersInArray(row.method_steps || []),
+    notes: fixSpecialCharactersInArray(row.notes || []),
     ingredients,
     author_username: profile?.username ?? null,
     group,

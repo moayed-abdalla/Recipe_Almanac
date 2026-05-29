@@ -13,6 +13,10 @@ import {
   buildAlmanacBackgroundDataUrl,
   readMaskPositions,
 } from '@/lib/almanacBackground';
+import {
+  fixSpecialCharacters,
+  fixSpecialCharactersInArray,
+} from '@/lib/fixSpecialCharacters';
 
 /** Full recipe payload required to render a single PDF page. */
 export interface AlmanacRecipe {
@@ -472,7 +476,20 @@ function drawCoverPage(ctx: PageContext, ownerName: string, recipeCount: number)
  * Caller must have already invoked doc.addPage() before calling this.
  */
 async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
-  ctx.recipeTitle = recipe.title;
+  const title = fixSpecialCharacters(recipe.title);
+  const description = recipe.description
+    ? fixSpecialCharacters(recipe.description)
+    : null;
+  const methodSteps = fixSpecialCharactersInArray(recipe.method_steps);
+  const notes = recipe.notes
+    ? fixSpecialCharactersInArray(recipe.notes)
+    : [];
+  const ingredients = recipe.ingredients.map((ing) => ({
+    ...ing,
+    name: fixSpecialCharacters(ing.name),
+  }));
+
+  ctx.recipeTitle = title;
   ctx.recipePage = 1;
   ctx.y = MARGIN_TOP;
   drawHeader(ctx);
@@ -481,7 +498,7 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   const textColor = hexToRgb(ctx.brand.text);
 
   // Recipe title
-  writeText(ctx, recipe.title, {
+  writeText(ctx, title, {
     font: PDF_FONT,
     style: 'normal',
     size: 22,
@@ -541,8 +558,8 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   }
 
   // Description
-  if (recipe.description) {
-    writeText(ctx, recipe.description, {
+  if (description) {
+    writeText(ctx, description, {
       font: 'helvetica',
       style: 'normal',
       size: 11,
@@ -552,9 +569,9 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   }
 
   // Ingredients
-  if (recipe.ingredients.length > 0) {
+  if (ingredients.length > 0) {
     writeSectionHeading(ctx, 'Ingredients');
-    recipe.ingredients.forEach((ing) => {
+    ingredients.forEach((ing) => {
       const line = `\u2022  ${formatIngredient(ing)}`;
       writeText(ctx, line, {
         font: 'helvetica',
@@ -569,9 +586,9 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   }
 
   // Method
-  if (recipe.method_steps.length > 0) {
+  if (methodSteps.length > 0) {
     writeSectionHeading(ctx, 'Method');
-    recipe.method_steps.forEach((step, idx) => {
+    methodSteps.forEach((step, idx) => {
       const prefix = `${idx + 1}.`;
       // Render the number in primary color, then the body
       ensureSpace(ctx, lineHeightMm(11));
@@ -596,9 +613,9 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   }
 
   // Notes
-  if (recipe.notes && recipe.notes.length > 0) {
+  if (notes.length > 0) {
     writeSectionHeading(ctx, 'Notes');
-    recipe.notes.forEach((note) => {
+    notes.forEach((note) => {
       writeText(ctx, `\u2022  ${note}`, {
         font: 'helvetica',
         style: 'italic',
