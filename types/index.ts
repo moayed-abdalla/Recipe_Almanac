@@ -18,6 +18,7 @@ export interface Profile {
   default_light_theme?: LightThemeId | null;
   default_dark_theme?: DarkThemeId | null;
   default_unit?: string | null;
+  nutrition_estimation_enabled?: boolean | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -43,6 +44,7 @@ export interface Recipe {
   servings?: number | null;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
+  nutrition_visible?: boolean | null;
   created_at: string;
   updated_at: string;
 }

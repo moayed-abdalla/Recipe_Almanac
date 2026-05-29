@@ -20,6 +20,7 @@ export type Database = {
           username: string;
           profile_description: string | null;
           avatar_url: string | null;
+          nutrition_estimation_enabled: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -28,6 +29,7 @@ export type Database = {
           username: string;
           profile_description?: string | null;
           avatar_url?: string | null;
+          nutrition_estimation_enabled?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -36,6 +38,7 @@ export type Database = {
           username?: string;
           profile_description?: string | null;
           avatar_url?: string | null;
+          nutrition_estimation_enabled?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -53,6 +56,7 @@ export type Database = {
           notes: string[];
           view_count: number;
           is_public: boolean;
+          nutrition_visible: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -68,6 +72,7 @@ export type Database = {
           notes?: string[];
           view_count?: number;
           is_public?: boolean;
+          nutrition_visible?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -83,6 +88,7 @@ export type Database = {
           notes?: string[];
           view_count?: number;
           is_public?: boolean;
+          nutrition_visible?: boolean;
           created_at?: string;
           updated_at?: string;
         };
