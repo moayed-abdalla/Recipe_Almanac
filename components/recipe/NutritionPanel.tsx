@@ -2,12 +2,13 @@
  * Nutrition Panel
  *
  * Optional, collapsible "Nutrition (approximate)" panel for the recipe detail
- * page. It estimates per-serving (or per-recipe) calories and macros from a
+ * page. It estimates per-recipe and per-serving calories and macros from a
  * static USDA-derived lookup table via `estimateRecipeNutrition`.
  *
  * Every value is explicitly marked as approximate. The panel:
  * - is collapsed by default
- * - shows a 5-cell grid (kcal / protein / carbs / fat / fibre)
+ * - shows a 5-cell grid (kcal / protein / carbs / fat / fibre) per recipe
+ * - adds a second per-serving grid when the recipe declares a serving count
  * - warns prominently when coverage is low (< 70%)
  * - discloses any ingredients it could not match
  * - shows "Not enough data" when there is nothing useful to estimate
@@ -35,6 +36,33 @@ const MACRO_CELLS: Array<{ key: keyof Nutrition; label: string; unit: string }> 
   { key: 'fibre_g', label: 'Fibre', unit: 'g' },
 ];
 
+function MacroGrid({ values, heading }: { values: Nutrition; heading: string }) {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold mb-2">{heading}</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+        {MACRO_CELLS.map((cell) => (
+          <div
+            key={cell.key}
+            className="rounded-lg bg-base-100 px-3 py-3 text-center"
+          >
+            <div className="text-lg sm:text-xl font-bold">
+              {values[cell.key]}
+              {cell.unit === 'g' ? (
+                <span className="text-sm font-normal opacity-70"> g</span>
+              ) : null}
+            </div>
+            <div className="text-xs opacity-70">
+              {cell.label}
+              {cell.unit === 'kcal' ? ' (kcal)' : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function NutritionPanel({ ingredients, servings }: NutritionPanelProps) {
   const [open, setOpen] = useState(false);
 
@@ -46,10 +74,12 @@ export default function NutritionPanel({ ingredients, servings }: NutritionPanel
   // We have something worth showing only when at least one ingredient matched
   // (matched mass > 0, reflected by coverage > 0).
   const hasData = result.coverage > 0;
-  const values = result.perServing ?? result.total;
-  const basisLabel = result.perServing ? 'per serving' : 'per recipe';
   const coveragePercent = Math.round(result.coverage * 100);
   const lowCoverage = hasData && result.coverage < COVERAGE_WARNING_THRESHOLD;
+  const perServingHeading =
+    servings != null && servings > 0
+      ? `Per serving (recipe serves ${servings})`
+      : 'Per serving';
 
   return (
     <div className="mb-8">
@@ -109,35 +139,17 @@ export default function NutritionPanel({ ingredients, servings }: NutritionPanel
             ) : (
               <>
                 <p className="text-sm opacity-70 mb-3">
-                  Approximate values {basisLabel}. Estimated from ingredient amounts using
-                  USDA reference data — actual values vary.
+                  Approximate values shown per recipe
+                  {result.perServing ? ' and per serving' : ''}. Estimated from ingredient
+                  amounts using USDA reference data — actual values vary.
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
-                  {MACRO_CELLS.map((cell) => (
-                    <div
-                      key={cell.key}
-                      className="rounded-lg bg-base-100 px-3 py-3 text-center"
-                    >
-                      <div className="text-lg sm:text-xl font-bold">
-                        {values[cell.key]}
-                        {cell.unit === 'g' ? (
-                          <span className="text-sm font-normal opacity-70"> g</span>
-                        ) : null}
-                      </div>
-                      <div className="text-xs opacity-70">
-                        {cell.label}
-                        {cell.unit === 'kcal' ? ' (kcal)' : ''}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <MacroGrid values={result.total} heading="Per recipe" />
 
-                {!result.perServing && (
-                  <p className="text-xs opacity-60 mt-2">
-                    No serving count is set for this recipe, so totals are shown for the
-                    whole recipe.
-                  </p>
+                {result.perServing && (
+                  <div className="mt-4">
+                    <MacroGrid values={result.perServing} heading={perServingHeading} />
+                  </div>
                 )}
 
                 {lowCoverage && (
