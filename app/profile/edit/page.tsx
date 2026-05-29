@@ -37,6 +37,7 @@ export default function ProfileEditPage() {
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
   const [selectedUnit, setSelectedUnit] = useState<string>(DEFAULT_UNIT);
+  const [nutritionEnabled, setNutritionEnabled] = useState<boolean>(false);
   const [currentThemeMode, setCurrentThemeMode] = useState<'light' | 'dark'>('light');
 
   /**
@@ -201,6 +202,7 @@ export default function ProfileEditPage() {
           default_light_theme: selectedLightTheme,
           default_dark_theme: selectedDarkTheme,
           default_unit: selectedUnit,
+          nutrition_estimation_enabled: nutritionEnabled,
         })
         .eq('id', user.id);
       
@@ -216,6 +218,7 @@ export default function ProfileEditPage() {
         default_light_theme: selectedLightTheme,
         default_dark_theme: selectedDarkTheme,
         default_unit: selectedUnit,
+        nutrition_estimation_enabled: nutritionEnabled,
       });
       
       // Update description state to show censored version
@@ -288,6 +291,7 @@ export default function ProfileEditPage() {
         setSelectedLightTheme(lightTheme);
         setSelectedDarkTheme(darkTheme);
         setSelectedUnit(defaultUnit);
+        setNutritionEnabled(userProfile.nutrition_estimation_enabled === true);
         
         // Apply user's current theme preferences
         applyThemePreview(lightTheme, darkTheme);
@@ -557,6 +561,27 @@ export default function ProfileEditPage() {
                     <option value="other">Other</option>
                   </optgroup>
                 </select>
+              </div>
+
+              {/* Nutrition Estimation */}
+              <div className="form-control mb-6">
+                <label className="label cursor-pointer">
+                  <span className="label-text font-semibold text-lg">Nutrition Estimation</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={nutritionEnabled}
+                    onChange={(e) => setNutritionEnabled(e.target.checked)}
+                  />
+                </label>
+                <div className="alert alert-warning mt-2">
+                  <span className="text-sm">
+                    Strictly experimental. When on, recipe pages show an approximate
+                    calorie and macro breakdown estimated from ingredient amounts using
+                    USDA nutrition values. Figures are rough and not a substitute for
+                    professional dietary advice. Off by default.
+                  </span>
+                </div>
               </div>
 
               {/* Submit Button */}

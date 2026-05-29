@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
   const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
+  const [nutritionEnabled, setNutritionEnabled] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -128,6 +129,7 @@ export default function RegisterPage() {
             default_light_theme: selectedLightTheme,
             default_dark_theme: selectedDarkTheme,
             default_unit: selectedUnit,
+            nutrition_estimation_enabled: nutritionEnabled,
           })
           .eq('id', data.user.id);
 
@@ -344,6 +346,27 @@ export default function RegisterPage() {
                   <option value="other">Other</option>
                 </optgroup>
               </select>
+            </div>
+
+            {/* Nutrition Estimation */}
+            <div className="form-control mt-6">
+              <label className="label cursor-pointer">
+                <span className="label-text font-semibold text-lg">Nutrition Estimation</span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={nutritionEnabled}
+                  onChange={(e) => setNutritionEnabled(e.target.checked)}
+                />
+              </label>
+              <div className="alert alert-warning mt-2">
+                <span className="text-sm">
+                  Strictly experimental. When on, recipe pages show an approximate
+                  calorie and macro breakdown estimated from ingredient amounts using
+                  USDA nutrition values. Figures are rough and not a substitute for
+                  professional dietary advice. Off by default.
+                </span>
+              </div>
             </div>
 
             <div className="form-control mt-6">

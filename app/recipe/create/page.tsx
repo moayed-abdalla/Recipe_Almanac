@@ -34,6 +34,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   const [description, setDescription] = useState(recipe?.description || '');
   const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
   const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
+  const [nutritionVisible, setNutritionVisible] = useState(recipe?.nutrition_visible ?? true);
 
   // Optional servings / timing fields (stored as strings for controlled inputs)
   const [servings, setServings] = useState(recipe?.servings != null ? String(recipe.servings) : '');
@@ -233,6 +234,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
             cook_time_minutes: cookTimeValue,
+            nutrition_visible: nutritionVisible,
             updated_at: new Date().toISOString(),
           })
           .eq('id', recipe!.id);
@@ -298,6 +300,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
             cook_time_minutes: cookTimeValue,
+            nutrition_visible: nutritionVisible,
           })
           .select()
           .single();
@@ -639,6 +642,22 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           </label>
           <label className="label">
             <span className="label-text-alt">Public recipes can be viewed by everyone. Private recipes are only visible to you.</span>
+          </label>
+        </div>
+
+        {/* Nutrition Estimate Toggle */}
+        <div className="form-control">
+          <label className="label cursor-pointer">
+            <span className="label-text">Show nutrition estimate on this recipe</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-primary"
+              checked={nutritionVisible}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNutritionVisible(e.target.checked)}
+            />
+          </label>
+          <label className="label">
+            <span className="label-text-alt">When on, viewers who have enabled nutrition estimation can see an approximate, experimental breakdown based on ingredient amounts.</span>
           </label>
         </div>
 
