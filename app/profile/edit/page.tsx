@@ -7,6 +7,11 @@ import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
+import {
+  DEFAULT_TEMPERATURE_UNIT,
+  TEMPERATURE_OPTIONS,
+  type TemperatureUnitValue,
+} from '@/lib/temperature-config';
 import type { Profile } from '@/types';
 import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 
@@ -37,6 +42,8 @@ export default function ProfileEditPage() {
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
   const [selectedUnit, setSelectedUnit] = useState<string>(DEFAULT_UNIT);
+  const [selectedTemperatureUnit, setSelectedTemperatureUnit] =
+    useState<TemperatureUnitValue>(DEFAULT_TEMPERATURE_UNIT);
   const [nutritionEnabled, setNutritionEnabled] = useState<boolean>(false);
   const [currentThemeMode, setCurrentThemeMode] = useState<'light' | 'dark'>('light');
 
@@ -202,6 +209,7 @@ export default function ProfileEditPage() {
           default_light_theme: selectedLightTheme,
           default_dark_theme: selectedDarkTheme,
           default_unit: selectedUnit,
+          default_temperature_unit: selectedTemperatureUnit,
           nutrition_estimation_enabled: nutritionEnabled,
         })
         .eq('id', user.id);
@@ -218,6 +226,7 @@ export default function ProfileEditPage() {
         default_light_theme: selectedLightTheme,
         default_dark_theme: selectedDarkTheme,
         default_unit: selectedUnit,
+        default_temperature_unit: selectedTemperatureUnit,
         nutrition_estimation_enabled: nutritionEnabled,
       });
       
@@ -288,9 +297,12 @@ export default function ProfileEditPage() {
         const lightTheme = userProfile.default_light_theme || DEFAULT_LIGHT_THEME;
         const darkTheme = userProfile.default_dark_theme || DEFAULT_DARK_THEME;
         const defaultUnit = userProfile.default_unit || DEFAULT_UNIT;
+        const defaultTempUnit =
+          userProfile.default_temperature_unit === 'F' ? 'F' : DEFAULT_TEMPERATURE_UNIT;
         setSelectedLightTheme(lightTheme);
         setSelectedDarkTheme(darkTheme);
         setSelectedUnit(defaultUnit);
+        setSelectedTemperatureUnit(defaultTempUnit);
         setNutritionEnabled(userProfile.nutrition_estimation_enabled === true);
         
         // Apply user's current theme preferences
@@ -560,6 +572,29 @@ export default function ProfileEditPage() {
                   <optgroup label="Other">
                     <option value="other">Other</option>
                   </optgroup>
+                </select>
+              </div>
+
+              {/* Default Temperature Unit */}
+              <div className="form-control mb-6">
+                <label className="label">
+                  <span className="label-text font-semibold text-lg">Default Temperature Unit</span>
+                </label>
+                <label className="label">
+                  <span className="label-text-alt">Used when viewing recipe temperatures</span>
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={selectedTemperatureUnit}
+                  onChange={(e) =>
+                    setSelectedTemperatureUnit(e.target.value as TemperatureUnitValue)
+                  }
+                >
+                  {TEMPERATURE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
