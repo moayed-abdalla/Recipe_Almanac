@@ -4,24 +4,23 @@ A digital recipe book you can share, browse, and write your own. **No ads. No su
 
 ## Why Recipe Almanac?
 
-I created Recipe Almanac after growing frustrated with recipe websites that:
-- Clutter pages with ads and pop-ups
-- Require email signups and subscriptions
-- Fill pages with marketing copy instead of actual recipes
-- Make it difficult to convert between measurement units (cups to grams, etc.)
-- Prioritize SEO content over user experience
-
-Recipe Almanac is my answer: a clean, ad-free platform focused solely on sharing great recipes with proper unit conversion tools.
+Most recipe sites are a chore to use and cover the actual recipe under ads, pop-ups, email gates, and SEO filler—and still give you unreliable cup-to-gram conversions. Recipe Almanac is built to do the opposite: **recipes first**, with tools that respect your time and privacy.
 
 ## What Makes It Different?
 
-**Ad-Free Experience** - No ads, no pop-ups, no distractions  
-**Privacy-First** - No email harvesting or marketing campaigns  
-**Smart Unit Conversion** - Easily switch between volume (cups, teaspoons) and weight (grams) measurements  
-**Clean Interface** - Focus on the recipe, not the marketing  
-**Dark Mode** - Comfortable viewing in any lighting  
-**Powerful Search** - Find recipes by name or tags  
-**Your Almanac** - Save and organize your favorite recipes  
+| Problem on typical recipe sites | How Recipe Almanac addresses it |
+|--------------------------------|----------------------------------|
+| Ads, pop-ups, distractions | Ad-free, recipe-focused layout |
+| Email signups & data harvesting | Privacy-first; no marketing campaigns |
+| SEO/blog filler around the recipe | Clean recipe pages; optional nutrition & notes only where useful |
+| Inconsistent volume ↔ weight conversion | Grams-based storage with one-click volume/weight toggle and density-aware conversion |
+| One-size-fits-all UI | Eight food-themed light/dark themes (see [Color Themes](#color-themes)) |
+| Hard to cook along | Built-in step timers with chime |
+| No sense of community quality | Star ratings and a public leaderboard |
+| Scattered bookmarks | Personal almanac, follow creators, export/print via **Prepare Almanac** (PDF) |
+| Mobile-unfriendly browsing | Responsive design + PWA-style offline page |
+
+**Also included:** full-text search & tags, public/private recipes, view counts, feedback with attachments, and a typewriter + kitchen-icon aesthetic—without subscriptions or ads funding the site.
 
 ## How It Works
 
@@ -33,7 +32,7 @@ Recipe Almanac is built with modern web technologies:
 - **Styling**: Tailwind CSS with DaisyUI components
 - **Backend**: Supabase (PostgreSQL database + Authentication + Storage)
 - **Deployment**: Vercel (serverless hosting)
-- **Font**: Typewriter-style fonts (Courier Prime, Special Elite) for a classic alchemist aesthetic
+- **Font**: Typewriter-style fonts (Special Elite) for a classic alchemist aesthetic
 
 ### Authentication & Security
 
@@ -43,7 +42,7 @@ Recipe Almanac is built with modern web technologies:
 - Session management
 - No need to handle passwords yourself
 - Industry-standard security practices
-- Admin have no method for accessing or decrypting passwords
+- Admins have no method for accessing or decrypting passwords
 
 When you create an account:
 1. Supabase Auth creates your user account securely
@@ -73,7 +72,7 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 ### For Recipe Creators
 - Create recipes with images
 - Add multiple tags for categorization
-- Write detailed method steps
+- Write detailed method steps with step timers
 - Include helpful notes
 - Set recipes as public or private
 - Track view counts
@@ -83,168 +82,104 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 - Filter by category
 - View recipes with beautiful formatting
 - Toggle between measurement units
+- Approximate nutrition estimates per recipe
 - Save recipes to your almanac
 - Follow recipe creators
+- Rate recipes and explore the leaderboard
 
 ### For Everyone
 - Clean, distraction-free interface
-- Chemistry-themed design with subtle flask backgrounds
+- Chemistry-themed design with subtle kitchen-icon backgrounds
+- Eight selectable light/dark color themes
 - Responsive design (works on mobile, tablet, desktop)
-- Dark mode support
 - Fast loading times
 - No account required to browse public recipes
+- Prepare Almanac PDF export for saved recipes
 
 ## Project Structure
 
 ```
 Recipe_Almanac/
-├── app/                          # Next.js App Router
-│   ├── api/                      # API routes
-│   │   ├── debug-auth/           # Debug authentication endpoint
-│   │   └── recipes/              # Recipes API endpoint
-│   ├── almanac/                  # User's saved recipes
-│   │   ├── MyAlmanacPage.tsx     # Main almanac component
-│   │   └── page.tsx              # Almanac page route
-│   ├── feedback/                 # Feedback page
-│   │   ├── FeedbackPage.tsx      # Feedback component
-│   │   └── page.tsx              # Feedback route
-│   ├── login/                    # Login page
-│   │   ├── LoginPage.tsx         # Login component
-│   │   └── page.tsx              # Login route
-│   ├── profile/                  # User profiles
-│   │   ├── [username]/           # Dynamic username route
-│   │   │   ├── ProfileViewPage.tsx
-│   │   │   └── page.tsx
-│   │   ├── ProfileEditPage.tsx   # Profile editing component
-│   │   └── page.tsx              # Profile route
-│   ├── recipe/                   # Recipe pages
-│   │   ├── [id]/                 # Dynamic recipe ID route
-│   │   │   ├── edit/             # Recipe editing
-│   │   │   │   ├── RecipeEditPage.tsx
-│   │   │   │   └── page.tsx
-│   │   │   ├── RecipeDetailPage.tsx
-│   │   │   ├── RecipePageClient.tsx
-│   │   │   └── page.tsx
-│   │   └── create/               # Recipe creation
-│   │       ├── RecipeCreatePage.tsx
-│   │       └── page.tsx
-│   ├── register/                 # Registration page
-│   │   ├── RegisterPage.tsx     # Registration component
-│   │   └── page.tsx              # Registration route
-│   ├── user/                     # User profile pages
-│   │   └── [username]/           # Dynamic username route
-│   │       ├── UserProfileAlmanacPage.tsx
-│   │       └── page.tsx
-│   ├── write_recipe/             # Legacy recipe writing route
-│   │   └── page.tsx
-│   ├── globals.css               # Global styles
-│   ├── HomePage.tsx              # Homepage component
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Homepage route
-├── components/                   # Reusable React components
-│   ├── Footer.tsx                # Site footer
-│   ├── Header.tsx                # Site header/navigation
-│   ├── HomePageClient.tsx        # Client-side homepage logic
-│   ├── RecipeCard.tsx            # Recipe card component
-│   ├── RecipeListClient.tsx     # Recipe list client component
-│   └── SearchBar.tsx            # Search bar component
-├── lib/                          # Supabase client configuration
-│   ├── supabase.ts              # Server-side Supabase client
-│   └── supabase-client.ts       # Client-side Supabase client
-├── utils/                        # Utility functions
-│   └── unitConverter.ts         # Unit conversion utilities
-├── public/                       # Static assets
-│   ├── bg_pic_01.png … bg_pic_12.png  # Background mask images (kitchen icons)
-│   ├── BuyMeACoffee_*.png       # Support images
-│   ├── favicon_*.ico            # Favicons
-│   └── logo.png                 # Logo image
-├── middleware.ts                 # Next.js middleware (auth handling)
-├── next.config.js                # Next.js configuration
-├── package.json                  # Dependencies and scripts
-├── postcss.config.js             # PostCSS configuration
-├── tailwind.config.ts            # Tailwind CSS configuration
-├── tsconfig.json                 # TypeScript configuration
-├── DIAGNOSTIC_GUIDE.md           # Comprehensive debugging guide
-└── Readme.md                     # This file
+├── app/                              # Next.js App Router
+│   ├── api/
+│   │   ├── debug-auth/               # Auth debugging route
+│   │   └── recipes/                  # Recipes API + view counter
+│   ├── auth/callback/                # Supabase OAuth callback
+│   ├── almanac/                      # Signed-in user's saved recipes
+│   ├── feedback/                     # User feedback
+│   ├── leaderboard/                  # Top recipes by engagement
+│   ├── login/                        # Sign in
+│   ├── offline/                      # PWA offline fallback
+│   ├── prepare_almanac/              # Almanac PDF preparation
+│   ├── profile/                      # Profile view & edit
+│   │   ├── [username]/               # Public profile
+│   │   └── edit/
+│   ├── recipe/
+│   │   ├── [id]/                     # Recipe detail, edit
+│   │   └── create/                   # New recipe
+│   ├── register/                     # Sign up (+ confirm)
+│   ├── globals.css                   # Theme CSS variables & masks
+│   ├── layout.tsx, page.tsx          # Root layout & home
+│   ├── error.tsx, robots.ts, sitemap.ts
+│   └── HomePage.tsx
+├── components/
+│   ├── recipe/                       # Grid, ratings, timers, nutrition
+│   ├── profile/, navigation/, ui/
+│   ├── providers/                    # App + service worker
+│   ├── AlmanacBackgroundLayer.tsx
+│   ├── Header.tsx, Footer.tsx, SearchBar.tsx, RecipeCard.tsx, …
+├── contexts/                         # ProfileContext
+├── data/                             # nutrition.json, badWords.json
+├── db/                               # SQL snippets (e.g. nutrition_feature.sql)
+├── hooks/                            # useAuth
+├── lib/
+│   ├── theme-config.ts               # Named color themes
+│   ├── recipeService.ts, almanacPdf.ts, almanacBackground.ts
+│   ├── supabase.ts, supabase-client.ts
+│   └── unit-config.ts, timerChime.ts, …
+├── public/
+│   ├── bg_pic_01.png … bg_pic_12.png # Mask backgrounds
+│   ├── fonts/SpecialElite-Regular.ttf
+│   ├── manifest.json, sw.js          # PWA assets
+│   └── icons, favicons, logo
+├── types/                            # Shared TypeScript types
+├── utils/                            # unitConverter, nutritionEstimator, …
+├── middleware.ts
+├── tailwind.config.ts                # DaisyUI themes from theme-config
+├── next.config.js, package.json, tsconfig.json
+├── clone_guide.md                    # Clone, Supabase, deploy, troubleshooting
+└── Readme.md
 ```
 
-**Note**: Database schema files are not included in this repository. The database schema should be set up directly in your Supabase project's SQL Editor. See the [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for detailed setup instructions.
+**Note:** Database schema is maintained in Supabase (see [clone_guide.md](clone_guide.md)). Optional SQL lives under `db/`.
 
-## Getting Started
+## Color Themes
 
-### Prerequisites
-- Node.js 18 or higher
-- A Supabase account (free tier works)
+Users pick separate **light** and **dark** themes (stored in profile/local storage). DaisyUI theme IDs map to display names:
 
-### Setup
+### Light themes
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/moayed-abdalla/Recipe_Almanac.git
-   cd Recipe_Almanac
-   ```
+| Theme ID | Display name | Accent feel |
+|----------|--------------|-------------|
+| `light-orange` | **Tangarine** | Orange on white-grey (default light) |
+| `light-grey` | **Pepper** | Neutral grey palette |
+| `light-beige` | **Lobster** | Beige with blue-grey accents |
+| `light-coffee` | **Coffee** | Warm beige & brown |
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Dark themes
 
-3. **Set up Supabase**
-   - Create a project at [supabase.com](https://supabase.com)
-   - Set up your database schema (see [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for SQL schema)
-   - Create storage buckets: `recipe-image`, `avatars`, and `feedback-attachments` (all public)
-   - Set up storage policies (see [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) or run `supabase-storage-policies.sql`)
-   - Get your API keys from Settings > API
+| Theme ID | Display name | Accent feel |
+|----------|--------------|-------------|
+| `dark-orange` | **Lemon** | Orange on near-black (default dark) |
+| `dark-blue` | **Ice** | Cool blue on slate |
+| `dark-red` | **Tomato** | Red accents on dark |
+| `dark-purple` | **Eggplant** | Lavender on deep purple |
 
-4. **Configure environment variables**
-   - Create a `.env.local` file in the root directory
-   - Add the following variables:
-     ```env
-     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-     ```
-   - Replace the placeholder values with your actual Supabase credentials
-
-5. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
-   - Visit `http://localhost:3000`
-
-## Deployment
-
-Recipe Almanac is designed to deploy seamlessly on Vercel:
-
-1. Push your code to GitHub
-2. Import your repository in [Vercel](https://vercel.com)
-3. Add environment variables (Supabase URL and key)
-4. Deploy!
-
-Vercel automatically:
-- Detects Next.js
-- Builds your app
-- Deploys to a global CDN
-- Sets up serverless functions for API routes
-
-## Color Theme
-
-Recipe Almanac uses a chemistry-inspired color palette:
-
-**Light Mode (Default)**:
-- Background: `#F7F7F7` (white-grey)
-- Text: `#CC5500` (dark orange)
-- Primary: `#FF8C00` (orange)
-- Accent: `#87CEEB` (light blue)
-
-**Dark Mode**:
-- Inverted colors for comfortable viewing
-- Dark background with orange text
+Kitchen background masks are tinted via CSS variables per theme (`app/globals.css`, `lib/theme-config.ts`).
 
 ## Contributing
 
-Recipe Almanac is open source! Feel free to:
+Recipe Almanac is open source, feel free to:
 - Report bugs
 - Suggest features
 - Submit pull requests
@@ -254,9 +189,9 @@ Recipe Almanac is open source! Feel free to:
 
 This project is open source and available for everyone to use and contribute to.
 
-## Troubleshooting
+## Cloning
 
-If you encounter issues setting up or running the application, please refer to the [Diagnostic Guide](DIAGNOSTIC_GUIDE.md) for comprehensive troubleshooting steps, common issues, and debugging techniques.
+To run Recipe Almanac locally or deploy your own copy, follow **[clone_guide.md](clone_guide.md)**. It covers prerequisites, Supabase setup (schema, storage buckets, policies), environment variables, `npm run dev`, common issues, and Vercel deployment.
 
 ## Support
 
