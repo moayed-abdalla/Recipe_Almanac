@@ -28,6 +28,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
+import {
+  fixSpecialCharacters,
+  fixSpecialCharactersInArray,
+} from '@/lib/fixSpecialCharacters';
 
 interface Recipe {
   id: string;
@@ -231,13 +235,13 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
         const { error: recipeError } = await supabaseClient
           .from('recipes')
           .update({
-            title,
+            title: fixSpecialCharacters(title),
             slug,
-            description: description || null,
+            description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: methodSteps.filter(Boolean),
-            notes: notes.filter(Boolean),
+            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -267,7 +271,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: recipe!.id,
-              name: ing.name,
+              name: fixSpecialCharacters(ing.name),
               amount_grams: amountGrams,
               unit: ing.unit,
               display_amount: ing.amount,
@@ -294,13 +298,13 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           .from('recipes')
           .insert({
             user_id: user.id,
-            title,
+            title: fixSpecialCharacters(title),
             slug,
-            description: description || null,
+            description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: methodSteps.filter(Boolean),
-            notes: notes.filter(Boolean),
+            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -324,7 +328,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
               recipe_id: newRecipe.id,
-              name: ing.name,
+              name: fixSpecialCharacters(ing.name),
               amount_grams: amountGrams,
               unit: ing.unit,
               display_amount: ing.amount,

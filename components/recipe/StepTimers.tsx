@@ -294,7 +294,7 @@ export default function StepTimers({ step, index }: { step: string; index: numbe
         const timerId = `${index}-${timerCount++}`;
         return (
           <Fragment key={i}>
-            <span className="bg-primary/10 underline decoration-primary/40 underline-offset-2 rounded px-0.5">
+            <span className="bg-primary/10 underline decoration-primary/40 underline-offset-2 rounded px-0.5 arial-font">
               {token.match.matchText}
             </span>
             <InlineTimer match={token.match} timerId={timerId} />

@@ -39,6 +39,10 @@ import StepTimers from '@/components/recipe/StepTimers';
 import RecipeRatings from '@/components/recipe/RecipeRatings';
 import NutritionPanel from '@/components/recipe/NutritionPanel';
 import { RecipeTimerContext } from '@/components/recipe/timerContext';
+import {
+  fixSpecialCharacters,
+  fixSpecialCharactersInArray,
+} from '@/lib/fixSpecialCharacters';
 
 interface Ingredient {
   id: string;
@@ -93,7 +97,29 @@ export default function RecipePageClient({
   nutritionEnabled,
 }: RecipePageClientProps) {
   const router = useRouter();
-  
+
+  const displayRecipe = useMemo(
+    () => ({
+      ...recipe,
+      title: fixSpecialCharacters(recipe.title),
+      description: recipe.description
+        ? fixSpecialCharacters(recipe.description)
+        : null,
+      method_steps: fixSpecialCharactersInArray(recipe.method_steps),
+      notes: fixSpecialCharactersInArray(recipe.notes),
+    }),
+    [recipe]
+  );
+
+  const displayIngredients = useMemo(
+    () =>
+      ingredients.map((ingredient) => ({
+        ...ingredient,
+        name: fixSpecialCharacters(ingredient.name),
+      })),
+    [ingredients]
+  );
+
   // Debug logging (remove in production)
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -763,7 +789,7 @@ export default function RecipePageClient({
         {recipe.image_url ? (
           <Image
             src={recipe.image_url}
-            alt={recipe.title}
+            alt={displayRecipe.title}
             width={800}
             height={600}
             className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-lg"
@@ -778,7 +804,7 @@ export default function RecipePageClient({
       {/* Recipe Title and Actions */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col gap-3 mb-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold special-elite-regular break-words text-base-content">{recipe.title}</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold special-elite-regular break-words text-base-content">{displayRecipe.title}</h1>
           <div className="flex gap-1.5 sm:gap-2 flex-wrap">
             {/* Wake Lock Button */}
             <button
@@ -965,8 +991,8 @@ export default function RecipePageClient({
       )}
 
       {/* Description */}
-      {recipe.description && (
-        <p className="mb-6 sm:mb-8 text-base sm:text-lg arial-font break-words">{recipe.description}</p>
+      {displayRecipe.description && (
+        <p className="mb-6 sm:mb-8 text-base sm:text-lg arial-font break-words">{displayRecipe.description}</p>
       )}
 
       {/* Ingredients Section */}
@@ -1026,7 +1052,7 @@ export default function RecipePageClient({
           </div>
         </div>
         <ul className="space-y-3">
-          {ingredients.map((ingredient) => {
+          {displayIngredients.map((ingredient) => {
             const { amount, unit, showWarning } = getDisplayAmount(ingredient);
             const isChecked = checkedIngredients.has(ingredient.id);
             const availableUnits = getAvailableUnits(ingredient);
@@ -1086,7 +1112,7 @@ export default function RecipePageClient({
       <div className="mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Method</h2>
         <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-3">
-          {recipe.method_steps.map((step, index) => (
+          {displayRecipe.method_steps.map((step, index) => (
             <li key={index} className="text-base sm:text-lg arial-font break-words pl-1">
               <StepTimers step={step} index={index} />
             </li>
@@ -1097,7 +1123,7 @@ export default function RecipePageClient({
       {/* Nutrition Section (viewer opt-in + creator opt-out) */}
       {nutritionEnabled && recipe.nutrition_visible !== false && (
         <NutritionPanel
-          ingredients={ingredients.map((ing) => ({
+          ingredients={displayIngredients.map((ing) => ({
             name: ing.name,
             amount_grams: ing.amount_grams,
           }))}
@@ -1106,11 +1132,11 @@ export default function RecipePageClient({
       )}
 
       {/* Notes Section */}
-      {recipe.notes.length > 0 && (
+      {displayRecipe.notes.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Notes</h2>
           <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-2">
-            {recipe.notes.map((note, index) => (
+            {displayRecipe.notes.map((note, index) => (
               <li key={index} className="opacity-80 arial-font break-words pl-1 text-sm sm:text-base">
                 {note}
               </li>
