@@ -39,10 +39,11 @@ Recipe Almanac is built with modern web technologies:
 
 **All user authentication is handled by Supabase Auth**, which means:
 - Secure password hashing (bcrypt)
-- Email verification (optional)
+- Email verification
 - Session management
 - No need to handle passwords yourself
 - Industry-standard security practices
+- Admin have no method for accessing or decrypting passwords
 
 When you create an account:
 1. Supabase Auth creates your user account securely
