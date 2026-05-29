@@ -23,11 +23,13 @@ import { supabaseClient } from '@/lib/supabase-client';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorAlert from '@/components/ui/ErrorAlert';
 import EmptyState from '@/components/ui/EmptyState';
+import AlmanacBackgroundLayer from '@/components/AlmanacBackgroundLayer';
 import {
   generateAlmanacPdf,
   type AlmanacRecipe,
   type AlmanacBrand,
 } from '@/lib/almanacPdf';
+import { readBgOpacity } from '@/lib/almanacBackground';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { getThemeById, type ThemeId } from '@/lib/theme-config';
 
@@ -78,6 +80,7 @@ function readBrand(): AlmanacBrand {
       background: '#F7F7F7',
       text: '#CC5500',
       imageColor: '#CC5500',
+      bgOpacity: 0.15,
       mode: 'light',
     };
   }
@@ -98,6 +101,7 @@ function readBrand(): AlmanacBrand {
     background: theme?.colors['base-100'] || '#FFFFFF',
     text: theme?.colors['base-content'] || '#1A1A1A',
     imageColor,
+    bgOpacity: readBgOpacity(),
     mode,
   };
 }
@@ -217,6 +221,7 @@ export default function PrepareAlmanacPage() {
     background: '#F7F7F7',
     text: '#1A1A1A',
     imageColor: '#CC5500',
+    bgOpacity: 0.15,
     mode: 'light',
   }));
 
@@ -570,9 +575,10 @@ function PreviewCover({
         color: brand.text,
       }}
     >
-      <div className="h-1.5 w-full" style={{ backgroundColor: brand.primary }} />
-      <div className="absolute bottom-0 left-0 right-0 h-1.5" style={{ backgroundColor: brand.primary }} />
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 py-10 text-center">
+      <AlmanacBackgroundLayer imageColor={brand.imageColor} bgOpacity={brand.bgOpacity} />
+      <div className="h-1.5 w-full relative z-10" style={{ backgroundColor: brand.primary }} />
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 z-10" style={{ backgroundColor: brand.primary }} />
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 py-10 text-center z-10">
         <div
           className="w-24 h-24 sm:w-32 sm:h-32 mb-4"
           style={{
@@ -617,14 +623,15 @@ function PreviewCover({
 function PreviewPage({ recipe, brand }: { recipe: ListRecipe; brand: AlmanacBrand }) {
   return (
     <article
-      className="rounded-md shadow-md mx-auto w-full max-w-[520px] overflow-hidden"
+      className="rounded-md shadow-md mx-auto w-full max-w-[520px] overflow-hidden relative"
       style={{
         backgroundColor: brand.background,
         color: brand.text,
       }}
     >
-      <div className="h-1.5 w-full" style={{ backgroundColor: brand.primary }} />
-      <header className="flex items-center gap-2 px-4 pt-3 pb-2">
+      <AlmanacBackgroundLayer imageColor={brand.imageColor} bgOpacity={brand.bgOpacity} />
+      <div className="h-1.5 w-full relative z-10" style={{ backgroundColor: brand.primary }} />
+      <header className="relative z-10 flex items-center gap-2 px-4 pt-3 pb-2">
         <div
           className="w-5 h-5"
           style={{
@@ -647,7 +654,7 @@ function PreviewPage({ recipe, brand }: { recipe: ListRecipe; brand: AlmanacBran
         </span>
       </header>
 
-      <div className="px-4 pb-5">
+      <div className="relative z-10 px-4 pb-5">
         <h3
           className="text-xl sm:text-2xl font-bold special-elite-regular mb-1 break-words"
           style={{ color: brand.primary }}
@@ -735,12 +742,12 @@ function PreviewHeading({ label, brand }: { label: string; brand: AlmanacBrand }
   return (
     <div className="mb-1.5">
       <h4
-        className="text-sm sm:text-base font-bold special-elite-regular"
+        className="text-sm sm:text-base font-bold special-elite-regular leading-tight"
         style={{ color: brand.primary }}
       >
         {label}
       </h4>
-      <div className="h-px w-10" style={{ backgroundColor: brand.primary }} />
+      <div className="mt-0.5 h-px w-10" style={{ backgroundColor: brand.primary }} />
     </div>
   );
 }
