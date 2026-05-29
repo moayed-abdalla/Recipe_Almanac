@@ -6,6 +6,7 @@
  */
 
 import type { LightThemeId, DarkThemeId } from '@/lib/theme-config';
+import type { TemperatureUnitValue } from '@/lib/temperature-config';
 
 /**
  * Profile interface matching the database schema
@@ -18,6 +19,7 @@ export interface Profile {
   default_light_theme?: LightThemeId | null;
   default_dark_theme?: DarkThemeId | null;
   default_unit?: string | null;
+  default_temperature_unit?: TemperatureUnitValue | null;
   nutrition_estimation_enabled?: boolean | null;
   created_at?: string;
   updated_at?: string;
