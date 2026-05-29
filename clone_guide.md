@@ -1,6 +1,6 @@
-# Diagnostic Guide: Complete Setup & Debugging Tutorial
+# Clone Guide: Setup, Supabase & Deployment
 
-This comprehensive guide will help you set up Recipe Almanac from scratch and debug common issues.
+This guide walks you through cloning Recipe Almanac, configuring Supabase, running locally, deploying to Vercel, and fixing common setup issues.
 
 ## Table of Contents
 
