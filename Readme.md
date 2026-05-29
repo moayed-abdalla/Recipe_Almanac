@@ -15,13 +15,13 @@ Recipe Almanac is my answer: a clean, ad-free platform focused solely on sharing
 
 ## What Makes It Different?
 
-✨ **Ad-Free Experience** - No ads, no pop-ups, no distractions  
-🔒 **Privacy-First** - No email harvesting or marketing campaigns  
-⚖️ **Smart Unit Conversion** - Easily switch between volume (cups, teaspoons) and weight (grams) measurements  
-📝 **Clean Interface** - Focus on the recipe, not the marketing  
-🌓 **Dark Mode** - Comfortable viewing in any lighting  
-🔍 **Powerful Search** - Find recipes by name or tags  
-📚 **Your Almanac** - Save and organize your favorite recipes  
+**Ad-Free Experience** - No ads, no pop-ups, no distractions  
+**Privacy-First** - No email harvesting or marketing campaigns  
+**Smart Unit Conversion** - Easily switch between volume (cups, teaspoons) and weight (grams) measurements  
+**Clean Interface** - Focus on the recipe, not the marketing  
+**Dark Mode** - Comfortable viewing in any lighting  
+**Powerful Search** - Find recipes by name or tags  
+**Your Almanac** - Save and organize your favorite recipes  
 
 ## How It Works
 
