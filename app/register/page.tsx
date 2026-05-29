@@ -7,6 +7,11 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { containsBadWords, getBadWordErrorMessage } from '@/utils/badWords';
 import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
+import {
+  DEFAULT_TEMPERATURE_UNIT,
+  TEMPERATURE_OPTIONS,
+  type TemperatureUnitValue,
+} from '@/lib/temperature-config';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +22,8 @@ export default function RegisterPage() {
   const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
   const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
   const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
+  const [selectedTemperatureUnit, setSelectedTemperatureUnit] =
+    useState<TemperatureUnitValue>(DEFAULT_TEMPERATURE_UNIT);
   const [nutritionEnabled, setNutritionEnabled] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -129,6 +136,7 @@ export default function RegisterPage() {
             default_light_theme: selectedLightTheme,
             default_dark_theme: selectedDarkTheme,
             default_unit: selectedUnit,
+            default_temperature_unit: selectedTemperatureUnit,
             nutrition_estimation_enabled: nutritionEnabled,
           })
           .eq('id', data.user.id);
@@ -345,6 +353,29 @@ export default function RegisterPage() {
                 <optgroup label="Other">
                   <option value="other">Other</option>
                 </optgroup>
+              </select>
+            </div>
+
+            {/* Default Temperature Unit */}
+            <div className="form-control mt-6">
+              <label className="label">
+                <span className="label-text font-semibold text-lg">Default Temperature Unit</span>
+              </label>
+              <label className="label">
+                <span className="label-text-alt">Used when viewing recipe temperatures</span>
+              </label>
+              <select
+                className="select select-bordered"
+                value={selectedTemperatureUnit}
+                onChange={(e) =>
+                  setSelectedTemperatureUnit(e.target.value as TemperatureUnitValue)
+                }
+              >
+                {TEMPERATURE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
 

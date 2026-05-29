@@ -21,6 +21,13 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useRecipeTimer } from './timerContext';
 import { playChime, primeAudio } from '@/lib/timerChime';
+import type { TemperatureUnitValue } from '@/lib/temperature-config';
+import {
+  TEMPERATURE_REGEX,
+  formatConversionHint,
+  shouldShowConversion,
+  type ViewerTemperaturePreference,
+} from '@/lib/temperatureConversion';
 
 const TIME_REGEX =
   /(\d+(?:\.\d+)?)\s*(?:to|–|-|—)?\s*(?:(\d+(?:\.\d+)?))?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)\b/gi;
@@ -101,6 +108,86 @@ function parseStep(step: string): Token[] {
   }
 
   return tokens;
+}
+
+type TextToken =
+  | { type: 'text'; value: string }
+  | {
+      type: 'temperature';
+      matchText: string;
+      value: number;
+      unit: TemperatureUnitValue;
+    };
+
+function parseTextForTemperatures(text: string): TextToken[] {
+  const tokens: TextToken[] = [];
+  let lastIndex = 0;
+  TEMPERATURE_REGEX.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = TEMPERATURE_REGEX.exec(text)) !== null) {
+    const [matchText, numStr, unitLetter] = match;
+
+    if (match.index > lastIndex) {
+      tokens.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+    }
+
+    tokens.push({
+      type: 'temperature',
+      matchText,
+      value: parseFloat(numStr),
+      unit: unitLetter.toUpperCase() as TemperatureUnitValue,
+    });
+
+    lastIndex = match.index + matchText.length;
+  }
+
+  if (lastIndex < text.length) {
+    tokens.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+
+  if (tokens.length === 0 && text.length > 0) {
+    tokens.push({ type: 'text', value: text });
+  }
+
+  return tokens;
+}
+
+function TextWithTemperatures({
+  text,
+  preferredTemperatureUnit,
+}: {
+  text: string;
+  preferredTemperatureUnit: ViewerTemperaturePreference;
+}) {
+  const parts = useMemo(
+    () => parseTextForTemperatures(text),
+    [text]
+  );
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.type === 'text') {
+          return <Fragment key={i}>{part.value}</Fragment>;
+        }
+
+        const showHint = shouldShowConversion(part.unit, preferredTemperatureUnit);
+
+        return (
+          <Fragment key={i}>
+            {part.matchText}
+            {showHint && (
+              <span className="text-sm opacity-70">
+                {' '}
+                {formatConversionHint(part.unit, part.value)}
+              </span>
+            )}
+          </Fragment>
+        );
+      })}
+    </>
+  );
 }
 
 type Phase = 'idle' | 'running' | 'paused' | 'finished';
@@ -279,7 +366,15 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
   );
 }
 
-export default function StepTimers({ step, index }: { step: string; index: number }) {
+export default function StepTimers({
+  step,
+  index,
+  preferredTemperatureUnit,
+}: {
+  step: string;
+  index: number;
+  preferredTemperatureUnit: ViewerTemperaturePreference;
+}) {
   const tokens = useMemo(() => parseStep(step), [step]);
 
   let timerCount = 0;
@@ -288,7 +383,13 @@ export default function StepTimers({ step, index }: { step: string; index: numbe
     <>
       {tokens.map((token, i) => {
         if (token.type === 'text') {
-          return <Fragment key={i}>{token.value}</Fragment>;
+          return (
+            <TextWithTemperatures
+              key={i}
+              text={token.value}
+              preferredTemperatureUnit={preferredTemperatureUnit}
+            />
+          );
         }
 
         const timerId = `${index}-${timerCount++}`;

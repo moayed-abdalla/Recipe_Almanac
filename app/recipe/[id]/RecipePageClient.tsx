@@ -81,6 +81,8 @@ interface RecipePageClientProps {
   owner: Owner;
   isOwner: boolean;
   nutritionEnabled: boolean;
+  /** null = signed out (show all temperature conversions). */
+  preferredTemperatureUnit: 'C' | 'F' | null;
 }
 
 // Available unit options for conversion
@@ -95,6 +97,7 @@ export default function RecipePageClient({
   owner,
   isOwner,
   nutritionEnabled,
+  preferredTemperatureUnit,
 }: RecipePageClientProps) {
   const router = useRouter();
 
@@ -1114,7 +1117,11 @@ export default function RecipePageClient({
         <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-3">
           {displayRecipe.method_steps.map((step, index) => (
             <li key={index} className="text-base sm:text-lg arial-font break-words pl-1">
-              <StepTimers step={step} index={index} />
+              <StepTimers
+                step={step}
+                index={index}
+                preferredTemperatureUnit={preferredTemperatureUnit}
+              />
             </li>
           ))}
         </ol>
