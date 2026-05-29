@@ -15,11 +15,6 @@
 import { createServerClient } from '@/lib/supabase';
 import HomePageClient from '@/components/HomePageClient';
 
-// Always render on demand so missing/changing env vars or DB outages
-// never poison a static build of the home page.
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 interface Recipe {
   id: string;
   slug: string;
