@@ -95,19 +95,24 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === typedRecipe.user_id;
 
-  // Nutrition estimation is opt-in per viewer (default off). Only fetch the
-  // preference when someone is logged in; signed-out visitors never see it.
+  // Viewer preferences: nutrition (logged-in only); temperature unit for step hints.
   let nutritionEnabled = false;
+  let preferredTemperatureUnit: 'C' | 'F' | null = null;
   if (user) {
     const { data: viewerProfile } = await supabase
       .from('profiles')
-      .select('nutrition_estimation_enabled')
+      .select('nutrition_estimation_enabled, default_temperature_unit')
       .eq('id', user.id)
       .single();
     const viewerPrefs = viewerProfile as unknown as
-      | { nutrition_estimation_enabled?: boolean | null }
+      | {
+          nutrition_estimation_enabled?: boolean | null;
+          default_temperature_unit?: string | null;
+        }
       | null;
     nutritionEnabled = viewerPrefs?.nutrition_estimation_enabled === true;
+    preferredTemperatureUnit =
+      viewerPrefs?.default_temperature_unit === 'F' ? 'F' : 'C';
   }
   
   // Debug logging (remove in production)
@@ -204,6 +209,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         owner={owner}
         isOwner={isOwner}
         nutritionEnabled={nutritionEnabled}
+        preferredTemperatureUnit={preferredTemperatureUnit}
       />
     </>
   );

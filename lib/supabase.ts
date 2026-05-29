@@ -21,6 +21,7 @@ export type Database = {
           profile_description: string | null;
           avatar_url: string | null;
           nutrition_estimation_enabled: boolean;
+          default_temperature_unit: 'C' | 'F';
           created_at: string;
           updated_at: string;
         };
@@ -30,6 +31,7 @@ export type Database = {
           profile_description?: string | null;
           avatar_url?: string | null;
           nutrition_estimation_enabled?: boolean;
+          default_temperature_unit?: 'C' | 'F';
           created_at?: string;
           updated_at?: string;
         };
@@ -39,6 +41,7 @@ export type Database = {
           profile_description?: string | null;
           avatar_url?: string | null;
           nutrition_estimation_enabled?: boolean;
+          default_temperature_unit?: 'C' | 'F';
           created_at?: string;
           updated_at?: string;
         };
