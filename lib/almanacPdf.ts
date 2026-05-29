@@ -162,6 +162,14 @@ const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_X * 2;
 // Typography (line-height factor for splitTextToSize manual wrapping)
 const LINE_HEIGHT_FACTOR = 1.35;
 
+/** Kitchen icons read faint in print — boost above live-site `--theme-bg-opacity`. */
+const PDF_BG_OPACITY_MULTIPLIER = 2;
+const PDF_BG_OPACITY_MAX = 0.4;
+
+function pdfBackgroundOpacity(siteOpacity: number): number {
+  return Math.min(siteOpacity * PDF_BG_OPACITY_MULTIPLIER, PDF_BG_OPACITY_MAX);
+}
+
 /** Convert a jsPDF point size to its baseline-to-baseline mm height. */
 function lineHeightMm(fontSizePt: number): number {
   return (fontSizePt * LINE_HEIGHT_FACTOR) / 2.83465; // 1mm = 2.83465pt
@@ -644,9 +652,14 @@ export async function generateAlmanacPdf(
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   await registerSpecialEliteFont(doc);
 
+  const pdfBrand: AlmanacBrand = {
+    ...brand,
+    bgOpacity: pdfBackgroundOpacity(brand.bgOpacity),
+  };
+
   const [logoDataUrl, backgroundDataUrl] = await Promise.all([
     colourizeLogo(options.logoUrl || '/logo.png', brand.primary),
-    buildAlmanacBackgroundDataUrl(brand, readMaskPositions(), 840, 1188),
+    buildAlmanacBackgroundDataUrl(pdfBrand, readMaskPositions(), 840, 1188),
   ]);
 
   const ctx: PageContext = {
