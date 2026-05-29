@@ -1,3 +1,3 @@
-import HomePage from './HomePage';
+export const dynamic = 'force-dynamic';
 
-export default HomePage;
+export { default } from './HomePage';
