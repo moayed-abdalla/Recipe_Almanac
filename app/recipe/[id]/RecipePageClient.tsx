@@ -287,11 +287,6 @@ export default function RecipePageClient({
   const cookMinutes = toPositiveInt(recipe.cook_time_minutes);
   const hasMetaStrip = baseServings != null || prepMinutes != null || cookMinutes != null;
 
-  // When a base serving count exists, scale controls are labelled by servings
-  // ("Serves N") rather than abstract multipliers. The math stays identical.
-  const scaleLabel = (mult: number): string =>
-    baseServings != null ? `Servings: ${Math.ceil(baseServings * mult)}` : `${mult}x`;
-  
   // Per-ingredient unit conversion state
   // Key: ingredient ID, Value: selected unit
   const [ingredientUnits, setIngredientUnits] = useState<Record<string, string>>({});
@@ -500,19 +495,6 @@ export default function RecipePageClient({
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue > 0) {
       setMultiplier(numValue);
-    }
-  };
-
-  /**
-   * Handle custom servings input (used when the recipe declares a base serving
-   * count). The user enters a target serving count and we derive the multiplier
-   * from the recipe's base servings. The underlying scaling math is unchanged.
-   */
-  const handleCustomServingsChange = (value: string) => {
-    setCustomMultiplier(value);
-    const numValue = parseInt(value, 10);
-    if (!isNaN(numValue) && numValue > 0 && baseServings) {
-      setMultiplier(numValue / baseServings);
     }
   };
 
@@ -951,7 +933,7 @@ export default function RecipePageClient({
           <div className="mt-3 flex flex-wrap gap-2">
             {baseServings != null && (
               <span className="badge badge-ghost badge-lg arial-font">
-                Serves {baseServings}
+                {baseServings} {baseServings === 1 ? 'Serving' : 'Servings'}
               </span>
             )}
             {prepMinutes != null && (
@@ -998,34 +980,30 @@ export default function RecipePageClient({
               onClick={() => handleMultiplierClick(0.5)}
               className={`btn btn-sm ${multiplier === 0.5 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
             >
-              {scaleLabel(0.5)}
+              0.5x
             </button>
             <button
               onClick={() => handleMultiplierClick(1)}
               className={`btn btn-sm ${multiplier === 1 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
             >
-              {scaleLabel(1)}
+              1x
             </button>
             <button
               onClick={() => handleMultiplierClick(2)}
               className={`btn btn-sm ${multiplier === 2 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
             >
-              {scaleLabel(2)}
+              2x
             </button>
             {showCustomInput ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <input
                   type="number"
-                  step={baseServings != null ? '1' : '0.1'}
-                  min={baseServings != null ? '1' : '0.1'}
+                  step="0.1"
+                  min="0.1"
                   className="input input-bordered input-sm w-28 arial-font flex-shrink-0"
-                  placeholder={baseServings != null ? 'Custom servings' : 'Custom'}
+                  placeholder="Custom"
                   value={customMultiplier}
-                  onChange={(e) =>
-                    baseServings != null
-                      ? handleCustomServingsChange(e.target.value)
-                      : handleCustomMultiplierChange(e.target.value)
-                  }
+                  onChange={(e) => handleCustomMultiplierChange(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                 />
                 <button
@@ -1040,9 +1018,9 @@ export default function RecipePageClient({
               <button
                 onClick={handleCustomInputToggle}
                 className={`btn btn-sm ${showCustomInput ? 'btn-primary' : 'btn-outline'} flex-shrink-0`}
-                title={baseServings != null ? 'Enter custom servings' : 'Enter custom multiplier'}
+                title="Enter custom multiplier"
               >
-                {baseServings != null ? 'Custom servings' : 'Custom'}
+                Custom
               </button>
             )}
           </div>
