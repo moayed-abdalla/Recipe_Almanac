@@ -290,7 +290,7 @@ export default function RecipePageClient({
   // When a base serving count exists, scale controls are labelled by servings
   // ("Serves N") rather than abstract multipliers. The math stays identical.
   const scaleLabel = (mult: number): string =>
-    baseServings != null ? `Serves ${Math.ceil(baseServings * mult)}` : `${mult}x`;
+    baseServings != null ? `Servings: ${Math.ceil(baseServings * mult)}` : `${mult}x`;
   
   // Per-ingredient unit conversion state
   // Key: ingredient ID, Value: selected unit
