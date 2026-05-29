@@ -20,6 +20,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { fixSpecialCharacters } from '@/lib/fixSpecialCharacters';
 
 interface RecipeCardProps {
   id: string;
@@ -52,13 +53,17 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const showTotalTime = typeof totalTimeMinutes === 'number' && totalTimeMinutes > 0;
   const showRating = typeof ratingCount === 'number' && ratingCount > 0;
+  const displayTitle = fixSpecialCharacters(title);
+  const displayDescription = description
+    ? fixSpecialCharacters(description)
+    : null;
   return (
     <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow h-full">
       <figure>
         {imageUrl ? (
           <Image
             src={imageUrl}
-            alt={title}
+            alt={displayTitle}
             width={400}
             height={300}
             className="w-full h-40 sm:h-48 object-cover"
@@ -70,9 +75,9 @@ export default function RecipeCard({
         )}
       </figure>
       <div className="card-body p-4 sm:p-6">
-        <h2 className="card-title arial-font text-base-content text-base sm:text-lg line-clamp-2">{title}</h2>
-        {description && (
-          <p className="text-sm opacity-70 line-clamp-2 arial-font text-base-content">{description}</p>
+        <h2 className="card-title arial-font text-base-content text-base sm:text-lg line-clamp-2">{displayTitle}</h2>
+        {displayDescription && (
+          <p className="text-sm opacity-70 line-clamp-2 arial-font text-base-content">{displayDescription}</p>
         )}
         <div className="card-actions flex-col items-stretch gap-2 mt-3 sm:mt-4">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
