@@ -43,6 +43,7 @@ import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
+import { encodeUnitOverrides } from '@/lib/printParams';
 
 interface Ingredient {
   id: string;
@@ -684,6 +685,37 @@ export default function RecipePageClient({
   };
 
   /**
+   * Open the print-optimised view in a new tab, carrying the current scale
+   * multiplier and per-ingredient unit choices across via the URL. The print
+   * view auto-triggers `window.print()` once loaded (via `?auto=1`).
+   */
+  const handlePrint = () => {
+    const params = new URLSearchParams();
+    if (multiplier && multiplier !== 1) {
+      params.set('m', String(multiplier));
+    }
+
+    // Only forward units that differ from the ingredient's stored default.
+    const overrides: Record<string, string> = {};
+    ingredients.forEach((ing) => {
+      const chosen = ingredientUnits[ing.id];
+      if (chosen && chosen !== ing.unit) {
+        overrides[ing.id] = chosen;
+      }
+    });
+    if (Object.keys(overrides).length > 0) {
+      params.set('u', encodeUnitOverrides(overrides));
+    }
+
+    params.set('auto', '1');
+    window.open(
+      `/recipe/${recipe.slug}/print?${params.toString()}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
+
+  /**
    * Handle fork button click
    * Creates a copy of the recipe that the user can then edit
    */
@@ -897,6 +929,27 @@ export default function RecipePageClient({
                   />
                 </svg>
               )}
+            </button>
+            {/* Print Button */}
+            <button
+              onClick={handlePrint}
+              className="btn btn-circle btn-ghost"
+              aria-label="Print recipe"
+              title="Print this recipe"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"
+                />
+              </svg>
             </button>
             {/* Edit Button - Only show for recipe owner */}
             {isOwner && (

@@ -372,4 +372,53 @@ i, em, .italic {
   mask-position: center;
 }
 
+/* ---------------------------------------------------------------------------
+   Print styles
+   Used by the dedicated recipe print view (`/recipe/[id]/print`). Strips the
+   site chrome (header, footer, themed page-wide background masks) and anything
+   tagged `.no-print` from printed output, then lets `.print-page` render its
+   own themed content. Applies everywhere so any printed page comes out clean.
+--------------------------------------------------------------------------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  /* Drop the page-wide kitchen-icon mask background from print output. */
+  body::before,
+  body::after {
+    display: none !important;
+  }
+
+  /* Hide global site chrome and any explicitly non-printable UI. */
+  body > header,
+  body > footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Neutral paper so themed colours sit on white, not the on-screen base. */
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  /* The print view manages its own margins/background via `@page`. */
+  .print-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Force themed colours/backgrounds (title, headings, kitchen-icon layer) to
+     render — `print-color-adjust` is not inherited, so apply to descendants. */
+  .print-page,
+  .print-page * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
 
