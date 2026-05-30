@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { volumeToWeight, VOLUME_UNITS } from '@/utils/unitConverter';
 import { DEFAULT_UNIT } from '@/lib/unit-config';
 import type { Recipe, Ingredient } from '@/types';
+import type { ParsedRecipeDraft } from '@/lib/recipeTextParser';
 import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
@@ -14,15 +16,20 @@ import {
 interface RecipeFormProps {
   recipe?: Recipe;
   ingredients?: Ingredient[];
+  /** Pre-filled values from the recipe importer (create mode only). */
+  draft?: ParsedRecipeDraft;
+  /** When true, the form omits its own title row (the importer renders one). */
+  hideHeader?: boolean;
 }
 
 export default function RecipeCreatePage() {
   return <RecipeForm />;
 }
 
-export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFormProps) {
+export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hideHeader }: RecipeFormProps) {
   const router = useRouter();
   const isEditMode = !!recipe;
+  const hasDraft = !isEditMode && !!draft;
   
   // Loading state for form submission
   const [loading, setLoading] = useState(false);
@@ -33,31 +40,39 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   // Error message state
   const [error, setError] = useState('');
   
-  // Form state - recipe metadata (pre-filled if editing)
-  const [title, setTitle] = useState(recipe?.title || '');
-  const [description, setDescription] = useState(recipe?.description || '');
-  const [tags, setTags] = useState(recipe?.tags.join(', ') || '');
+  // Form state - recipe metadata (pre-filled if editing or importing)
+  const [title, setTitle] = useState(recipe?.title || draft?.title || '');
+  const [description, setDescription] = useState(recipe?.description || draft?.description || '');
+  const [tags, setTags] = useState(recipe?.tags.join(', ') || draft?.tags || '');
   const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
   const [nutritionVisible, setNutritionVisible] = useState(recipe?.nutrition_visible ?? true);
 
   // Optional servings / timing fields (stored as strings for controlled inputs)
-  const [servings, setServings] = useState(recipe?.servings != null ? String(recipe.servings) : '');
-  const [prepTime, setPrepTime] = useState(recipe?.prep_time_minutes != null ? String(recipe.prep_time_minutes) : '');
-  const [cookTime, setCookTime] = useState(recipe?.cook_time_minutes != null ? String(recipe.cook_time_minutes) : '');
+  const [servings, setServings] = useState(recipe?.servings != null ? String(recipe.servings) : (draft?.servings || ''));
+  const [prepTime, setPrepTime] = useState(recipe?.prep_time_minutes != null ? String(recipe.prep_time_minutes) : (draft?.prepTime || ''));
+  const [cookTime, setCookTime] = useState(recipe?.cook_time_minutes != null ? String(recipe.cook_time_minutes) : (draft?.cookTime || ''));
   
-  // Form state - recipe content (pre-filled if editing)
+  // Form state - recipe content (pre-filled if editing or importing)
   const [methodSteps, setMethodSteps] = useState<string[]>(
-    recipe?.method_steps && recipe.method_steps.length > 0 ? recipe.method_steps : ['']
+    recipe?.method_steps && recipe.method_steps.length > 0
+      ? recipe.method_steps
+      : draft?.methodSteps && draft.methodSteps.length > 0
+        ? draft.methodSteps
+        : ['']
   );
   const [notes, setNotes] = useState<string[]>(
-    recipe?.notes && recipe.notes.length > 0 ? recipe.notes : ['']
+    recipe?.notes && recipe.notes.length > 0
+      ? recipe.notes
+      : draft?.notes && draft.notes.length > 0
+        ? draft.notes
+        : ['']
   );
   
   // User's default unit from profile (used when creating new recipes)
   const [defaultUnit, setDefaultUnit] = useState<string>(DEFAULT_UNIT);
   const [hasFetchedDefaultUnit, setHasFetchedDefaultUnit] = useState(false);
   
-  // Form state - ingredients (pre-filled if editing)
+  // Form state - ingredients (pre-filled if editing or importing)
   const [ingredients, setIngredients] = useState<Array<{
     name: string;
     amount: number;
@@ -69,12 +84,15 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
           amount: ing.display_amount,
           unit: ing.unit,
         }))
-      : [{ name: '', amount: 0, unit: DEFAULT_UNIT }] // Default to one empty ingredient field
+      : draft?.ingredients && draft.ingredients.length > 0
+        ? draft.ingredients.map(ing => ({ name: ing.name, amount: ing.amount, unit: ing.unit }))
+        : [{ name: '', amount: 0, unit: DEFAULT_UNIT }] // Default to one empty ingredient field
   );
 
-  // Fetch user's default unit from profile when in create mode
+  // Fetch user's default unit from profile when in create mode.
+  // Skipped for imports, which already carry parsed units per ingredient.
   useEffect(() => {
-    if (isEditMode) return;
+    if (isEditMode || hasDraft) return;
     const fetchDefaultUnit = async () => {
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) return;
@@ -89,11 +107,11 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
       setHasFetchedDefaultUnit(true);
     };
     fetchDefaultUnit();
-  }, [isEditMode]);
+  }, [isEditMode, hasDraft]);
 
   // Apply user's default unit to empty initial ingredient once profile data is loaded
   useEffect(() => {
-    if (isEditMode || !hasFetchedDefaultUnit) return;
+    if (isEditMode || hasDraft || !hasFetchedDefaultUnit) return;
     setIngredients(prev => {
       const first = prev[0];
       if (first && first.name === '' && first.amount === 0 && first.unit === DEFAULT_UNIT) {
@@ -101,7 +119,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
       }
       return prev;
     });
-  }, [hasFetchedDefaultUnit, defaultUnit, isEditMode]);
+  }, [hasFetchedDefaultUnit, defaultUnit, isEditMode, hasDraft]);
   
   // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -482,8 +500,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients }: RecipeFo
   };
 
   return (
-    <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
+    <div className={hideHeader ? '' : 'container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl'}>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{isEditMode ? 'Edit Recipe' : 'Create Recipe'}</h1>
+          {!isEditMode && (
+            <Link href="/recipe/import" className="btn btn-outline btn-primary w-full sm:w-auto">
+              Import Recipe
+            </Link>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
