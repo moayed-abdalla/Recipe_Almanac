@@ -1,9 +1,13 @@
 /**
  * Feed Client
  *
- * Interactive feed with four filter modes. Handles auth gating, signal
- * detection (does the user follow anyone / have favourites / 5-star ratings)
- * and per-mode data fetching.
+ * Interactive feed whose sources are independent toggle buttons rather than
+ * mutually-exclusive tabs. Each enabled toggle (Following, Favourite Tags,
+ * Favorites, Random) contributes recipes and the results are merged into a
+ * single deduplicated grid.
+ *
+ * Handles auth gating and signal detection (does the user follow anyone / have
+ * favourites / 5-star ratings).
  */
 
 'use client';
@@ -23,7 +27,9 @@ import {
   fetchFavoriteRecipes,
 } from '@/lib/recipeService';
 
-type FeedMode = 'following' | 'tags' | 'favorites' | 'random';
+type ToggleKey = 'following' | 'tags' | 'favorites' | 'random';
+
+type Toggles = Record<ToggleKey, boolean>;
 
 interface FeedSignals {
   followingCount: number;
@@ -32,17 +38,39 @@ interface FeedSignals {
   fiveStarCount: number;
 }
 
-const FILTERS: { id: FeedMode; label: string }[] = [
+const FILTERS: { id: ToggleKey; label: string }[] = [
   { id: 'following', label: 'Following' },
   { id: 'tags', label: 'Favourite Tags' },
   { id: 'favorites', label: 'Favorites' },
   { id: 'random', label: 'Random' },
 ];
 
+const NO_TOGGLES: Toggles = {
+  following: false,
+  tags: false,
+  favorites: false,
+  random: false,
+};
+
+/** Merge recipe lists in source order, keeping the first occurrence of each id. */
+function mergeUnique(lists: NormalizedRecipe[][]): NormalizedRecipe[] {
+  const seen = new Set<string>();
+  const merged: NormalizedRecipe[] = [];
+  for (const list of lists) {
+    for (const recipe of list) {
+      if (!seen.has(recipe.id)) {
+        seen.add(recipe.id);
+        merged.push(recipe);
+      }
+    }
+  }
+  return merged;
+}
+
 export default function FeedClient() {
   const { user, loading: authLoading } = useProfileContext();
 
-  const [mode, setMode] = useState<FeedMode>('following');
+  const [toggles, setToggles] = useState<Toggles>(NO_TOGGLES);
   const [signals, setSignals] = useState<FeedSignals | null>(null);
   const [signalsLoading, setSignalsLoading] = useState(true);
 
@@ -62,6 +90,11 @@ export default function FeedClient() {
       signals.fiveStarCount > 0
     );
   }, [signals]);
+
+  const anyToggleOn = useMemo(
+    () => Object.values(toggles).some(Boolean),
+    [toggles]
+  );
 
   // Load the user's feed signals once we know who they are.
   useEffect(() => {
@@ -90,6 +123,13 @@ export default function FeedClient() {
       if (!active) return;
 
       setSelectedTags(likedTags);
+      // Default the toggles on for whatever the user actually has signal for.
+      setToggles({
+        following: followingIds.length > 0,
+        tags: likedTags.length > 0,
+        favorites: favoriteRecipes.length > 0,
+        random: false,
+      });
       setSignals({
         followingCount: followingIds.length,
         likedTags,
@@ -104,35 +144,35 @@ export default function FeedClient() {
     };
   }, [user, authLoading]);
 
-  // Load the feed for the active mode.
+  // Load + merge the feed for whichever toggles are enabled.
   const loadFeed = useCallback(async () => {
     if (!user || !signals) return;
 
-    setFeedLoading(true);
-    let result: NormalizedRecipe[] = [];
-
-    switch (mode) {
-      case 'following':
-        result = await fetchFollowingFeed(user.id);
-        break;
-      case 'tags':
-        result = await fetchTagFeed(selectedTags, user.id);
-        break;
-      case 'favorites':
-        result = signals.favoriteRecipes;
-        break;
-      case 'random':
-        result = await fetchRandomFeed(user.id);
-        break;
+    if (!anyToggleOn) {
+      setRecipes([]);
+      return;
     }
 
-    setRecipes(result);
+    setFeedLoading(true);
+
+    const sources: Promise<NormalizedRecipe[]>[] = [];
+    if (toggles.following) sources.push(fetchFollowingFeed(user.id));
+    if (toggles.tags) sources.push(fetchTagFeed(selectedTags, user.id));
+    if (toggles.favorites) sources.push(Promise.resolve(signals.favoriteRecipes));
+    if (toggles.random) sources.push(fetchRandomFeed(user.id));
+
+    const lists = await Promise.all(sources);
+    setRecipes(mergeUnique(lists));
     setFeedLoading(false);
-  }, [user, signals, mode, selectedTags]);
+  }, [user, signals, toggles, selectedTags, anyToggleOn]);
 
   useEffect(() => {
     void loadFeed();
   }, [loadFeed]);
+
+  const toggleSource = (key: ToggleKey) => {
+    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const openTagPopup = () => {
     setDraftTags(selectedTags);
@@ -181,7 +221,9 @@ export default function FeedClient() {
     );
   }
 
-  const showNoSignalNote = mode !== 'random' && !hasAnySignal;
+  // Show the guidance note when the user has no signals to build a feed from
+  // and hasn't opted into the random selection.
+  const showNoSignalNote = !hasAnySignal && !toggles.random;
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
@@ -191,32 +233,32 @@ export default function FeedClient() {
             Your Feed
           </h1>
           <p className="text-base-content/70">
-            Recent recipes tailored to who you follow and what you love.
+            Toggle the sources below to build your feed. Enabled sources are
+            combined into one list with no duplicates.
           </p>
         </div>
 
-        {/* Filter controls */}
+        {/* Filter toggles */}
         <div className="flex flex-wrap items-center gap-2 mb-6">
-          <div role="tablist" className="tabs tabs-boxed bg-base-200">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.id}
-                role="tab"
-                type="button"
-                onClick={() => setMode(filter.id)}
-                className={`tab ${mode === filter.id ? 'tab-active' : ''}`}
-                aria-selected={mode === filter.id}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => toggleSource(filter.id)}
+              aria-pressed={toggles[filter.id]}
+              className={`btn btn-sm ${
+                toggles[filter.id] ? 'btn-primary' : 'btn-outline'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
 
-          {mode === 'tags' && signals.likedTags.length > 0 && (
+          {toggles.tags && signals.likedTags.length > 0 && (
             <button
               type="button"
               onClick={openTagPopup}
-              className="btn btn-sm btn-outline"
+              className="btn btn-sm btn-ghost"
             >
               Select tags
               {selectedTags.length > 0 && (
@@ -228,7 +270,6 @@ export default function FeedClient() {
           )}
         </div>
 
-        {/* No-signal note (overrides the empty grid for non-random modes) */}
         {showNoSignalNote ? (
           <div className="card bg-base-200 max-w-2xl mx-auto">
             <div className="card-body items-center text-center gap-4">
@@ -241,7 +282,7 @@ export default function FeedClient() {
               <div className="flex flex-wrap justify-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setMode('random')}
+                  onClick={() => setToggles((t) => ({ ...t, random: true }))}
                   className="btn btn-primary btn-sm"
                 >
                   Show me a random feed
@@ -252,12 +293,27 @@ export default function FeedClient() {
               </div>
             </div>
           </div>
+        ) : !anyToggleOn ? (
+          <div className="card bg-base-200 max-w-2xl mx-auto">
+            <div className="card-body items-center text-center gap-2">
+              <p className="text-base-content/70">
+                Turn on a source above to build your feed.
+              </p>
+            </div>
+          </div>
         ) : feedLoading ? (
           <div className="flex justify-center py-16">
             <span className="loading loading-spinner loading-lg" />
           </div>
         ) : recipes.length === 0 ? (
-          <EmptyForMode mode={mode} likedTagCount={signals.likedTags.length} />
+          <div className="card bg-base-200 max-w-2xl mx-auto">
+            <div className="card-body items-center text-center gap-2">
+              <p className="text-base-content/70">
+                No recipes match the selected sources right now. Try enabling
+                more sources or following more creators.
+              </p>
+            </div>
+          </div>
         ) : (
           <RecipeGrid recipes={recipes} />
         )}
@@ -328,67 +384,6 @@ export default function FeedClient() {
           <button aria-label="Close">close</button>
         </form>
       </dialog>
-    </div>
-  );
-}
-
-function EmptyForMode({
-  mode,
-  likedTagCount,
-}: {
-  mode: FeedMode;
-  likedTagCount: number;
-}) {
-  let message: React.ReactNode;
-
-  switch (mode) {
-    case 'following':
-      message = (
-        <>
-          <p className="text-base-content/70">
-            You&apos;re not following anyone yet. Browse recipes and follow
-            creators whose food you love.
-          </p>
-          <Link href="/leaderboard" className="btn btn-primary btn-sm">
-            Browse the leaderboard
-          </Link>
-        </>
-      );
-      break;
-    case 'tags':
-      message =
-        likedTagCount === 0 ? (
-          <p className="text-base-content/70">
-            Favourite a recipe or rate one 5 stars to build your favourite tags,
-            then we&apos;ll show recipes that match your taste.
-          </p>
-        ) : (
-          <p className="text-base-content/70">
-            No recipes match your selected tags right now. Try selecting more
-            tags.
-          </p>
-        );
-      break;
-    case 'favorites':
-      message = (
-        <p className="text-base-content/70">
-          You haven&apos;t favourited any recipes yet. Tap the favourite button
-          on a recipe to save it here.
-        </p>
-      );
-      break;
-    case 'random':
-      message = (
-        <p className="text-base-content/70">
-          No public recipes to show right now. Check back soon.
-        </p>
-      );
-      break;
-  }
-
-  return (
-    <div className="card bg-base-200 max-w-2xl mx-auto">
-      <div className="card-body items-center text-center gap-4">{message}</div>
     </div>
   );
 }
