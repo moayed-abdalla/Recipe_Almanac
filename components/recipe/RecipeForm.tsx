@@ -12,6 +12,8 @@ import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
+import { SortableFormList } from '@/components/recipe/SortableFormList';
+import { newSortableId } from '@/lib/sortableId';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -48,41 +50,53 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   const [prepTime, setPrepTime] = useState(recipe?.prep_time_minutes != null ? String(recipe.prep_time_minutes) : (draft?.prepTime || ''));
   const [cookTime, setCookTime] = useState(recipe?.cook_time_minutes != null ? String(recipe.cook_time_minutes) : (draft?.cookTime || ''));
   
-  // Form state - recipe content (pre-filled if editing or importing)
-  const [methodSteps, setMethodSteps] = useState<string[]>(
-    recipe?.method_steps && recipe.method_steps.length > 0
-      ? recipe.method_steps
-      : draft?.methodSteps && draft.methodSteps.length > 0
-        ? draft.methodSteps
-        : ['']
+  // Form state - recipe content (pre-filled if editing or importing).
+  // Each row carries a stable `id` so dnd-kit can track it across reorders.
+  const [methodSteps, setMethodSteps] = useState<Array<{ id: string; text: string }>>(
+    () => {
+      const source =
+        recipe?.method_steps && recipe.method_steps.length > 0
+          ? recipe.method_steps
+          : draft?.methodSteps && draft.methodSteps.length > 0
+            ? draft.methodSteps
+            : [''];
+      return source.map((text) => ({ id: newSortableId(), text }));
+    }
   );
-  const [notes, setNotes] = useState<string[]>(
-    recipe?.notes && recipe.notes.length > 0
-      ? recipe.notes
-      : draft?.notes && draft.notes.length > 0
-        ? draft.notes
-        : ['']
+  const [notes, setNotes] = useState<Array<{ id: string; text: string }>>(
+    () => {
+      const source =
+        recipe?.notes && recipe.notes.length > 0
+          ? recipe.notes
+          : draft?.notes && draft.notes.length > 0
+            ? draft.notes
+            : [''];
+      return source.map((text) => ({ id: newSortableId(), text }));
+    }
   );
   
   // User's default unit from profile (used when creating new recipes)
   const [defaultUnit, setDefaultUnit] = useState<string>(DEFAULT_UNIT);
   const [hasFetchedDefaultUnit, setHasFetchedDefaultUnit] = useState(false);
   
-  // Form state - ingredients (pre-filled if editing or importing)
+  // Form state - ingredients (pre-filled if editing or importing).
+  // Each row carries a stable `id` so dnd-kit can track it across reorders.
   const [ingredients, setIngredients] = useState<Array<{
+    id: string;
     name: string;
     amount: number;
     unit: string;
   }>>(
     initialIngredients && initialIngredients.length > 0
       ? initialIngredients.map(ing => ({
+          id: newSortableId(),
           name: ing.name,
           amount: ing.display_amount,
           unit: ing.unit,
         }))
       : draft?.ingredients && draft.ingredients.length > 0
-        ? draft.ingredients.map(ing => ({ name: ing.name, amount: ing.amount, unit: ing.unit }))
-        : [{ name: '', amount: 0, unit: DEFAULT_UNIT }] // Default to one empty ingredient field
+        ? draft.ingredients.map(ing => ({ id: newSortableId(), name: ing.name, amount: ing.amount, unit: ing.unit }))
+        : [{ id: newSortableId(), name: '', amount: 0, unit: DEFAULT_UNIT }] // Default to one empty ingredient field
   );
 
   // Fetch user's default unit from profile when in create mode.
@@ -246,8 +260,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
-            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
+            method_steps: fixSpecialCharactersInArray(methodSteps.map(s => s.text).filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.map(n => n.text).filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -312,8 +326,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: fixSpecialCharactersInArray(methodSteps.filter(Boolean)),
-            notes: fixSpecialCharactersInArray(notes.filter(Boolean)),
+            method_steps: fixSpecialCharactersInArray(methodSteps.map(s => s.text).filter(Boolean)),
+            notes: fixSpecialCharactersInArray(notes.map(n => n.text).filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
             prep_time_minutes: prepTimeValue,
@@ -412,27 +426,27 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   };
 
   const addMethodStep = () => {
-    setMethodSteps([...methodSteps, '']);
+    setMethodSteps([...methodSteps, { id: newSortableId(), text: '' }]);
   };
 
   const updateMethodStep = (index: number, value: string) => {
     const newSteps = [...methodSteps];
-    newSteps[index] = value;
+    newSteps[index] = { ...newSteps[index], text: value };
     setMethodSteps(newSteps);
   };
 
   const addNote = () => {
-    setNotes([...notes, '']);
+    setNotes([...notes, { id: newSortableId(), text: '' }]);
   };
 
   const updateNote = (index: number, value: string) => {
     const newNotes = [...notes];
-    newNotes[index] = value;
+    newNotes[index] = { ...newNotes[index], text: value };
     setNotes(newNotes);
   };
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', amount: 0, unit: defaultUnit }]);
+    setIngredients([...ingredients, { id: newSortableId(), name: '', amount: 0, unit: defaultUnit }]);
   };
 
   const removeIngredient = (index: number) => {
@@ -693,38 +707,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           <label className="label">
             <span className="label-text text-lg font-bold">Ingredients</span>
           </label>
-          {ingredients.map((ing, index) => {
-            const isOtherUnit = ing.unit === 'other';
-            return (
-            <div
-              key={index}
-              className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-2 items-stretch sm:items-center group w-full"
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', index.toString());
-                e.dataTransfer.effectAllowed = 'move';
-                e.currentTarget.classList.add('opacity-50');
-              }}
-              onDragEnd={(e) => {
-                e.currentTarget.classList.remove('opacity-50');
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                if (fromIndex !== index) {
-                  const newIngredients = [...ingredients];
-                  const [moved] = newIngredients.splice(fromIndex, 1);
-                  newIngredients.splice(index, 0, moved);
-                  setIngredients(newIngredients);
-                }
-              }}
-            >
+          <SortableFormList
+            items={ingredients}
+            onReorder={setIngredients}
+            itemClassName="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-2 items-stretch sm:items-center group w-full"
+            gripLabel={(index) => `Reorder ingredient ${index + 1}`}
+            renderItem={(ing, index, handle) => {
+              const isOtherUnit = ing.unit === 'other';
+              return (
+            <>
               <div className="flex gap-2 items-center w-full sm:w-auto">
-              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
+              {handle}
               <input
                 type="number"
                 step="0.25"
@@ -777,8 +770,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   ×
                 </button>
               )}
-            </div>
-          )})}
+            </>
+              );
+            }}
+          />
           <button
             type="button"
             onClick={addIngredient}
@@ -793,35 +788,15 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           <label className="label">
             <span className="label-text text-lg font-bold">Method Steps</span>
           </label>
-          {methodSteps.map((step, index) => (
-            <div
-              key={index}
-              className="mb-2 flex items-start gap-2"
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', index.toString());
-                e.dataTransfer.effectAllowed = 'move';
-                e.currentTarget.classList.add('opacity-50');
-              }}
-              onDragEnd={(e) => {
-                e.currentTarget.classList.remove('opacity-50');
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                if (fromIndex !== index) {
-                  const newSteps = [...methodSteps];
-                  const [moved] = newSteps.splice(fromIndex, 1);
-                  newSteps.splice(index, 0, moved);
-                  setMethodSteps(newSteps);
-                }
-              }}
-            >
-              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0 mt-3" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
+          <SortableFormList
+            items={methodSteps}
+            onReorder={setMethodSteps}
+            itemClassName="mb-2 flex items-start gap-2"
+            gripClassName="mt-3"
+            gripLabel={(index) => `Reorder step ${index + 1}`}
+            renderItem={(step, index, handle) => (
+            <>
+              {handle}
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-1">
                   <label className="label">
@@ -840,13 +815,14 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                 </div>
                 <textarea
                   className="textarea textarea-bordered w-full arial-font"
-                  value={step}
+                  value={step.text}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
                   rows={2}
                 />
               </div>
-            </div>
-          ))}
+            </>
+            )}
+          />
           <button
             type="button"
             onClick={addMethodStep}
@@ -861,35 +837,15 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           <label className="label">
             <span className="label-text text-lg font-bold">Notes</span>
           </label>
-          {notes.map((note, index) => (
-            <div
-              key={index}
-              className="mb-2 flex items-start gap-2"
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', index.toString());
-                e.dataTransfer.effectAllowed = 'move';
-                e.currentTarget.classList.add('opacity-50');
-              }}
-              onDragEnd={(e) => {
-                e.currentTarget.classList.remove('opacity-50');
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                if (fromIndex !== index) {
-                  const newNotes = [...notes];
-                  const [moved] = newNotes.splice(fromIndex, 1);
-                  newNotes.splice(index, 0, moved);
-                  setNotes(newNotes);
-                }
-              }}
-            >
-              <span className="cursor-grab active:cursor-grabbing text-base-content/50 hover:text-base-content flex-shrink-0 mt-3" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
+          <SortableFormList
+            items={notes}
+            onReorder={setNotes}
+            itemClassName="mb-2 flex items-start gap-2"
+            gripClassName="mt-3"
+            gripLabel={(index) => `Reorder note ${index + 1}`}
+            renderItem={(note, index, handle) => (
+            <>
+              {handle}
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-1">
                   <label className="label">
@@ -908,13 +864,14 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                 </div>
                 <textarea
                   className="textarea textarea-bordered w-full arial-font"
-                  value={note}
+                  value={note.text}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
                   rows={2}
                 />
               </div>
-            </div>
-          ))}
+            </>
+            )}
+          />
           <button
             type="button"
             onClick={addNote}
