@@ -430,4 +430,16 @@ i, em, .italic {
   }
 }
 
+/* Drag preview rendered in dnd-kit's DragOverlay while reordering form rows.
+   Lifts the cloned row above the list with a themed surface and shadow so the
+   user clearly sees what they are moving. */
+.sortable-overlay {
+  z-index: 50;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--b1));
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.2),
+    0 0 0 2px hsl(var(--p) / 0.3);
+  cursor: grabbing;
+}
+
 
