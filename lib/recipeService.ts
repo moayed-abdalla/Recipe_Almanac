@@ -34,6 +34,32 @@ const RECIPE_SELECT_FIELDS = `
   )
 `;
 
+/** Same as RECIPE_SELECT_FIELDS but includes user_id (needed by feed filters). */
+const FEED_SELECT_FIELDS = `
+  id,
+  user_id,
+  slug,
+  title,
+  image_url,
+  description,
+  view_count,
+  favorite_count:saved_recipes(count),
+  recipe_rating_stats (
+    rating_count,
+    average_rating
+  ),
+  tags,
+  is_public,
+  servings,
+  prep_time_minutes,
+  cook_time_minutes,
+  profiles:user_id (
+    username
+  )
+`;
+
+const FEED_LIMIT = 50;
+
 type FavoriteRpcRow = {
   id: string;
   slug: string;
@@ -207,4 +233,145 @@ export async function fetchAllPublicRecipes(limit: number = 50): Promise<Normali
     console.error('Unexpected error fetching all public recipes:', err);
     return [];
   }
+}
+
+/**
+ * Fetch the IDs of users that `userId` follows.
+ */
+export async function fetchFollowingIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabaseClient
+    .from('followers')
+    .select('followee_id')
+    .eq('follower_id', userId);
+
+  if (error) {
+    console.error('Error fetching following ids:', error);
+    return [];
+  }
+
+  return (data || []).map((row: { followee_id: string }) => row.followee_id);
+}
+
+/**
+ * Feed of recent public recipes from the people a user follows.
+ * Ordered most recent first, capped at 50.
+ */
+export async function fetchFollowingFeed(userId: string): Promise<NormalizedRecipe[]> {
+  const followeeIds = await fetchFollowingIds(userId);
+  if (followeeIds.length === 0) return [];
+
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select(FEED_SELECT_FIELDS)
+    .in('user_id', followeeIds)
+    .eq('is_public', true)
+    .order('created_at', { ascending: false })
+    .limit(FEED_LIMIT);
+
+  if (error) {
+    console.error('Error fetching following feed:', error);
+    return [];
+  }
+
+  return normalizeRecipes((data || []) as RecipeWithProfile[]);
+}
+
+/**
+ * The set of tags a user "likes" — derived from recipes they favourited and
+ * recipes they rated 5 stars. Used to power the tag-based feed.
+ */
+export async function fetchLikedTags(userId: string): Promise<string[]> {
+  const [savedResult, fiveStarResult] = await Promise.all([
+    supabaseClient.from('saved_recipes').select('recipe_id').eq('user_id', userId),
+    supabaseClient
+      .from('recipe_ratings')
+      .select('recipe_id')
+      .eq('user_id', userId)
+      .eq('rating', 5),
+  ]);
+
+  const recipeIds = new Set<string>();
+  (savedResult.data || []).forEach((row: { recipe_id: string }) =>
+    recipeIds.add(row.recipe_id)
+  );
+  (fiveStarResult.data || []).forEach((row: { recipe_id: string }) =>
+    recipeIds.add(row.recipe_id)
+  );
+
+  if (recipeIds.size === 0) return [];
+
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select('tags')
+    .in('id', Array.from(recipeIds));
+
+  if (error) {
+    console.error('Error fetching liked tags:', error);
+    return [];
+  }
+
+  const tagSet = new Set<string>();
+  (data || []).forEach((row: { tags: string[] | null }) => {
+    (row.tags || []).forEach((tag) => {
+      if (tag && tag.trim().length > 0) tagSet.add(tag);
+    });
+  });
+
+  return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Feed of recent public recipes that share any of the given tags,
+ * excluding the viewer's own recipes. Ordered most recent first, capped at 50.
+ */
+export async function fetchTagFeed(
+  tags: string[],
+  excludeUserId: string
+): Promise<NormalizedRecipe[]> {
+  if (tags.length === 0) return [];
+
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select(FEED_SELECT_FIELDS)
+    .overlaps('tags', tags)
+    .eq('is_public', true)
+    .neq('user_id', excludeUserId)
+    .order('created_at', { ascending: false })
+    .limit(FEED_LIMIT);
+
+  if (error) {
+    console.error('Error fetching tag feed:', error);
+    return [];
+  }
+
+  return normalizeRecipes((data || []) as RecipeWithProfile[]);
+}
+
+/**
+ * Random feed — a shuffled selection of recent public recipes, excluding the
+ * viewer's own. PostgREST can't order randomly, so we pull a recent pool and
+ * shuffle client-side.
+ */
+export async function fetchRandomFeed(excludeUserId: string): Promise<NormalizedRecipe[]> {
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select(FEED_SELECT_FIELDS)
+    .eq('is_public', true)
+    .neq('user_id', excludeUserId)
+    .order('created_at', { ascending: false })
+    .limit(150);
+
+  if (error) {
+    console.error('Error fetching random feed:', error);
+    return [];
+  }
+
+  const recipes = normalizeRecipes((data || []) as RecipeWithProfile[]);
+
+  // Fisher–Yates shuffle, then take the feed limit.
+  for (let i = recipes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [recipes[i], recipes[j]] = [recipes[j], recipes[i]];
+  }
+  return recipes.slice(0, FEED_LIMIT);
 }

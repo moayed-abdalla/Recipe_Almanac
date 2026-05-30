@@ -6,7 +6,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Profile } from '@/types';
+import type { Profile, ProfileFollowInfo } from '@/types';
+import ProfileFollowButton from '@/app/profile/[username]/ProfileFollowButton';
 
 interface ProfileHeaderProps {
   /**
@@ -26,12 +27,19 @@ interface ProfileHeaderProps {
     totalViews?: number;
     favoritedRecipesCount?: number;
   };
+
+  /**
+   * Follow-graph context. When provided, renders follower/following counts and
+   * a Follow / Unfollow button (for signed-in, non-owner viewers).
+   */
+  followInfo?: ProfileFollowInfo;
 }
 
 export default function ProfileHeader({ 
   profile, 
   showEditButton = false,
-  stats 
+  stats,
+  followInfo,
 }: ProfileHeaderProps) {
   return (
     <div className="card bg-base-200 shadow-xl mb-6 sm:mb-8">
@@ -68,6 +76,21 @@ export default function ProfileHeader({
                 </Link>
               )}
             </div>
+
+            {/* Follow button + follower/following counts */}
+            {followInfo && (
+              <div className="mb-3 sm:mb-4">
+                <ProfileFollowButton
+                  profileId={followInfo.profileId}
+                  username={followInfo.username}
+                  isOwnProfile={followInfo.isOwnProfile}
+                  isLoggedIn={followInfo.isLoggedIn}
+                  initialIsFollowing={followInfo.isFollowing}
+                  initialFollowerCount={followInfo.followerCount}
+                  initialFollowingCount={followInfo.followingCount}
+                />
+              </div>
+            )}
             {profile.profile_description && (
               <p className="text-base sm:text-lg opacity-80 mb-4 text-base-content break-words">{profile.profile_description}</p>
             )}
