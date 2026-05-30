@@ -4,7 +4,7 @@ A digital recipe book you can share, browse, and write your own. **No ads. No su
 
 ## Why Recipe Almanac?
 
-Most recipe sites are a chore to use and cover the actual recipe under ads, pop-ups, email gates, and SEO filler—and still give you unreliable cup-to-gram conversions. Recipe Almanac is built to do the opposite: **recipes first**, with tools that respect your time and privacy.
+Most recipe sites are a chore to use and cover the actual recipe under ads, pop-ups, email gates, and SEO filler-and still give you unreliable cup-to-gram conversions. Recipe Almanac is built to do the opposite: **recipes first**, with tools that respect your time and privacy.
 
 ## What Makes It Different?
 
@@ -20,9 +20,9 @@ Most recipe sites are a chore to use and cover the actual recipe under ads, pop-
 | Scattered bookmarks | Personal almanac, follow creators, export/print via **Prepare Almanac** (PDF) |
 | Mobile-unfriendly browsing | Responsive design + PWA-style offline page |
 
-**Also included:** full-text search & tags, public/private recipes, view counts, feedback with attachments, and a typewriter + kitchen-icon aesthetic—without subscriptions or ads funding the site.
+**Also included:** full-text search & tags, public/private recipes, view counts, feedback with attachments, and a typewriter + kitchen-icon aesthetic-without subscriptions or ads funding the site.
 
-## How It Works
+## How It Works (Current V1.0)
 
 ### Technology Stack
 
@@ -76,13 +76,14 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 - Include helpful notes
 - Set recipes as public or private
 - Track view counts
+- Copy someones recipe to make your own version and adjustments
 
 ### For Recipe Browsers
 - Search recipes by name or tags
 - Filter by category
-- View recipes with beautiful formatting
-- Toggle between measurement units
-- Approximate nutrition estimates per recipe
+- View recipes with logical and consise formatting
+- Toggle between measurement units (converts volumetric and weight)
+- Approximate nutrition estimates per recipe (EXPERIMENTAL STILL)
 - Save recipes to your almanac
 - Follow recipe creators
 - Rate recipes and explore the leaderboard
@@ -90,11 +91,10 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 ### For Everyone
 - Clean, distraction-free interface
 - Chemistry-themed design with subtle kitchen-icon backgrounds
-- Eight selectable light/dark color themes
+- 8 light/dark color themes
 - Responsive design (works on mobile, tablet, desktop)
-- Fast loading times
 - No account required to browse public recipes
-- Prepare Almanac PDF export for saved recipes
+- Prepare Almanac(Recipe book) PDF export for saved recipes
 
 ## Project Structure
 
