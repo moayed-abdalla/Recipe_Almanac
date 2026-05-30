@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
-import { RecipeForm } from '@/app/recipe/create/page';
+import { RecipeForm } from '@/components/recipe/RecipeForm';
 import type { Recipe, Ingredient } from '@/types';
 
 interface RecipeEditPageProps {
