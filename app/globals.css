@@ -380,9 +380,12 @@ i, em, .italic {
    own themed content. Applies everywhere so any printed page comes out clean.
 --------------------------------------------------------------------------- */
 @media print {
+  /* Zero page margin so the themed background prints full-bleed (matching the
+     almanac PDF). Content keeps its breathing room via the card's own padding,
+     and a 0 margin also makes browsers drop their default header/footer. */
   @page {
     size: A4;
-    margin: 14mm;
+    margin: 0;
   }
 
   /* Drop the page-wide kitchen-icon mask background from print output. */
@@ -410,6 +413,12 @@ i, em, .italic {
     padding: 0 !important;
     max-width: none !important;
     width: 100% !important;
+  }
+
+  /* Themed card prints full-bleed: drop the on-screen rounded corners so the
+     background reaches the sheet edges without leaving white corner gaps. */
+  .print-page > div {
+    border-radius: 0 !important;
   }
 
   /* Force themed colours/backgrounds (title, headings, kitchen-icon layer) to
