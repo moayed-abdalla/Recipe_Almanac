@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { RecipeForm } from '@/app/recipe/create/page';
+import { RecipeForm } from '@/components/recipe/RecipeForm';
 import { parseRecipeText, type ParsedRecipeDraft } from '@/lib/recipeTextParser';
 
 const PLACEHOLDER = `Paste a full recipe here, for example:
