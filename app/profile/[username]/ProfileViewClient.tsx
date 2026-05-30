@@ -10,7 +10,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { NormalizedRecipe, Profile, UserStats } from '@/types';
+import type { NormalizedRecipe, Profile, UserStats, ProfileFollowInfo } from '@/types';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import Tabs from '@/components/navigation/Tabs';
 import RecipeGrid from '@/components/recipe/RecipeGrid';
@@ -21,6 +21,7 @@ interface ProfileViewClientProps {
   initialPublicRecipes: NormalizedRecipe[];
   initialFavoriteRecipes: NormalizedRecipe[];
   initialStats: UserStats;
+  followInfo: ProfileFollowInfo;
 }
 
 export default function ProfileViewClient({
@@ -28,6 +29,7 @@ export default function ProfileViewClient({
   initialPublicRecipes,
   initialFavoriteRecipes,
   initialStats,
+  followInfo,
 }: ProfileViewClientProps) {
   // Active tab: 'favorites' or 'recipes'
   const [activeTab, setActiveTab] = useState<'favorites' | 'recipes'>('recipes');
@@ -64,6 +66,7 @@ export default function ProfileViewClient({
       <ProfileHeader 
         profile={profile} 
         stats={stats}
+        followInfo={followInfo}
       />
 
       {/* Tabs */}

@@ -2,7 +2,13 @@ import type { Metadata } from 'next';
 import { createServerClient } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { normalizeRecipes } from '@/utils/recipeNormalizer';
-import type { Profile, RecipeWithProfile, UserStats, NormalizedRecipe } from '@/types';
+import type {
+  Profile,
+  RecipeWithProfile,
+  UserStats,
+  NormalizedRecipe,
+  ProfileFollowInfo,
+} from '@/types';
 import ProfileViewClient from './ProfileViewClient';
 
 interface ProfilePageProps {
@@ -98,11 +104,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const typedProfile = profile as Profile;
 
+  // Resolve the viewing user (if any) so we can decide whether to show the
+  // Follow button and whether they already follow this profile.
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
+
   const [
     recipesResult,
     rpcFavoriteResult,
     statsRecipesResult,
     savedCountResult,
+    viewerFollowResult,
   ] = await Promise.all([
     supabase
       .from('recipes')
@@ -129,12 +142,29 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       .from('saved_recipes')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', typedProfile.id),
+    viewer && viewer.id !== typedProfile.id
+      ? supabase
+          .from('followers')
+          .select('follower_id', { head: true, count: 'exact' })
+          .eq('follower_id', viewer.id)
+          .eq('followee_id', typedProfile.id)
+      : Promise.resolve({ count: 0 } as { count: number }),
   ]);
 
   const { data: recipes, error: recipesError } = recipesResult;
   const { data: rpcFavoriteRecipes, error: rpcError } = rpcFavoriteResult;
   const { data: recipesForStats, error: statsError } = statsRecipesResult;
   const { count: favoritedCount, error: favoritesError } = savedCountResult;
+
+  const followInfo: ProfileFollowInfo = {
+    profileId: typedProfile.id,
+    username: typedProfile.username,
+    isOwnProfile: !!viewer && viewer.id === typedProfile.id,
+    isLoggedIn: !!viewer,
+    isFollowing: (viewerFollowResult.count ?? 0) > 0,
+    followerCount: typedProfile.follower_count ?? 0,
+    followingCount: typedProfile.following_count ?? 0,
+  };
 
   if (recipesError) {
     console.error('Error fetching recipes:', recipesError);
@@ -217,6 +247,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         initialPublicRecipes={normalizedRecipes}
         initialFavoriteRecipes={normalizedFavoriteRecipes}
         initialStats={stats}
+        followInfo={followInfo}
       />
     </div>
   );
