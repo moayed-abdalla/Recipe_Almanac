@@ -8,6 +8,7 @@
  *   - My Profile link
  *   - My Almanac link
  *   - Create Recipe link
+ *   - Import Recipe link
  *   - Logout button
  * - Login button (when not logged in)
  * - Theme toggle (light/dark mode)
@@ -297,6 +298,9 @@ export default function Header() {
                 </li>
                 <li>
                   <Link href="/recipe/create">Create Recipe</Link>
+                </li>
+                <li>
+                  <Link href="/recipe/import">Import Recipe</Link>
                 </li>
                 <li>
                   <button 
