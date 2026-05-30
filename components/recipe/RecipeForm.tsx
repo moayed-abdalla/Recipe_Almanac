@@ -710,24 +710,23 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           <SortableFormList
             items={ingredients}
             onReorder={setIngredients}
-            itemClassName="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-2 items-stretch sm:items-center group w-full"
+            itemClassName="flex flex-row flex-wrap items-center gap-2 mb-2 group w-full min-w-0"
             gripLabel={(index) => `Reorder ingredient ${index + 1}`}
             renderItem={(ing, index, handle) => {
               const isOtherUnit = ing.unit === 'other';
               return (
             <>
-              <div className="flex gap-2 items-center w-full sm:w-auto">
               {handle}
               <input
                 type="number"
                 step="0.25"
-                className="input input-bordered w-20 sm:w-24 flex-shrink-0"
-                placeholder="Amount"
+                className="input input-bordered input-sm w-[4.25rem] flex-shrink-0"
+                placeholder="Amt"
                 value={ing.amount || ''}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
               />
               <select
-                className={`select select-bordered flex-1 sm:flex-none flex-shrink-0 ${isOtherUnit ? 'sm:w-10 sm:min-w-[2.5rem] text-transparent' : 'sm:min-w-[120px]'}`}
+                className={`select select-bordered select-sm flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'w-[5.25rem]'}`}
                 value={ing.unit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
                 aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
@@ -752,10 +751,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   <option value="other">Other</option>
                 </optgroup>
               </select>
-              </div>
               <input
                 type="text"
-                className="input input-bordered flex-1 min-w-0 w-full"
+                className="input input-bordered input-sm flex-1 min-w-[5rem]"
                 placeholder="Ingredient name"
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
@@ -764,7 +762,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                 <button
                   type="button"
                   onClick={() => removeIngredient(index)}
-                  className="btn btn-sm btn-ghost flex-shrink-0"
+                  className="btn btn-sm btn-ghost btn-square flex-shrink-0"
                   aria-label="Remove ingredient"
                 >
                   ×

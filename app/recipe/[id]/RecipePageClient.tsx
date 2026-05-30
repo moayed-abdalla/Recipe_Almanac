@@ -1119,28 +1119,26 @@ export default function RecipePageClient({
               : formatMeasurement(amount, unit);
 
             return (
-              <li key={ingredient.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleIngredient(ingredient.id)}
-                    className="checkbox flex-shrink-0 mt-0.5"
-                  />
-                  <span className={`${isChecked ? 'line-through opacity-50' : ''} arial-font break-words flex-1 min-w-0 text-sm sm:text-base`}>
-                    {displayText} {ingredient.name}
-                    {showWarning && (
-                      <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
-                        *
-                      </span>
-                    )}
-                  </span>
-                </div>
+              <li key={ingredient.id} className="flex flex-row items-center gap-2 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleIngredient(ingredient.id)}
+                  className="checkbox checkbox-sm flex-shrink-0"
+                />
+                <span className={`${isChecked ? 'line-through opacity-50' : ''} arial-font break-words flex-1 min-w-0 text-sm sm:text-base`}>
+                  {displayText} {ingredient.name}
+                  {showWarning && (
+                    <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
+                      *
+                    </span>
+                  )}
+                </span>
                 {!hideUnit && (
                   <select
                     value={currentUnit}
                     onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
-                    className="select select-bordered select-sm w-full sm:w-auto sm:max-w-xs arial-font flex-shrink-0"
+                    className="select select-bordered select-sm w-auto min-w-[4.25rem] max-w-[5.5rem] arial-font flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {availableUnits.map((unitOption) => (
