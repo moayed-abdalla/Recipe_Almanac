@@ -21,6 +21,8 @@ export interface Profile {
   default_unit?: string | null;
   default_temperature_unit?: TemperatureUnitValue | null;
   nutrition_estimation_enabled?: boolean | null;
+  follower_count?: number | null;
+  following_count?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -108,4 +110,21 @@ export interface Ingredient {
 export interface UserStats {
   totalViews: number;
   favoritedRecipesCount: number;
+}
+
+/**
+ * Follow-graph context for a profile page, resolved server-side.
+ */
+export interface ProfileFollowInfo {
+  /** auth.users id of the profile being viewed. */
+  profileId: string;
+  username: string;
+  /** Viewer is the owner of this profile. */
+  isOwnProfile: boolean;
+  /** Viewer is signed in. */
+  isLoggedIn: boolean;
+  /** Viewer currently follows this profile. */
+  isFollowing: boolean;
+  followerCount: number;
+  followingCount: number;
 }

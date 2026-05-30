@@ -239,6 +239,25 @@ export default function Header() {
               Offline
             </span>
           )}
+          {/* Feed Link - only for logged-in users; icon on mobile, text on desktop */}
+          {user && (
+            <Link
+              href="/feed"
+              className="btn btn-ghost btn-circle sm:rounded-btn sm:w-auto sm:h-auto sm:aspect-auto sm:px-4"
+              aria-label="Feed"
+            >
+              <svg
+                className="w-5 h-5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                fillRule="evenodd"
+                aria-hidden
+              >
+                <path d="M12 12 L19.66 5.57 A10 10 0 1 0 19.66 18.43 Z M13.2 7.5 A1.2 1.2 0 1 0 10.8 7.5 A1.2 1.2 0 1 0 13.2 7.5 Z" />
+              </svg>
+              <span className="hidden sm:inline">Feed</span>
+            </Link>
+          )}
           {/* Leaderboard Link - icon on small screens, text on larger to avoid clutter */}
           <Link
             href="/leaderboard"
