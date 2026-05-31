@@ -5,6 +5,7 @@
  * Filters recipes by:
  * - Title substring match (case-insensitive)
  * - Tag substring match (case-insensitive)
+ * - Author username match (case-insensitive)
  * 
  * This is a Client Component because it needs to:
  * - Manage search state
@@ -173,7 +174,10 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
         fuzzyMatch(searchLower, tag.toLowerCase())
       );
 
-      return titleMatch || tagMatch;
+      const usernameValue = (recipe.profiles?.username ?? '').toLowerCase();
+      const usernameMatch = fuzzyMatch(searchLower, usernameValue);
+
+      return titleMatch || tagMatch || usernameMatch;
     });
   }, [recipes, searchTerm, sortBy, sortOrder]);
 
