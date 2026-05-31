@@ -10,7 +10,7 @@
  * - Range phrases ("5 to 7 minutes") default to the upper bound and expose a
  *   tiny dropdown so the lower bound can be chosen instead.
  * - Multiple timers run independently with component-local state only.
- * - A finished timer plays a soft WebAudio chime once (unless muted) and shows
+ * - A finished timer plays a soft WebAudio chime twice (unless muted) and shows
  *   a "Done — restart" button.
  * - Running timers report their state up through the shared timer context so
  *   the page can keep the screen awake while anything is counting down.
