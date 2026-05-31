@@ -39,8 +39,38 @@ export function primeAudio(): void {
   }
 }
 
+// A pleasant rising arpeggio (A5, C#6, E6).
+const CHIME_FREQUENCIES = [880, 1108.73, 1318.51];
+const CHIME_TONE_LENGTH = 0.35;
+const CHIME_SPACING = 0.18;
+const CHIME_TAIL = 0.05;
+const CHIME_SEQUENCE_DURATION =
+  (CHIME_FREQUENCIES.length - 1) * CHIME_SPACING + CHIME_TONE_LENGTH + CHIME_TAIL;
+
+function playChimeSequence(ctx: AudioContext, startAt: number): void {
+  CHIME_FREQUENCIES.forEach((frequency, i) => {
+    const toneStart = startAt + i * CHIME_SPACING;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+
+    // Quick attack then exponential fade out.
+    gain.gain.setValueAtTime(0.0001, toneStart);
+    gain.gain.exponentialRampToValueAtTime(0.22, toneStart + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, toneStart + CHIME_TONE_LENGTH);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(toneStart);
+    osc.stop(toneStart + CHIME_TONE_LENGTH + CHIME_TAIL);
+  });
+}
+
 /**
- * Play three short, gently fading tones to signal a finished timer.
+ * Play three short, gently fading tones twice to signal a finished timer.
  */
 export function playChime(): void {
   const ctx = getContext();
@@ -50,29 +80,7 @@ export function playChime(): void {
     ctx.resume().catch(() => {});
   }
 
-  // A pleasant rising arpeggio (A5, C#6, E6).
-  const frequencies = [880, 1108.73, 1318.51];
-  const toneLength = 0.35;
-  const spacing = 0.18;
   const now = ctx.currentTime;
-
-  frequencies.forEach((frequency, i) => {
-    const startAt = now + i * spacing;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.value = frequency;
-
-    // Quick attack then exponential fade out.
-    gain.gain.setValueAtTime(0.0001, startAt);
-    gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + toneLength);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(startAt);
-    osc.stop(startAt + toneLength + 0.05);
-  });
+  playChimeSequence(ctx, now);
+  playChimeSequence(ctx, now + CHIME_SEQUENCE_DURATION);
 }
