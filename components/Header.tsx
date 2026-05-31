@@ -220,7 +220,7 @@ export default function Header() {
                 className="w-full h-full"
               />
             </div>
-            <span className="special-elite-regular text-sm sm:text-base lg:text-xl truncate text-base-content">Recipe Almanac Test</span>
+            <span className="special-elite-regular text-sm sm:text-base lg:text-xl truncate text-base-content">Recipe Almanac</span>
           </Link>
         </div>
         
