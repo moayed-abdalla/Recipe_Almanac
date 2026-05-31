@@ -1,4 +1,4 @@
-# Recipe Almanac
+# Recipe Almanac (dual deployment test)
 
 A digital recipe book you can share, browse, and write your own. **No ads. No subscriptions. No marketing fluff. Just recipes.**
 
