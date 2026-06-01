@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase';
+import { getRecipeBySlug } from '@/lib/recipeServer';
 import RecipePageClient from './RecipePageClient';
-import type { Recipe, Profile, RecipeWithProfile, Ingredient } from '@/types';
+import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
 import { getTotalTimeMinutes, minutesToIso8601Duration, toPositiveInt } from '@/utils/recipeTime';
 
 interface RecipeDetailPageProps {
@@ -10,23 +11,11 @@ interface RecipeDetailPageProps {
 }
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
-  const supabase = await createServerClient();
-  
-  // Fetch recipe data by slug (format: username-recipe-slug)
-  // Note: params.id contains the slug value
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .select(`
-      *,
-      profiles:user_id (
-        username,
-        avatar_url
-      )
-    `)
-    .eq('slug', params.id)
-    .single();
+  // Shared, request-cached fetch (see lib/recipeServer.ts) — also used by
+  // generateMetadata in page.tsx, so the slug is only queried once per request.
+  const typedRecipe = await getRecipeBySlug(params.id);
 
-  if (error || !recipe) {
+  if (!typedRecipe) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="alert alert-error">
@@ -36,8 +25,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     );
   }
 
-  // Type assertion and handle profiles (may be array or single object)
-  const typedRecipe = recipe as RecipeWithProfile;
+  // Handle profiles (may be array or single object)
   let owner: Profile | null = null;
   
   if (Array.isArray(typedRecipe.profiles)) {
@@ -67,53 +55,84 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     );
   }
   
-  // Check if recipe is private and verify access
-  if (!typedRecipe.is_public) {
-    // Check if current user is the owner
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user || user.id !== typedRecipe.user_id) {
-      return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="alert alert-error">
-            <span>This recipe is private and you don't have permission to view it.</span>
-          </div>
-        </div>
-      );
-    }
-  }
-  
-  // Fetch ingredients
-  const { data: rawIngredients } = await supabase
-    .from('ingredients')
-    .select('*')
-    .eq('recipe_id', typedRecipe.id)
-    .order('order_index');
-  const ingredients = (rawIngredients || []) as Ingredient[];
-
-  // Check if current user is the recipe owner
+  // One auth resolution for the whole render: the privacy gate, owner controls,
+  // and viewer-specific data all derive from this single getUser() call.
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Private recipes are only visible to their owner.
+  if (!typedRecipe.is_public && (!user || user.id !== typedRecipe.user_id)) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="alert alert-error">
+          <span>This recipe is private and you don&apos;t have permission to view it.</span>
+        </div>
+      </div>
+    );
+  }
+
   const isOwner = user?.id === typedRecipe.user_id;
 
+  // Independent secondary reads run together instead of in a waterfall:
+  // ingredients, the viewer's preferences, their favorite status, and the
+  // recipe's rating summary.
+  const [ingredientsResult, viewerProfileResult, favoriteResult, ratingStatsResult] =
+    await Promise.all([
+      supabase
+        .from('ingredients')
+        .select('*')
+        .eq('recipe_id', typedRecipe.id)
+        .order('order_index'),
+      user
+        ? supabase
+            .from('profiles')
+            .select('nutrition_estimation_enabled, default_temperature_unit')
+            .eq('id', user.id)
+            .single()
+        : Promise.resolve({ data: null }),
+      user
+        ? supabase
+            .from('saved_recipes')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('recipe_id', typedRecipe.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from('recipe_rating_stats')
+        .select('rating_count, average_rating')
+        .eq('recipe_id', typedRecipe.id)
+        .maybeSingle(),
+    ]);
+
+  const ingredients = (ingredientsResult.data || []) as Ingredient[];
+
   // Viewer preferences: nutrition (logged-in only); temperature unit for step hints.
-  let nutritionEnabled = false;
-  let preferredTemperatureUnit: 'C' | 'F' | null = null;
-  if (user) {
-    const { data: viewerProfile } = await supabase
-      .from('profiles')
-      .select('nutrition_estimation_enabled, default_temperature_unit')
-      .eq('id', user.id)
-      .single();
-    const viewerPrefs = viewerProfile as unknown as
-      | {
-          nutrition_estimation_enabled?: boolean | null;
-          default_temperature_unit?: string | null;
-        }
-      | null;
-    nutritionEnabled = viewerPrefs?.nutrition_estimation_enabled === true;
-    preferredTemperatureUnit =
-      viewerPrefs?.default_temperature_unit === 'F' ? 'F' : 'C';
-  }
+  const viewerPrefs = viewerProfileResult.data as
+    | {
+        nutrition_estimation_enabled?: boolean | null;
+        default_temperature_unit?: string | null;
+      }
+    | null;
+  const nutritionEnabled = viewerPrefs?.nutrition_estimation_enabled === true;
+  // null = signed out (client then shows all temperature conversions).
+  const preferredTemperatureUnit: 'C' | 'F' | null = user
+    ? viewerPrefs?.default_temperature_unit === 'F'
+      ? 'F'
+      : 'C'
+    : null;
+
+  const initialIsFavorited = Boolean(favoriteResult.data);
+
+  const ratingStatsRow = ratingStatsResult.data as
+    | { rating_count: number | null; average_rating: number | null }
+    | null;
+  const initialRatingStats = ratingStatsRow
+    ? {
+        ratingCount: Number(ratingStatsRow.rating_count) || 0,
+        averageRating: Number(ratingStatsRow.average_rating) || 0,
+      }
+    : null;
   
   // Debug logging (remove in production)
   if (process.env.NODE_ENV === 'development') {
@@ -208,6 +227,9 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         ingredients={ingredients}
         owner={owner}
         isOwner={isOwner}
+        viewerId={user?.id ?? null}
+        initialIsFavorited={initialIsFavorited}
+        initialRatingStats={initialRatingStats}
         nutritionEnabled={nutritionEnabled}
         preferredTemperatureUnit={preferredTemperatureUnit}
       />
