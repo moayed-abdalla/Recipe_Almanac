@@ -50,3 +50,5 @@ next-env.d.ts
 /client/.vite
 /client/dist
 /server/uploads
+
+desktop.ini
