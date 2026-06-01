@@ -30,6 +30,8 @@ interface RecipeRatingsProps {
   recipeId: string;
   isOwner: boolean;
   isPublic: boolean;
+  /** Server-resolved rating summary, shown immediately while reviews load. */
+  initialStats?: RatingStats;
 }
 
 interface ReviewRow {
@@ -66,11 +68,18 @@ function StarIcon({ filled, className }: { filled: boolean; className?: string }
   );
 }
 
-export default function RecipeRatings({ recipeId, isOwner, isPublic }: RecipeRatingsProps) {
+export default function RecipeRatings({
+  recipeId,
+  isOwner,
+  isPublic,
+  initialStats,
+}: RecipeRatingsProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [stats, setStats] = useState<RatingStats>({ averageRating: 0, ratingCount: 0 });
+  const [stats, setStats] = useState<RatingStats>(
+    initialStats ?? { averageRating: 0, ratingCount: 0 }
+  );
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 

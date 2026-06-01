@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { createServerClient } from '@/lib/supabase';
 import type { RecipeWithProfile } from '@/types';
+import { getRecipeBySlug } from '@/lib/recipeServer';
 import RecipeDetailPage from './RecipeDetailPage';
 
 // Always render on demand so metadata generation doesn't get stuck in
@@ -17,24 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Wrap the whole metadata fetch in a try/catch so a metadata failure can
   // never break the route itself — the page will still render via the default
   // export below.
+  // Shares the same React.cache()-wrapped query the page component uses, so
+  // this does not add an extra Supabase round trip.
   let recipe: RecipeWithProfile | null = null;
   try {
-    const supabase = await createServerClient();
-    const { data: rawRecipe } = await supabase
-      .from('recipes')
-      .select(`
-        title,
-        description,
-        image_url,
-        tags,
-        slug,
-        is_public,
-        profiles:user_id (username)
-      `)
-      .eq('slug', params.id)
-      .single();
-
-    recipe = rawRecipe as RecipeWithProfile | null;
+    recipe = await getRecipeBySlug(params.id);
   } catch (err) {
     console.error('generateMetadata fetch failed:', err);
   }
