@@ -14,6 +14,7 @@ import {
 } from '@/lib/fixSpecialCharacters';
 import { SortableFormList } from '@/components/recipe/SortableFormList';
 import { newSortableId } from '@/lib/sortableId';
+import { revalidateRecipe } from '@/app/recipe/[id]/actions';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -310,11 +311,12 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           }
         }
 
-        // Step 7a: Redirect to the updated recipe page using slug
-        // Use replace() so back button doesn't return to edit form
-        // Must await navigation so router.refresh() runs on the new page, not the edit page
+        // Step 7a: Redirect to the updated recipe page using slug.
+        // Use replace() so the back button doesn't return to the edit form.
+        // revalidateRecipe() busts the cache up front so the destination is
+        // fetched fresh exactly once, instead of replace() + refresh() refetching.
+        await revalidateRecipe(slug);
         await router.replace(`/recipe/${slug}`);
-        router.refresh();
       } else {
         // Step 4b: Create new recipe record
         const { data: newRecipe, error: recipeError } = await supabaseClient

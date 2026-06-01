@@ -30,14 +30,24 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
-import RecipeRatings from '@/components/recipe/RecipeRatings';
-import NutritionPanel from '@/components/recipe/NutritionPanel';
+
+// Below-the-fold, client-only sections are code-split so the main recipe
+// content paints and hydrates first.
+const RecipeRatings = dynamic(() => import('@/components/recipe/RecipeRatings'), {
+  ssr: false,
+  loading: () => <div className="skeleton mt-8 h-40 w-full rounded-lg" />,
+});
+const NutritionPanel = dynamic(() => import('@/components/recipe/NutritionPanel'), {
+  ssr: false,
+  loading: () => <div className="skeleton mb-8 h-32 w-full rounded-lg" />,
+});
 import { RecipeTimerContext } from '@/components/recipe/timerContext';
 import {
   fixSpecialCharacters,
@@ -81,6 +91,12 @@ interface RecipePageClientProps {
   ingredients: Ingredient[];
   owner: Owner;
   isOwner: boolean;
+  /** Signed-in viewer's id, resolved on the server. null = signed out. */
+  viewerId: string | null;
+  /** Whether the viewer has already favorited this recipe (server-resolved). */
+  initialIsFavorited: boolean;
+  /** Rating summary resolved on the server so the average shows immediately. */
+  initialRatingStats: { averageRating: number; ratingCount: number } | null;
   nutritionEnabled: boolean;
   /** null = signed out (show all temperature conversions). */
   preferredTemperatureUnit: 'C' | 'F' | null;
@@ -97,6 +113,9 @@ export default function RecipePageClient({
   ingredients,
   owner,
   isOwner,
+  viewerId,
+  initialIsFavorited,
+  initialRatingStats,
   nutritionEnabled,
   preferredTemperatureUnit,
 }: RecipePageClientProps) {
@@ -141,9 +160,11 @@ export default function RecipePageClient({
     setWakeLockSupported(typeof navigator !== 'undefined' && 'wakeLock' in navigator);
   }, []);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Favorite status and viewer identity are resolved on the server and passed in
+  // as props, so the page no longer makes a client-side auth + favorites round
+  // trip on mount.
+  const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
+  const user = useMemo(() => (viewerId ? { id: viewerId } : null), [viewerId]);
   const [forking, setForking] = useState(false);
   const [viewCount, setViewCount] = useState<number>(recipe.view_count);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
@@ -180,12 +201,14 @@ export default function RecipePageClient({
     });
   }, []);
 
-  // Sync view count when recipe prop changes
+  // Sync server-resolved state when navigating between recipes (the component
+  // stays mounted across param changes, so props update without a remount).
   useEffect(() => {
     setViewCount(recipe.view_count);
     setViewTracked(false);
     viewTrackingRef.current = false; // Reset ref when recipe changes
-  }, [recipe.id, recipe.view_count]);
+    setIsFavorited(initialIsFavorited);
+  }, [recipe.id, recipe.view_count, initialIsFavorited]);
 
   const requestWakeLock = useCallback(async () => {
     if (!wakeLockSupported || wakeLockRef.current) return;
@@ -347,46 +370,6 @@ export default function RecipePageClient({
     setIngredientUnits(initialUnits);
     setUnitWarnings(initialWarnings);
   }, [ingredients]);
-
-  /**
-   * Check if the current user has favorited this recipe
-   * Runs on component mount and when recipe ID changes
-   */
-  useEffect(() => {
-    const checkFavorite = async () => {
-      try {
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        
-        if (userError) {
-          console.error('Error getting user:', userError);
-          setLoading(false);
-          return;
-        }
-        
-        setUser(user);
-        
-        // Check if recipe is in user's favorites
-        if (user) {
-          const { data, error } = await supabaseClient
-            .from('saved_recipes')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('recipe_id', recipe.id)
-            .single();
-          
-          // If data exists, recipe is favorited
-          // If error is "PGRST116" (no rows returned), recipe is not favorited
-          setIsFavorited(!!data && !error);
-        }
-      } catch (err) {
-        console.error('Error checking favorite status:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkFavorite();
-  }, [recipe.id]);
 
   /**
    * Track scroll percentage and register view when user scrolls more than 5%
@@ -979,7 +962,6 @@ export default function RecipePageClient({
               onClick={toggleFavorite}
               className={`btn btn-circle ${isFavorited ? 'btn-primary' : 'btn-ghost'}`}
               aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-              disabled={loading}
             >
               <svg
                 className={`w-6 h-6 ${isFavorited ? 'fill-current' : ''}`}
@@ -1208,6 +1190,7 @@ export default function RecipePageClient({
         recipeId={recipe.id}
         isOwner={isOwner}
         isPublic={recipe.is_public !== false}
+        initialStats={initialRatingStats ?? undefined}
       />
     </div>
     </RecipeTimerContext.Provider>
