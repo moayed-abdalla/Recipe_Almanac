@@ -14,6 +14,7 @@ import {
 } from '@/lib/temperature-config';
 import type { Profile } from '@/types';
 import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
+import ImageCropModal from '@/components/ui/ImageCropModal';
 
 interface ProfileEdit extends Profile {
   id: string;
@@ -33,6 +34,7 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -145,21 +147,18 @@ export default function ProfileEditPage() {
   };
 
   /**
-   * Handle file input change
+   * Handle file input change — open crop modal before uploading
    */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Preview image
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
+      reader.onload = (ev) => {
+        setCropModalSrc(ev.target?.result as string);
       };
       reader.readAsDataURL(file);
-      
-      // Upload the file
-      handleAvatarUpload(file);
     }
+    e.target.value = '';
   };
 
   /**
@@ -418,6 +417,21 @@ export default function ProfileEditPage() {
                   </div>
                 </div>
               </div>
+
+              {cropModalSrc && (
+                <ImageCropModal
+                  imageSrc={cropModalSrc}
+                  aspect={1}
+                  cropShape="round"
+                  title="Edit Profile Picture"
+                  onConfirm={(croppedFile, previewUrl) => {
+                    setAvatarPreview(previewUrl);
+                    setCropModalSrc(null);
+                    handleAvatarUpload(croppedFile);
+                  }}
+                  onCancel={() => setCropModalSrc(null)}
+                />
+              )}
 
               {/* Username Field */}
               <div className="form-control mb-6">
