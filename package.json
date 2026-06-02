@@ -20,7 +20,8 @@
     "motion": "^12.38.0",
     "next": "^14.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-easy-crop": "^5.5.7"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
