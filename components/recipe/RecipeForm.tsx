@@ -15,6 +15,7 @@ import {
 import { SortableFormList } from '@/components/recipe/SortableFormList';
 import { newSortableId } from '@/lib/sortableId';
 import { revalidateRecipe } from '@/app/recipe/[id]/actions';
+import ImageCropModal from '@/components/ui/ImageCropModal';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -135,6 +136,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   // Form state - image file for upload
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(recipe?.image_url || null);
+  const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
 
   /**
    * Handle form submission
@@ -568,17 +570,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             className="file-input file-input-bordered"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0] || null;
-              setImageFile(file);
               if (file) {
-                // Preview new image
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                  setImagePreview(e.target?.result as string);
+                reader.onload = (ev) => {
+                  setCropModalSrc(ev.target?.result as string);
                 };
                 reader.readAsDataURL(file);
               } else {
+                setImageFile(null);
                 setImagePreview(isEditMode ? recipe?.image_url || null : null);
               }
+              e.target.value = '';
             }}
           />
           {isEditMode && (
@@ -587,6 +589,21 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             </label>
           )}
         </div>
+
+        {cropModalSrc && (
+          <ImageCropModal
+            imageSrc={cropModalSrc}
+            aspect={4 / 3}
+            cropShape="rect"
+            title="Edit Recipe Image"
+            onConfirm={(croppedFile, previewUrl) => {
+              setImageFile(croppedFile);
+              setImagePreview(previewUrl);
+              setCropModalSrc(null);
+            }}
+            onCancel={() => setCropModalSrc(null)}
+          />
+        )}
 
         {/* Description */}
         <div className="form-control">
