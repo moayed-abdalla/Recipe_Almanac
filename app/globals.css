@@ -335,6 +335,19 @@ i, em, .italic {
   font-style: normal;
 }
 
+/* Header: grow with wrapped brand text (btn min-height would otherwise clip/overflow) */
+.site-header.navbar {
+  height: auto;
+  align-items: center;
+}
+
+.header-brand.btn {
+  height: auto;
+  min-height: 0;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 /* Header brand: stack "Recipe" / "Almanac" when tight; 30% larger when side by side */
 .header-brand {
   container-type: inline-size;
