@@ -341,9 +341,13 @@ i, em, .italic {
   align-items: center;
 }
 
+/* Keep logo + text on one row; only the text itself may wrap internally.
+   Overrides DaisyUI .btn which sets flex-wrap: wrap. */
 .header-brand.btn {
   height: auto;
   min-height: 0;
+  flex-wrap: nowrap;
+  align-items: center;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
