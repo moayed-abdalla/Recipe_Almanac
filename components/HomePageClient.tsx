@@ -189,57 +189,45 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
       </div>
 
       {/* Sort controls */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <span className="text-sm font-medium opacity-70 text-base-content shrink-0">Sort by:</span>
-            <div className="dropdown dropdown-bottom">
-              <label tabIndex={0} className="btn btn-sm btn-outline">
-                {sortBy === 'view_count' ? 'View Count' : 'Date Created'}
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </label>
-              <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300 z-10">
-                <li>
-                  <button
-                    onClick={() => setSortBy('view_count')}
-                    className={sortBy === 'view_count' ? 'active' : ''}
-                  >
-                    View Count
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setSortBy('created_at')}
-                    className={sortBy === 'created_at' ? 'active' : ''}
-                  >
-                    Date Created
-                  </button>
-                </li>
-              </ul>
-            </div>
+      <div className="mb-6 grid grid-cols-2 gap-4 w-fit">
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium opacity-70 text-base-content">Sort by:</span>
+          <div className="dropdown dropdown-bottom">
+            <label tabIndex={0} className="btn btn-sm btn-outline w-full">
+              {sortBy === 'view_count' ? 'View Count' : 'Date Created'}
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </label>
+            <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300 z-10">
+              <li>
+                <button
+                  onClick={() => setSortBy('view_count')}
+                  className={sortBy === 'view_count' ? 'active' : ''}
+                >
+                  View Count
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => setSortBy('created_at')}
+                  className={sortBy === 'created_at' ? 'active' : ''}
+                >
+                  Date Created
+                </button>
+              </li>
+            </ul>
           </div>
+        </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <span className="text-sm font-medium opacity-70 text-base-content shrink-0">Order:</span>
-            <div className="btn-group w-full sm:w-auto">
-              <button
-                onClick={() => setSortOrder('desc')}
-                className={`btn btn-sm flex-1 sm:flex-none ${sortOrder === 'desc' ? 'btn-primary' : 'btn-outline'}`}
-              >
-                <span className="sm:hidden">Desc</span>
-                <span className="hidden sm:inline">Descending</span>
-              </button>
-              <button
-                onClick={() => setSortOrder('asc')}
-                className={`btn btn-sm flex-1 sm:flex-none ${sortOrder === 'asc' ? 'btn-primary' : 'btn-outline'}`}
-              >
-                <span className="sm:hidden">Asc</span>
-                <span className="hidden sm:inline">Ascending</span>
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium opacity-70 text-base-content">Order:</span>
+          <button
+            onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+            className="btn btn-sm btn-outline"
+          >
+            {sortOrder === 'desc' ? 'Descending' : 'Ascending'}
+          </button>
         </div>
       </div>
 
