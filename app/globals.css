@@ -335,6 +335,55 @@ i, em, .italic {
   font-style: normal;
 }
 
+/* Header brand: stack "Recipe" / "Almanac" when tight; 30% larger when side by side */
+.header-brand {
+  container-type: inline-size;
+  container-name: header-brand;
+}
+
+.header-brand-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.25rem;
+  line-height: 1.1;
+  font-size: 0.875rem;
+}
+
+.header-brand-text > span {
+  white-space: nowrap;
+}
+
+@container header-brand (min-width: 10rem) {
+  .header-brand-text {
+    font-size: 1.1375rem; /* 0.875rem × 1.3 */
+  }
+}
+
+@media (min-width: 640px) {
+  .header-brand-text {
+    font-size: 1rem;
+  }
+
+  @container header-brand (min-width: 10rem) {
+    .header-brand-text {
+      font-size: 1.3rem; /* 1rem × 1.3 */
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-brand-text {
+    font-size: 1.25rem;
+  }
+
+  @container header-brand (min-width: 10rem) {
+    .header-brand-text {
+      font-size: 1.625rem; /* 1.25rem × 1.3 */
+    }
+  }
+}
+
 /* Arial font for recipe content */
 .arial-font {
   font-family: Arial, Helvetica, sans-serif;
