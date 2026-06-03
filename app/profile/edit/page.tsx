@@ -14,7 +14,7 @@ import {
 } from '@/lib/temperature-config';
 import type { Profile } from '@/types';
 import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
-import ImageCropModal from '@/components/ui/ImageCropModal';
+import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
 
 interface ProfileEdit extends Profile {
   id: string;
@@ -35,6 +35,7 @@ export default function ProfileEditPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
+  const [loadingCropSrc, setLoadingCropSrc] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -372,12 +373,13 @@ export default function ProfileEditPage() {
                         )}
                       </div>
                     </div>
+                    {/* Camera button — upload new image */}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingAvatar}
+                      disabled={uploadingAvatar || loadingCropSrc}
                       className="absolute bottom-0 right-0 btn btn-circle btn-primary btn-sm"
-                      title="Change profile picture"
+                      title="Upload new profile picture"
                     >
                       {uploadingAvatar ? (
                         <span className="loading loading-spinner loading-xs"></span>
@@ -404,6 +406,36 @@ export default function ProfileEditPage() {
                         </svg>
                       )}
                     </button>
+
+                    {/* Edit/crop button — only visible when there is an existing image */}
+                    {displayAvatarUrl && (
+                      <button
+                        type="button"
+                        disabled={uploadingAvatar || loadingCropSrc}
+                        onClick={async () => {
+                          setLoadingCropSrc(true);
+                          try {
+                            const src = await fetchImageAsDataUrl(displayAvatarUrl);
+                            setCropModalSrc(src);
+                          } catch (err) {
+                            console.error('Failed to load image for editing:', err);
+                          } finally {
+                            setLoadingCropSrc(false);
+                          }
+                        }}
+                        className="absolute -bottom-0 -left-0 btn btn-circle btn-neutral btn-sm"
+                        title="Edit / crop current picture"
+                      >
+                        {loadingCropSrc ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.293-6.293a1 1 0 011.414 0l1.586 1.586a1 1 0 010 1.414L12 16H9v-3z" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -413,7 +445,11 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm opacity-70">Click the camera icon to change your profile picture</p>
+                    <p className="text-sm opacity-70">
+                      {displayAvatarUrl
+                        ? 'Use the camera to upload a new photo, or the pencil to crop the current one'
+                        : 'Click the camera icon to upload a profile picture'}
+                    </p>
                   </div>
                 </div>
               </div>
