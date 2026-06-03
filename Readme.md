@@ -22,7 +22,7 @@ Most recipe sites are a chore to use and cover the actual recipe under ads, pop-
 
 **Also included:** full-text search & tags, public/private recipes, view counts, feedback with attachments, and a typewriter + kitchen-icon aesthetic-without subscriptions or ads funding the site.
 
-## How It Works (Current V1.0)
+## How It Works (Current V1.1)
 
 ### Technology Stack
 
