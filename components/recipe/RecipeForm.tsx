@@ -15,7 +15,7 @@ import {
 import { SortableFormList } from '@/components/recipe/SortableFormList';
 import { newSortableId } from '@/lib/sortableId';
 import { revalidateRecipe } from '@/app/recipe/[id]/actions';
-import ImageCropModal from '@/components/ui/ImageCropModal';
+import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -137,6 +137,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(recipe?.image_url || null);
   const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
+  const [loadingCropSrc, setLoadingCropSrc] = useState(false);
 
   /**
    * Handle form submission
@@ -554,13 +555,41 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           </label>
           {(imagePreview || (isEditMode && recipe?.image_url)) && (
             <div className="mb-2">
-              <img
-                src={imagePreview || recipe?.image_url || ''}
-                alt="Recipe image"
-                className="w-full max-w-xs sm:max-w-sm h-40 sm:h-48 object-cover rounded-lg"
-              />
+              <div className="relative inline-block">
+                <img
+                  src={imagePreview || recipe?.image_url || ''}
+                  alt="Recipe image"
+                  className="w-full max-w-xs sm:max-w-sm h-40 sm:h-48 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  disabled={loadingCropSrc}
+                  onClick={async () => {
+                    setLoadingCropSrc(true);
+                    try {
+                      const src = await fetchImageAsDataUrl(imagePreview || recipe?.image_url || '');
+                      setCropModalSrc(src);
+                    } catch (err) {
+                      console.error('Failed to load image for editing:', err);
+                    } finally {
+                      setLoadingCropSrc(false);
+                    }
+                  }}
+                  className="absolute top-2 right-2 btn btn-sm btn-neutral gap-1 shadow"
+                  title="Edit image"
+                >
+                  {loadingCropSrc ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.293-6.293a1 1 0 011.414 0l1.586 1.586a1 1 0 010 1.414L12 16H9v-3z" />
+                    </svg>
+                  )}
+                  Edit
+                </button>
+              </div>
               <p className="text-sm opacity-70 mt-1">
-                {imagePreview ? 'New image preview' : 'Current image'}
+                {imagePreview && imagePreview !== recipe?.image_url ? 'New image preview' : 'Current image'}
               </p>
             </div>
           )}

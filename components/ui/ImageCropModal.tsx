@@ -14,6 +14,25 @@ interface ImageCropModalProps {
   onCancel: () => void;
 }
 
+/**
+ * Fetch any image URL (including remote Supabase URLs) and return a data URL.
+ * This avoids canvas CORS tainting when we later draw the image to a canvas.
+ */
+export async function fetchImageAsDataUrl(url: string): Promise<string> {
+  // blob/data URLs are already local — return them as-is
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 async function getCroppedImage(
   imageSrc: string,
   pixelCrop: Area,
@@ -21,6 +40,7 @@ async function getCroppedImage(
 ): Promise<{ file: File; previewUrl: string }> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = imageSrc;
