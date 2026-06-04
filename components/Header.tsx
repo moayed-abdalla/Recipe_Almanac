@@ -209,9 +209,12 @@ export default function Header() {
   return (
     <header className="site-header navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50 min-h-14 h-auto py-1 px-3 sm:px-4">
       <div className="w-full max-w-7xl mx-auto flex items-center gap-1 sm:gap-2 min-h-0">
-        <div className="flex-1 flex items-center min-w-0 min-h-0">
-          <Link href="/" className="header-brand btn btn-ghost normal-case typewriter px-1 sm:px-2 flex flex-nowrap items-center min-w-0 overflow-hidden max-w-[55vw] sm:max-w-none">
-            <div className="logo-colorized mr-1.5 sm:mr-2 w-8 h-8 sm:w-10 sm:h-10 shrink-0">
+        <div className="flex-1 flex items-center min-w-0">
+          <Link
+            href="/"
+            className="header-brand btn btn-ghost normal-case px-1 sm:px-2 flex items-center gap-1.5 sm:gap-2 min-w-0"
+          >
+            <div className="logo-colorized w-8 h-8 sm:w-10 sm:h-10 shrink-0">
               <Image
                 src="/logo.png"
                 alt="Recipe Almanac"
@@ -220,9 +223,8 @@ export default function Header() {
                 className="w-full h-full"
               />
             </div>
-            <span className="special-elite-regular header-brand-text text-base-content min-w-0">
-              <span>Recipe</span>
-              <span>Almanac</span>
+            <span className="typewriter text-base-content text-sm sm:text-base lg:text-xl whitespace-nowrap">
+              Recipe Almanac
             </span>
           </Link>
         </div>
