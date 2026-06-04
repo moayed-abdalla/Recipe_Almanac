@@ -531,8 +531,8 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   if (recipe.image_url) {
     const loaded = await loadImageAsDataUrl(recipe.image_url);
     if (loaded) {
-      const maxWidth = CONTENT_WIDTH;
-      const maxHeight = 80;
+      const maxWidth = CONTENT_WIDTH * 0.5;
+      const maxHeight = 40;
       const ratio = loaded.width / loaded.height;
       let imgW = maxWidth;
       let imgH = imgW / ratio;
