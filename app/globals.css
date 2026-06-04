@@ -339,6 +339,17 @@ i, em, .italic {
 .site-header.navbar {
   height: auto;
   align-items: center;
+  /* Ensure DaisyUI's padding shorthand never clobbers Tailwind's px-* utilities.
+     Values mirror the px-3 / sm:px-4 classes on the header element. */
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .site-header.navbar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 /* Keep logo + text on one row; only the text itself may wrap internally.
@@ -352,7 +363,8 @@ i, em, .italic {
   padding-bottom: 0.25rem;
 }
 
-/* Header brand: stack "Recipe" / "Almanac" when tight; 30% larger when side by side */
+/* Header brand text: one line by default, stack only when the brand container
+   is extremely narrow (< 7rem, i.e. the logo + one word barely fit). */
 .header-brand {
   container-type: inline-size;
   container-name: header-brand;
@@ -360,20 +372,20 @@ i, em, .italic {
 
 .header-brand-text {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;   /* keep "Recipe Almanac" on a single line */
   align-items: baseline;
-  column-gap: 0.25rem;
+  column-gap: 0.3em;
   line-height: 1.1;
-  font-size: 0.875rem;
-}
-
-.header-brand-text > span {
   white-space: nowrap;
+  overflow: hidden;
+  font-size: 0.8rem;   /* slightly compact on mobile so text fits without clipping */
 }
 
-@container header-brand (min-width: 10rem) {
+/* Only stack the words when the brand area is truly cramped */
+@container header-brand (max-width: 7rem) {
   .header-brand-text {
-    font-size: 1.1375rem; /* 0.875rem × 1.3 */
+    flex-wrap: wrap;
+    white-space: normal;
   }
 }
 
@@ -381,23 +393,11 @@ i, em, .italic {
   .header-brand-text {
     font-size: 1rem;
   }
-
-  @container header-brand (min-width: 10rem) {
-    .header-brand-text {
-      font-size: 1.3rem; /* 1rem × 1.3 */
-    }
-  }
 }
 
 @media (min-width: 1024px) {
   .header-brand-text {
     font-size: 1.25rem;
-  }
-
-  @container header-brand (min-width: 10rem) {
-    .header-brand-text {
-      font-size: 1.625rem; /* 1.25rem × 1.3 */
-    }
   }
 }
 
