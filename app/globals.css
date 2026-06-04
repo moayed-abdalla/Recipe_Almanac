@@ -352,8 +352,7 @@ i, em, .italic {
   }
 }
 
-/* Keep logo + text on one row; only the text itself may wrap internally.
-   Overrides DaisyUI .btn which sets flex-wrap: wrap. */
+/* Overrides DaisyUI .btn which defaults flex-wrap: wrap and fixed heights */
 .header-brand.btn {
   height: auto;
   min-height: 0;
@@ -361,44 +360,6 @@ i, em, .italic {
   align-items: center;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
-}
-
-/* Header brand text: one line by default, stack only when the brand container
-   is extremely narrow (< 7rem, i.e. the logo + one word barely fit). */
-.header-brand {
-  container-type: inline-size;
-  container-name: header-brand;
-}
-
-.header-brand-text {
-  display: flex;
-  flex-wrap: nowrap;   /* keep "Recipe Almanac" on a single line */
-  align-items: baseline;
-  column-gap: 0.3em;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  font-size: 0.8rem;   /* slightly compact on mobile so text fits without clipping */
-}
-
-/* Only stack the words when the brand area is truly cramped */
-@container header-brand (max-width: 7rem) {
-  .header-brand-text {
-    flex-wrap: wrap;
-    white-space: normal;
-  }
-}
-
-@media (min-width: 640px) {
-  .header-brand-text {
-    font-size: 1rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-brand-text {
-    font-size: 1.25rem;
-  }
 }
 
 /* Arial font for recipe content */
