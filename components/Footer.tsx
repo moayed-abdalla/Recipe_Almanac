@@ -194,8 +194,11 @@ export default function Footer() {
           </div>
         )}
 
-        <div className="text-center mt-4 text-xs sm:text-sm opacity-70 px-2">
-          <p>© {new Date().getFullYear()} Recipe Almanac. No ads, no subscriptions, just recipes.</p>
+        <div className="text-center mt-4 text-xs sm:text-sm opacity-70 px-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span>© {new Date().getFullYear()} Recipe Almanac. No ads, no subscriptions, just recipes.</span>
+          <Link href="/privacy" className="link link-hover whitespace-nowrap">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>
