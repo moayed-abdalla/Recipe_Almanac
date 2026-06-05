@@ -179,15 +179,19 @@ export default function Header() {
   }, [theme]);
 
   /**
-   * Apply theme when profile or theme mode changes (not on first mount — init effect applies first).
+   * Apply saved profile color themes when profile loads or updates.
+   * Does not depend on `theme`: mode changes from the header toggle or from
+   * register/edit preview already set `data-theme` on the document — re-applying
+   * here on every mode change would overwrite unsaved preview selections with
+   * the user's saved defaults.
    */
   useEffect(() => {
     if (!applyThemeSyncReadyRef.current) {
       applyThemeSyncReadyRef.current = true;
       return;
     }
-    applyTheme(theme, profile);
-  }, [theme, profile, applyTheme]);
+    applyTheme(themeRef.current, profile);
+  }, [profile, applyTheme]);
 
   /**
    * Toggle between light and dark theme mode
