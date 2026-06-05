@@ -257,13 +257,26 @@ export default function ProfileEditPage() {
   };
 
   /**
-   * Apply theme preview immediately
+   * Apply theme preview immediately, forcing the given mode so clicking a light
+   * theme always previews in light mode and a dark theme in dark mode —
+   * matching the behaviour on the registration page.
    */
-  const applyThemePreview = (lightTheme: LightThemeId, darkTheme: DarkThemeId) => {
-    const mode = getCurrentThemeMode();
-    const themeId = mode === 'light' ? lightTheme : darkTheme;
+  const applyThemePreview = (lightTheme: LightThemeId, darkTheme: DarkThemeId, mode?: 'light' | 'dark') => {
+    const resolvedMode = mode ?? getCurrentThemeMode();
+    const themeId = resolvedMode === 'light' ? lightTheme : darkTheme;
     document.documentElement.setAttribute('data-theme', themeId);
-    document.documentElement.setAttribute('data-theme-mode', mode);
+    document.documentElement.setAttribute('data-theme-mode', resolvedMode);
+    localStorage.setItem('theme-mode', resolvedMode);
+  };
+
+  const handleSelectLightTheme = (themeId: LightThemeId) => {
+    setSelectedLightTheme(themeId);
+    applyThemePreview(themeId, selectedDarkTheme, 'light');
+  };
+
+  const handleSelectDarkTheme = (themeId: DarkThemeId) => {
+    setSelectedDarkTheme(themeId);
+    applyThemePreview(selectedLightTheme, themeId, 'dark');
   };
 
   /**
@@ -525,10 +538,7 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedLightTheme(theme.id as LightThemeId);
-                          applyThemePreview(theme.id as LightThemeId, selectedDarkTheme);
-                        }}
+                        onClick={() => handleSelectLightTheme(theme.id as LightThemeId)}
                         className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                           selectedLightTheme === theme.id
                             ? 'border-primary bg-primary/10'
@@ -561,10 +571,7 @@ export default function ProfileEditPage() {
                       <button
                         key={theme.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedDarkTheme(theme.id as DarkThemeId);
-                          applyThemePreview(selectedLightTheme, theme.id as DarkThemeId);
-                        }}
+                        onClick={() => handleSelectDarkTheme(theme.id as DarkThemeId)}
                         className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
                           selectedDarkTheme === theme.id
                             ? 'border-primary bg-primary/10'
