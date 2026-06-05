@@ -26,8 +26,6 @@ Most recipe sites are a chore to use and cover the actual recipe under ads, pop-
 
 ### Technology Stack
 
-Recipe Almanac is built with modern web technologies:
-
 - **Frontend**: Next.js 14 with React and TypeScript
 - **Styling**: Tailwind CSS with DaisyUI components
 - **Backend**: Supabase (PostgreSQL database + Authentication + Storage)
@@ -187,7 +185,7 @@ Recipe Almanac is open source, feel free to:
 
 ## License
 
-This project is open source and available for everyone to use and contribute to.
+This project has an MIT license meaning it is open source and available for everyone to use and contribute to.
 
 ## Cloning
 
