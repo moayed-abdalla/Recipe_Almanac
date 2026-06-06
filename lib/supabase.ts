@@ -22,6 +22,8 @@ export type Database = {
           avatar_url: string | null;
           nutrition_estimation_enabled: boolean;
           default_temperature_unit: 'C' | 'F';
+          has_seen_home_tutorial: boolean;
+          has_seen_recipe_tutorial: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -32,6 +34,8 @@ export type Database = {
           avatar_url?: string | null;
           nutrition_estimation_enabled?: boolean;
           default_temperature_unit?: 'C' | 'F';
+          has_seen_home_tutorial?: boolean;
+          has_seen_recipe_tutorial?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -42,6 +46,8 @@ export type Database = {
           avatar_url?: string | null;
           nutrition_estimation_enabled?: boolean;
           default_temperature_unit?: 'C' | 'F';
+          has_seen_home_tutorial?: boolean;
+          has_seen_recipe_tutorial?: boolean;
           created_at?: string;
           updated_at?: string;
         };

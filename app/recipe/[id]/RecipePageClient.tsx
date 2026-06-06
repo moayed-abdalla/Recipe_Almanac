@@ -37,6 +37,7 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
+import RecipeTutorial from '@/components/tutorial/RecipeTutorial';
 
 // Below-the-fold, client-only sections are code-split so the main recipe
 // content paints and hydrates first.
@@ -166,6 +167,7 @@ export default function RecipePageClient({
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const user = useMemo(() => (viewerId ? { id: viewerId } : null), [viewerId]);
   const [forking, setForking] = useState(false);
+  const forkConfirmRef = useRef<HTMLDialogElement>(null);
   const [viewCount, setViewCount] = useState<number>(recipe.view_count);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   const viewTrackingRef = useRef<boolean>(false); // Ref to prevent multiple API calls
@@ -802,6 +804,7 @@ export default function RecipePageClient({
   return (
     <RecipeTimerContext.Provider value={timerContextValue}>
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
+      <RecipeTutorial />
       {/* Recipe Image */}
       <div className="mb-4 sm:mb-6 lg:mb-8">
         {recipe.image_url ? (
@@ -827,6 +830,7 @@ export default function RecipePageClient({
             {/* Wake Lock Button */}
             <button
               onClick={toggleWakeLock}
+              data-tour="wakelock"
               className={`btn btn-circle ${wakeLockActive ? 'btn-primary' : 'btn-ghost'}`}
               aria-pressed={wakeLockActive}
               aria-label={wakeLockActive ? 'Disable always on' : 'Enable always on'}
@@ -853,6 +857,7 @@ export default function RecipePageClient({
             {/* Timer Chime Mute Toggle */}
             <button
               onClick={toggleTimerMute}
+              data-tour="mute"
               className={`btn btn-circle ${timerMuted ? 'btn-ghost' : 'btn-primary'}`}
               aria-pressed={!timerMuted}
               aria-label={timerMuted ? 'Unmute timer chime' : 'Mute timer chime'}
@@ -889,7 +894,8 @@ export default function RecipePageClient({
             </button>
             {/* Fork Button */}
             <button
-              onClick={handleFork}
+              onClick={() => forkConfirmRef.current?.showModal()}
+              data-tour="fork"
               className="btn btn-circle btn-ghost"
               aria-label="Fork recipe"
               title="Create your own version"
@@ -916,6 +922,7 @@ export default function RecipePageClient({
             {/* Print Button */}
             <button
               onClick={handlePrint}
+              data-tour="print"
               className="btn btn-circle btn-ghost"
               aria-label="Print recipe"
               title="Print this recipe"
@@ -960,6 +967,7 @@ export default function RecipePageClient({
             {/* Favorite Button */}
             <button
               onClick={toggleFavorite}
+              data-tour="favorite"
               className={`btn btn-circle ${isFavorited ? 'btn-primary' : 'btn-ghost'}`}
               aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
             >
@@ -1038,7 +1046,7 @@ export default function RecipePageClient({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-4">
           <h2 className="text-xl sm:text-2xl font-bold special-elite-regular">Ingredients</h2>
           {/* Multiplier Controls */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2" data-tour="multiplier">
             <span className="text-sm opacity-70 arial-font mr-2 w-full sm:w-auto">Scale:</span>
             <button
               onClick={() => handleMultiplierClick(0.5)}
@@ -1090,7 +1098,7 @@ export default function RecipePageClient({
           </div>
         </div>
         <ul className="space-y-3">
-          {displayIngredients.map((ingredient) => {
+          {displayIngredients.map((ingredient, ingredientIndex) => {
             const { amount, unit, showWarning } = getDisplayAmount(ingredient);
             const isChecked = checkedIngredients.has(ingredient.id);
             const availableUnits = getAvailableUnits(ingredient);
@@ -1120,6 +1128,7 @@ export default function RecipePageClient({
                   <select
                     value={currentUnit}
                     onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
+                    data-tour={ingredientIndex === 0 ? 'units' : undefined}
                     className="select select-bordered select-sm w-auto min-w-[4.25rem] max-w-[5.5rem] arial-font flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -1192,6 +1201,61 @@ export default function RecipePageClient({
         isPublic={recipe.is_public !== false}
         initialStats={initialRatingStats ?? undefined}
       />
+
+      {/* Fork Confirmation Dialog */}
+      <dialog ref={forkConfirmRef} className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box border border-primary/30 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0">
+              <svg
+                className="w-5 h-5 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold special-elite-regular text-base-content">
+              Copy this recipe?
+            </h3>
+          </div>
+          <p className="text-sm opacity-75 arial-font mb-6">
+            A copy of{' '}
+            <span className="font-semibold text-primary">
+              {displayRecipe.title}
+            </span>{' '}
+            will be added to your recipes. You can edit it freely without
+            affecting the original.
+          </p>
+          <div className="modal-action mt-0 gap-3">
+            <form method="dialog">
+              <button className="btn btn-ghost btn-sm">No, cancel</button>
+            </form>
+            <button
+              className="btn btn-primary btn-sm gap-2"
+              disabled={forking}
+              onClick={() => {
+                forkConfirmRef.current?.close();
+                handleFork();
+              }}
+            >
+              {forking ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : null}
+              Yes, copy it
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
     </RecipeTimerContext.Provider>
   );

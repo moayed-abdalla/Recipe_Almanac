@@ -165,6 +165,18 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
       const prepTimeValue = parseOptionalInt(prepTime, 'Prep time');
       const cookTimeValue = parseOptionalInt(cookTime, 'Cook time');
 
+      // Step 0b: A recipe must have at least one valid ingredient (a name and
+      // an amount greater than zero). This mirrors the filter used below for
+      // the actual insert so we never create an ingredient-less recipe.
+      const validIngredients = ingredients.filter(
+        (ing) => ing.name.trim() && ing.amount > 0
+      );
+      if (validIngredients.length === 0) {
+        throw new Error(
+          'Please add at least one ingredient with a name and an amount greater than zero.'
+        );
+      }
+
       // Step 1: Verify user is authenticated
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
       if (userError || !user) {
