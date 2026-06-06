@@ -252,6 +252,7 @@ export default function Header() {
           {user && (
             <Link
               href="/feed"
+              data-tour="feed"
               className="btn btn-ghost btn-circle sm:rounded-btn sm:w-auto sm:h-auto sm:aspect-auto sm:px-4"
               aria-label="Feed"
             >
@@ -270,6 +271,7 @@ export default function Header() {
           {/* Leaderboard Link - icon on small screens, text on larger to avoid clutter */}
           <Link
             href="/leaderboard"
+            data-tour="leaderboard"
             className="btn btn-ghost btn-circle sm:rounded-btn sm:w-auto sm:h-auto sm:aspect-auto sm:px-4"
             aria-label="Leaderboard"
           >
@@ -303,7 +305,7 @@ export default function Header() {
           {/* Profile Icon / Login Button */}
           {user ? (
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+              <label tabIndex={0} data-tour="profile" className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full bg-base-300">
                   {profile?.avatar_url ? (
                     <Image
@@ -324,6 +326,7 @@ export default function Header() {
               </label>
               <ul 
                 tabIndex={0} 
+                data-tour="profile-menu"
                 className="mt-3 z-[1] p-2 shadow-lg menu menu-sm dropdown-content bg-base-100/95 backdrop-blur-sm rounded-box w-52 border border-base-300"
                 onClick={(e) => {
                   // Close dropdown when clicking on a link
