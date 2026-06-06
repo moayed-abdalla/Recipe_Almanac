@@ -166,6 +166,7 @@ export default function RecipePageClient({
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const user = useMemo(() => (viewerId ? { id: viewerId } : null), [viewerId]);
   const [forking, setForking] = useState(false);
+  const forkConfirmRef = useRef<HTMLDialogElement>(null);
   const [viewCount, setViewCount] = useState<number>(recipe.view_count);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   const viewTrackingRef = useRef<boolean>(false); // Ref to prevent multiple API calls
@@ -889,7 +890,7 @@ export default function RecipePageClient({
             </button>
             {/* Fork Button */}
             <button
-              onClick={handleFork}
+              onClick={() => forkConfirmRef.current?.showModal()}
               className="btn btn-circle btn-ghost"
               aria-label="Fork recipe"
               title="Create your own version"
@@ -1192,6 +1193,61 @@ export default function RecipePageClient({
         isPublic={recipe.is_public !== false}
         initialStats={initialRatingStats ?? undefined}
       />
+
+      {/* Fork Confirmation Dialog */}
+      <dialog ref={forkConfirmRef} className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box border border-primary/30 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0">
+              <svg
+                className="w-5 h-5 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold special-elite-regular text-base-content">
+              Copy this recipe?
+            </h3>
+          </div>
+          <p className="text-sm opacity-75 arial-font mb-6">
+            A copy of{' '}
+            <span className="font-semibold text-primary">
+              {displayRecipe.title}
+            </span>{' '}
+            will be added to your recipes. You can edit it freely without
+            affecting the original.
+          </p>
+          <div className="modal-action mt-0 gap-3">
+            <form method="dialog">
+              <button className="btn btn-ghost btn-sm">No, cancel</button>
+            </form>
+            <button
+              className="btn btn-primary btn-sm gap-2"
+              disabled={forking}
+              onClick={() => {
+                forkConfirmRef.current?.close();
+                handleFork();
+              }}
+            >
+              {forking ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : null}
+              Yes, copy it
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
     </RecipeTimerContext.Provider>
   );
