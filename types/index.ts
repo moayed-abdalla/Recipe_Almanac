@@ -21,6 +21,8 @@ export interface Profile {
   default_unit?: string | null;
   default_temperature_unit?: TemperatureUnitValue | null;
   nutrition_estimation_enabled?: boolean | null;
+  has_seen_home_tutorial?: boolean | null;
+  has_seen_recipe_tutorial?: boolean | null;
   follower_count?: number | null;
   following_count?: number | null;
   created_at?: string;

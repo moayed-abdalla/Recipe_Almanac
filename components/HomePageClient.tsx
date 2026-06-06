@@ -18,6 +18,7 @@
 import { useState, useMemo } from 'react';
 import SearchBar from './SearchBar';
 import RecipeListClient from './RecipeListClient';
+import HomeTutorial from './tutorial/HomeTutorial';
 
 type SortBy = 'view_count' | 'created_at';
 type SortOrder = 'asc' | 'desc';
@@ -183,6 +184,7 @@ export default function HomePageClient({ recipes }: HomePageClientProps) {
 
   return (
     <>
+      <HomeTutorial />
       {/* Search bar for finding recipes */}
       <div className="mb-8 sm:mb-12">
         <SearchBar onSearchChange={setSearchTerm} />
