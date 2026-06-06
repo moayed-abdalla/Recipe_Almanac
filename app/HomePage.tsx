@@ -125,9 +125,9 @@ export default async function HomePage() {
             Recipe Almanac
           </h1>
           <p className="text-center mb-6 sm:mb-8 text-base sm:text-lg max-w-2xl mx-auto italic text-base-content/60 px-2">
-            A digital recipe book you can share, browse and write your own.
+            A free digital recipe book to write, share, and discover easy recipes.
             <br />
-            No ads, no subscriptions, just recipes.
+            No ads, no subscriptions — just recipes.
           </p>
         </div>
         

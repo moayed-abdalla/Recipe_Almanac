@@ -4,13 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 type RecipeSlugRow = { slug: string; updated_at: string | null };
 type ProfileUsernameRow = { username: string; updated_at: string | null };
 
-// Render the sitemap dynamically (per request) so a transient DB issue during
-// a build never cascades into breaking the rest of the site.
-export const dynamic = 'force-dynamic';
+// Revalidate the sitemap every hour so recipe/profile additions appear quickly
+// without hitting the DB on every crawl request.
 export const revalidate = 3600;
 
 // Hard cap on how long we'll wait for the DB before falling back to static URLs.
-const DB_TIMEOUT_MS = 5000;
+// Keep this short so the ISR build never hangs and always completes.
+const DB_TIMEOUT_MS = 4000;
 
 function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
   return new Promise<T>((resolve) => {
@@ -47,8 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
     { url: `${siteUrl}/leaderboard`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${siteUrl}/login`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${siteUrl}/register`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ];
 
   if (!supabaseUrl || !supabaseKey) {
@@ -87,10 +85,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       }));
 
+    // Only include profiles whose username contains no spaces or special characters
+    // so the sitemap URLs are clean and don't contain %20 encoding.
     const profileUrls: MetadataRoute.Sitemap = profiles
-      .filter((p) => p.username)
+      .filter((p) => p.username && /^[a-zA-Z0-9_\-.]+$/.test(p.username))
       .map((profile) => ({
-        url: `${siteUrl}/profile/${encodeURIComponent(profile.username)}`,
+        url: `${siteUrl}/profile/${profile.username}`,
         lastModified: profile.updated_at ? new Date(profile.updated_at) : new Date(),
         changeFrequency: 'weekly',
         priority: 0.5,
