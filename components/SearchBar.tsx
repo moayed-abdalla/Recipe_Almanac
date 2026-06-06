@@ -49,6 +49,7 @@ export default function SearchBar({ onSearchChange }: SearchBarProps) {
           <input
             type="text"
             placeholder="Search recipes..."
+            data-tour="search"
             className="input input-bordered flex-1 min-w-0 typewriter text-sm sm:text-base"
             value={searchTerm}
             onChange={handleInputChange}
