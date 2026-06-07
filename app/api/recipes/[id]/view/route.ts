@@ -8,16 +8,7 @@ export async function POST(
   try {
     const supabase = await createServerClient();
 
-    // The hand-written Database type doesn't satisfy supabase-js's GenericSchema
-    // constraint (missing Views / Relationships), so Schema resolves to never and the
-    // rpc overload collapses args to undefined. Cast through unknown to bypass this
-    // while keeping the return type explicit.
-    const rpc = supabase.rpc as unknown as (
-      fn: string,
-      args: Record<string, unknown>
-    ) => Promise<{ data: number | null; error: { message: string } | null }>;
-
-    const { data: viewCount, error } = await rpc('increment_view_count', {
+    const { data: viewCount, error } = await supabase.rpc('increment_view_count', {
       p_slug: params.id,
     });
 
