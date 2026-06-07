@@ -192,6 +192,10 @@ export type Database = {
           favorite_count: number;
         }>;
       };
+      increment_view_count: {
+        Args: { p_slug: string };
+        Returns: number | null;
+      };
     };
   };
 };
