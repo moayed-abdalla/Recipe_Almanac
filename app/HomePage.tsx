@@ -20,7 +20,6 @@ interface Recipe {
   slug: string;
   title: string;
   image_url: string | null;
-  description: string | null;
   view_count: number;
   favorite_count: number;
   average_rating: number;
@@ -74,7 +73,6 @@ export default async function HomePage() {
         slug,
         title,
         image_url,
-        description,
         view_count,
         favorite_count:saved_recipes(count),
         recipe_rating_stats (

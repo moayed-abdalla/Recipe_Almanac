@@ -108,7 +108,6 @@ interface Recipe {
   slug: string;
   title: string;
   image_url: string | null;
-  description: string | null;
   view_count: number;
   favorite_count: number;
   average_rating?: number | null;
