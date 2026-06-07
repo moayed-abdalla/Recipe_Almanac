@@ -51,6 +51,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       recipes: {
         Row: {
@@ -101,6 +102,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       ingredients: {
         Row: {
@@ -133,6 +135,7 @@ export type Database = {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       saved_recipes: {
         Row: {
@@ -153,8 +156,10 @@ export type Database = {
           recipe_id?: string;
           saved_at?: string;
         };
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
     Functions: {
       get_public_favorited_recipes: {
         Args: {
