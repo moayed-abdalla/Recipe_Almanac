@@ -46,12 +46,11 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-/** Supabase Storage public object URL for the recipe-image bucket (raw or render-transformed). */
+/** Supabase Storage public object URL for the recipe-image bucket. */
 function isRecipeImage(url) {
   return (
     url.hostname.endsWith('.supabase.co') &&
-    (url.pathname.includes('/storage/v1/object/public/recipe-image/') ||
-     url.pathname.includes('/storage/v1/render/image/public/recipe-image/'))
+    url.pathname.includes('/storage/v1/object/public/recipe-image/')
   );
 }
 

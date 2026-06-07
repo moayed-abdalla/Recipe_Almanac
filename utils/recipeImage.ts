@@ -1,60 +1,25 @@
 /**
  * Recipe image URL helpers.
  *
- * Cards display recipe images at ~400 × 300 px. Rather than having every call
- * site rely on next/image alone (which only optimises on-the-fly for browser
- * requests, not for service-worker precache), this module returns a URL that
- * is already sized for card contexts.
+ * Cards display recipe images at ~400 × 300 px. next/image handles
+ * on-the-fly resizing and WebP/AVIF conversion via the /_next/image proxy,
+ * so we pass the original Supabase Storage URL through unchanged. The `sizes`
+ * prop on every <Image> tells the browser (and the Next.js image loader) the
+ * rendered width, ensuring only a card-sized variant is fetched — not the
+ * full-resolution upload.
  *
- * Strategy: Supabase Storage supports image transforms via its render endpoint
- * (available on all plans as of 2024). We rewrite public object URLs to the
- * transform endpoint so the stored full-size image is never sent to the
- * browser or precached at full resolution.
- *
- * Transform endpoint shape:
- *   https://<project>.supabase.co/storage/v1/render/image/public/<bucket>/<path>
- *   ?width=400&quality=75&resize=cover
- *
- * If the URL does not look like a Supabase Storage public object, it is
- * returned unchanged so existing external URLs are unaffected.
+ * The Supabase Storage render-transform endpoint
+ * (/storage/v1/render/image/public/…) is a Pro-tier feature and is NOT used
+ * here to maintain free-plan compatibility.
  */
 
-const CARD_WIDTH = 400;
-const CARD_QUALITY = 75;
-
 /**
- * Return a thumbnail URL suitable for recipe card contexts (~400 px wide).
- * Falls back to the original URL for non-Supabase or already-transformed URLs.
+ * Return the image URL to use in recipe card / list contexts.
+ * Currently a straight pass-through: sizing is handled by next/image + the
+ * `sizes` prop at each call site. The function exists so callers have a
+ * single place to update if a CDN transform becomes available later.
  */
 export function getRecipeCardImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-
-  try {
-    const parsed = new URL(url);
-
-    // Only rewrite Supabase Storage public object URLs.
-    const isSupabaseStorage =
-      parsed.hostname.endsWith('.supabase.co') &&
-      parsed.pathname.includes('/storage/v1/object/public/');
-
-    if (!isSupabaseStorage) return url;
-
-    // Already a render/transform URL — don't double-transform.
-    if (parsed.pathname.includes('/storage/v1/render/image/')) return url;
-
-    // Rewrite /storage/v1/object/public/<rest> → /storage/v1/render/image/public/<rest>
-    const transformedPath = parsed.pathname.replace(
-      '/storage/v1/object/public/',
-      '/storage/v1/render/image/public/'
-    );
-
-    const out = new URL(parsed.origin + transformedPath);
-    out.searchParams.set('width', String(CARD_WIDTH));
-    out.searchParams.set('quality', String(CARD_QUALITY));
-    out.searchParams.set('resize', 'cover');
-
-    return out.toString();
-  } catch {
-    return url;
-  }
+  return url;
 }
