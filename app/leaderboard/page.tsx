@@ -13,43 +13,26 @@ import type { Metadata } from 'next';
 import { createServerClient } from '@/lib/supabase';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { NormalizedRecipe } from '@/types';
 import { getTotalTimeMinutes } from '@/utils/recipeTime';
+import { getRecipeCardImageUrl } from '@/utils/recipeImage';
 
-interface RecipeWithScore extends NormalizedRecipe {
+interface RecipeWithScore {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string | null;
+  description: string | null;
+  view_count: number;
+  favorite_count: number;
+  rating_count: number;
+  average_rating: number;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
+  tags: string[];
+  username: string;
   score: number;
   rank: number;
 }
-
-const extractRatingStats = (recipe: {
-  recipe_rating_stats?:
-    | { rating_count?: number; average_rating?: number }
-    | Array<{ rating_count?: number; average_rating?: number }>
-    | null;
-}): { average_rating: number; rating_count: number } => {
-  const candidate = recipe.recipe_rating_stats;
-  const row = Array.isArray(candidate) ? candidate[0] : candidate;
-  if (row && typeof row === 'object') {
-    return {
-      average_rating: Number(row.average_rating) || 0,
-      rating_count: Number(row.rating_count) || 0,
-    };
-  }
-  return { average_rating: 0, rating_count: 0 };
-};
-
-const extractFavoriteCount = (recipe: {
-  favorite_count?: number | { count: number } | Array<{ count: number }>;
-  saved_recipes?: number | { count: number } | Array<{ count: number }>;
-}): number => {
-  const candidate = recipe.favorite_count ?? recipe.saved_recipes;
-  if (typeof candidate === 'number') return candidate;
-  if (Array.isArray(candidate)) return candidate[0]?.count ?? 0;
-  if (candidate && typeof candidate === 'object' && 'count' in candidate) {
-    return candidate.count ?? 0;
-  }
-  return 0;
-};
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 
@@ -87,31 +70,11 @@ export const metadata: Metadata = {
 export default async function LeaderboardPage() {
   const supabase = await createServerClient();
 
-  const { data: recipes, error } = await supabase
-    .from('recipes')
-    .select(`
-      id,
-      slug,
-      title,
-      image_url,
-      description,
-      view_count,
-      favorite_count:saved_recipes(count),
-      recipe_rating_stats (
-        rating_count,
-        average_rating
-      ),
-      tags,
-      prep_time_minutes,
-      cook_time_minutes,
-      profiles:user_id (
-        username
-      )
-    `)
-    .eq('is_public', true);
+  // score = favorites*10 + rating_count*2 + ROUND(avg*count) + views — ranked in the DB.
+  const { data, error } = await supabase.rpc('get_leaderboard_recipes', { p_limit: 100 });
 
   if (error) {
-    console.error('Error fetching recipes for leaderboard:', error);
+    console.error('Error fetching leaderboard:', error);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="alert alert-error">
@@ -121,41 +84,7 @@ export default async function LeaderboardPage() {
     );
   }
 
-  const typedRecipes = (recipes || []).map((recipe: Record<string, unknown>) => {
-    const profile = Array.isArray(recipe.profiles)
-      ? recipe.profiles[0]
-      : recipe.profiles;
-    const ratingStats = extractRatingStats(
-      recipe as Parameters<typeof extractRatingStats>[0]
-    );
-    return {
-      ...recipe,
-      favorite_count: extractFavoriteCount(recipe as Parameters<typeof extractFavoriteCount>[0]),
-      average_rating: ratingStats.average_rating,
-      rating_count: ratingStats.rating_count,
-      profiles: profile || { username: 'Unknown' },
-    };
-  }) as (NormalizedRecipe & { view_count: number })[];
-
-  const recipesWithScores: RecipeWithScore[] = typedRecipes
-    .map((recipe) => {
-      const favoriteCount = recipe.favorite_count ?? 0;
-      const viewCount = recipe.view_count ?? 0;
-      const ratingCount = recipe.rating_count ?? 0;
-      const averageRating = recipe.average_rating ?? 0;
-      // Favourites stay the strongest signal at 10 points each. Ratings add real
-      // weight (2 per rating + average × count) without overpowering favourites,
-      // and views still count for 1 each.
-      const score =
-        favoriteCount * 10 +
-        ratingCount * 2 +
-        Math.round(averageRating * ratingCount * 1) +
-        viewCount * 1;
-      return { ...recipe, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 100)
-    .map((recipe, index) => ({ ...recipe, rank: index + 1 }));
+  const recipesWithScores: RecipeWithScore[] = (data ?? []) as RecipeWithScore[];
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
@@ -195,10 +124,12 @@ export default async function LeaderboardPage() {
                   <figure>
                     {recipe.image_url ? (
                       <Image
-                        src={recipe.image_url}
+                        src={getRecipeCardImageUrl(recipe.image_url) ?? recipe.image_url}
                         alt={recipe.title}
                         width={400}
                         height={300}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        loading="lazy"
                         className="w-full h-48 object-cover"
                       />
                     ) : (
@@ -221,7 +152,7 @@ export default async function LeaderboardPage() {
                     <div className="card-actions flex-col items-stretch gap-2 mt-3 sm:mt-4">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="text-sm opacity-60 special-elite-regular text-base-content">
-                          by {recipe.profiles.username}
+                          by {recipe.username}
                         </span>
                         <span className="text-sm opacity-60">•</span>
                         <span className="text-sm opacity-60">

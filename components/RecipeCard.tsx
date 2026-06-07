@@ -21,6 +21,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { fixSpecialCharacters } from '@/lib/fixSpecialCharacters';
+import { getRecipeCardImageUrl } from '@/utils/recipeImage';
 
 interface RecipeCardProps {
   id: string;
@@ -57,15 +58,18 @@ export default function RecipeCard({
   const displayDescription = description
     ? fixSpecialCharacters(description)
     : null;
+  const cardImageUrl = getRecipeCardImageUrl(imageUrl);
   return (
     <Link href={`/recipe/${slug}`} className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow h-full">
       <figure>
-        {imageUrl ? (
+        {cardImageUrl ? (
           <Image
-            src={imageUrl}
+            src={cardImageUrl}
             alt={displayTitle}
             width={400}
             height={300}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
             className="w-full h-40 sm:h-48 object-cover"
           />
         ) : (

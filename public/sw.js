@@ -46,12 +46,18 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-/** Supabase Storage public object URL for the recipe-image bucket. */
+/** Supabase Storage public object URL for the recipe-image bucket (raw or render-transformed). */
 function isRecipeImage(url) {
   return (
     url.hostname.endsWith('.supabase.co') &&
-    url.pathname.includes('/storage/v1/object/public/recipe-image/')
+    (url.pathname.includes('/storage/v1/object/public/recipe-image/') ||
+     url.pathname.includes('/storage/v1/render/image/public/recipe-image/'))
   );
+}
+
+/** Next.js image optimisation proxy (/_next/image?url=...). Cache these like recipe images. */
+function isNextImageOptimised(url) {
+  return url.origin === self.location.origin && url.pathname === '/_next/image';
 }
 
 /** Any other Supabase request (auth, rest, realtime, functions, non-recipe storage). */
@@ -144,6 +150,13 @@ self.addEventListener('fetch', (event) => {
   if (isSupabaseApi(url)) return;
 
   if (isRecipeImage(url)) {
+    event.respondWith(cacheFirstImage(request));
+    return;
+  }
+
+  // Cache Next.js optimised card images (/_next/image) the same way as raw
+  // recipe images so they survive offline without re-downloading full originals.
+  if (isNextImageOptimised(url)) {
     event.respondWith(cacheFirstImage(request));
     return;
   }

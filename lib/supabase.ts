@@ -196,6 +196,26 @@ export type Database = {
         Args: { p_slug: string };
         Returns: number | null;
       };
+      get_leaderboard_recipes: {
+        Args: { p_limit?: number };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          title: string;
+          image_url: string | null;
+          description: string | null;
+          view_count: number;
+          favorite_count: number;
+          rating_count: number;
+          average_rating: number;
+          prep_time_minutes: number | null;
+          cook_time_minutes: number | null;
+          tags: string[];
+          username: string;
+          score: number;
+          rank: number;
+        }>;
+      };
     };
   };
 };

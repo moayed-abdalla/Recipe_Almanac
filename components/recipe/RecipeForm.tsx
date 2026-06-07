@@ -17,6 +17,62 @@ import { newSortableId } from '@/lib/sortableId';
 import { revalidateRecipe } from '@/app/recipe/[id]/actions';
 import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
 
+/**
+ * Resize and compress an image file client-side using the Canvas API.
+ * Returns a JPEG Blob with the longest edge capped at MAX_EDGE px and
+ * quality at QUALITY (0–1). This keeps uploads well under 300 KB for
+ * typical phone photos, reducing storage cost and downstream cache weight.
+ */
+const MAX_EDGE = 1600;
+const QUALITY = 0.80;
+
+async function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      if (width > MAX_EDGE || height > MAX_EDGE) {
+        if (width >= height) {
+          height = Math.round((height * MAX_EDGE) / width);
+          width = MAX_EDGE;
+        } else {
+          width = Math.round((width * MAX_EDGE) / height);
+          height = MAX_EDGE;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas 2D context unavailable'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Canvas toBlob returned null'));
+        },
+        'image/jpeg',
+        QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image for compression'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 interface RecipeFormProps {
   recipe?: Recipe;
   ingredients?: Ingredient[];
@@ -244,12 +300,14 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
       let imageUrl = isEditMode ? recipe!.image_url : null; // Keep existing image by default when editing
       if (imageFile) {
         try {
-          const fileExt = imageFile.name.split('.').pop();
-          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-          
+          // Compress to JPEG ≤ 1600px / 80% quality before uploading so that
+          // stored objects stay small for both bandwidth and offline caching.
+          const compressed = await compressImage(imageFile);
+          const fileName = `${user.id}/${Date.now()}.jpg`;
+
           const { error: uploadError } = await supabaseClient.storage
             .from('recipe-image')
-            .upload(fileName, imageFile);
+            .upload(fileName, compressed, { contentType: 'image/jpeg' });
 
           if (uploadError) {
             throw new Error(`Image upload failed: ${uploadError.message}`);

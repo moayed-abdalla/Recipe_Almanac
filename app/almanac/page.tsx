@@ -9,6 +9,7 @@ import {
   fetchPrivateRecipes 
 } from '@/lib/recipeService';
 import type { NormalizedRecipe } from '@/types';
+import { getRecipeCardImageUrl } from '@/utils/recipeImage';
 import Tabs from '@/components/navigation/Tabs';
 import RecipeGrid from '@/components/recipe/RecipeGrid';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -83,7 +84,10 @@ export default function AlmanacPage() {
     const recipes = [...favoriteRecipes, ...publicRecipes, ...privateRecipes];
     const urls = recipes.flatMap((recipe) => {
       const entries = [`/recipe/${recipe.slug}`];
-      if (recipe.image_url) entries.push(recipe.image_url);
+      // Precache card-sized thumbnails (via Supabase render transform) rather
+      // than full-resolution originals to keep offline cache storage lean.
+      const thumbUrl = getRecipeCardImageUrl(recipe.image_url);
+      if (thumbUrl) entries.push(thumbUrl);
       return entries;
     });
 
