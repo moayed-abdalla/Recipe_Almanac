@@ -46,3 +46,23 @@ export function minutesToIso8601Duration(
   if (mins > 0 || hours === 0) duration += `${mins}M`;
   return duration;
 }
+
+/**
+ * Parse an ISO 8601 duration string (e.g. "PT15M", "PT1H30M") into total minutes.
+ * Returns null when the value is missing or not a usable duration.
+ */
+export function iso8601DurationToMinutes(value: string | null | undefined): number | null {
+  if (!value || typeof value !== 'string') return null;
+  const trimmed = value.trim().toUpperCase();
+  if (!trimmed.startsWith('P')) return null;
+
+  const timePart = trimmed.includes('T') ? trimmed.split('T')[1] : '';
+  if (!timePart) return null;
+
+  const hoursMatch = timePart.match(/(\d+(?:\.\d+)?)H/);
+  const minsMatch = timePart.match(/(\d+(?:\.\d+)?)M/);
+  const hours = hoursMatch ? parseFloat(hoursMatch[1]) : 0;
+  const mins = minsMatch ? parseFloat(minsMatch[1]) : 0;
+  const total = Math.round(hours * 60 + mins);
+  return total > 0 ? total : null;
+}

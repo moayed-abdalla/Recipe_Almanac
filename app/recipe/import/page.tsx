@@ -28,6 +28,9 @@ Notes
 - Tastes even better the next day.`;
 
 export default function RecipeImportPage() {
+  const [recipeUrl, setRecipeUrl] = useState('');
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkError, setLinkError] = useState('');
   const [rawText, setRawText] = useState('');
   const [parsedDraft, setParsedDraft] = useState<ParsedRecipeDraft | null>(null);
   const [parseKey, setParseKey] = useState(0);
@@ -36,6 +39,46 @@ export default function RecipeImportPage() {
     const draft = parseRecipeText(rawText);
     setParsedDraft(draft);
     setParseKey(key => key + 1);
+  };
+
+  const handleImportLink = async () => {
+    const url = recipeUrl.trim();
+    if (!url) return;
+
+    setLinkLoading(true);
+    setLinkError('');
+
+    try {
+      const response = await fetch('/api/recipe/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        sourceText?: string;
+        draft?: ParsedRecipeDraft;
+      };
+
+      if (!response.ok) {
+        setLinkError(data.error ?? 'Could not import that recipe link.');
+        return;
+      }
+
+      if (!data.sourceText || !data.draft) {
+        setLinkError('Could not import that recipe link.');
+        return;
+      }
+
+      setRawText(data.sourceText);
+      setParsedDraft(data.draft);
+      setParseKey(key => key + 1);
+    } catch {
+      setLinkError('Could not import that recipe link.');
+    } finally {
+      setLinkLoading(false);
+    }
   };
 
   return (
@@ -48,6 +91,42 @@ export default function RecipeImportPage() {
       </div>
 
       <div className="space-y-4">
+        <div className="form-control">
+          <label className="label" htmlFor="recipe-import-link">
+            <span className="label-text text-lg font-bold">Paste Recipe Link</span>
+          </label>
+          <input
+            id="recipe-import-link"
+            type="url"
+            className="input input-bordered w-full"
+            value={recipeUrl}
+            onChange={e => setRecipeUrl(e.target.value)}
+            placeholder="https://example.com/recipe"
+          />
+          <label className="label">
+            <span className="label-text-alt opacity-70">
+              Paste a recipe page URL. We&apos;ll pull structured recipe data when available.
+            </span>
+          </label>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-primary w-full sm:w-auto"
+          onClick={handleImportLink}
+          disabled={!recipeUrl.trim() || linkLoading}
+        >
+          {linkLoading ? 'Importing...' : 'Import from Link'}
+        </button>
+
+        {linkError && (
+          <div className="alert alert-error">
+            <span>{linkError}</span>
+          </div>
+        )}
+
+        <div className="divider">or paste text</div>
+
         <div className="form-control">
           <label className="label" htmlFor="recipe-import-text">
             <span className="label-text text-lg font-bold">Paste recipe text</span>
