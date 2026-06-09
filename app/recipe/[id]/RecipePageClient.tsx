@@ -34,7 +34,7 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
-import { formatMeasurement, convertUnit, VOLUME_UNITS, INGREDIENT_DENSITIES } from '@/utils/unitConverter';
+import { formatMeasurement, convertUnit, VOLUME_UNITS, hasKnownIngredientDensity } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
 import RecipeTutorial from '@/components/tutorial/RecipeTutorial';
@@ -608,7 +608,7 @@ export default function RecipePageClient({
       return ['other'];
     }
     const originalIsVolume = VOLUME_UNITS[ingredient.unit.toLowerCase()] !== undefined;
-    const hasDensity = INGREDIENT_DENSITIES[ingredient.name.toLowerCase()] !== undefined;
+    const hasDensity = hasKnownIngredientDensity(ingredient.name);
     
     if (originalIsVolume && hasDensity) {
       // Can convert to both volume and weight

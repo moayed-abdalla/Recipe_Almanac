@@ -267,23 +267,16 @@ function resolveCanonicalKey(normalized: string): string {
 }
 
 /**
- * Find the density for an ingredient using a tolerant lookup chain:
+ * Internal: run the 4-step tolerant lookup chain and return the matched density,
+ * or null if no known entry was found (i.e. would fall back to 'default').
+ *
+ * Steps:
  *   1. Exact match against INGREDIENT_DENSITIES
  *   2. Alias lookup (synonyms/variants) -> canonical key
  *   3. Substring match (input contains a key, or a key contains the input)
  *   4. Levenshtein fuzzy match (handles typos)
- *   5. Fallback to the 'default' density
- *
- * @param ingredient - Raw ingredient name (may contain typos, extra spaces, capitals)
- * @returns Density in grams per milliliter
  */
-export function findIngredientDensity(ingredient: string): number {
-  const normalized = normalizeIngredient(ingredient);
-
-  if (!normalized) {
-    return INGREDIENT_DENSITIES['default'];
-  }
-
+function findDensityOrNull(normalized: string): number | null {
   // 1. Exact match
   if (INGREDIENT_DENSITIES[normalized] !== undefined) {
     return INGREDIENT_DENSITIES[normalized];
@@ -348,8 +341,39 @@ export function findIngredientDensity(ingredient: string): number {
     return bestFuzzy.density;
   }
 
-  // 5. Fallback
-  return INGREDIENT_DENSITIES['default'];
+  return null;
+}
+
+/**
+ * Return true when the ingredient name resolves to a known density entry
+ * (i.e. the lookup chain finds a match without falling back to 'default').
+ * Use this to decide whether weight ↔ volume conversion is meaningful.
+ *
+ * @param ingredient - Raw ingredient name
+ */
+export function hasKnownIngredientDensity(ingredient: string): boolean {
+  const normalized = normalizeIngredient(ingredient);
+  if (!normalized) return false;
+  return findDensityOrNull(normalized) !== null;
+}
+
+/**
+ * Find the density for an ingredient using a tolerant lookup chain:
+ *   1. Exact match against INGREDIENT_DENSITIES
+ *   2. Alias lookup (synonyms/variants) -> canonical key
+ *   3. Substring match (input contains a key, or a key contains the input)
+ *   4. Levenshtein fuzzy match (handles typos)
+ *   5. Fallback to the 'default' density
+ *
+ * @param ingredient - Raw ingredient name (may contain typos, extra spaces, capitals)
+ * @returns Density in grams per milliliter
+ */
+export function findIngredientDensity(ingredient: string): number {
+  const normalized = normalizeIngredient(ingredient);
+  if (!normalized) {
+    return INGREDIENT_DENSITIES['default'];
+  }
+  return findDensityOrNull(normalized) ?? INGREDIENT_DENSITIES['default'];
 }
 
 /**
