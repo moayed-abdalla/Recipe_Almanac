@@ -106,7 +106,7 @@ interface RecipePageClientProps {
 // Available unit options for conversion
 const UNIT_OPTIONS = {
   weight: ['g', 'kg', 'oz', 'lb'],
-  volume: ['cup', 'cups', 'tbsp', 'tsp', 'ml', 'fl oz'],
+  volume: ['cups', 'tbsp', 'tsp', 'ml', 'fl oz'],
 };
 
 export default function RecipePageClient({
