@@ -4,9 +4,12 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
-/* Theme color variables for image colorization */
+/* Theme color variables for image colorization.
+   --theme-image-color and --theme-bg-opacity are injected at runtime
+   by applyTheme() in Header.tsx from the unified theme config.
+   The defaults below match the Tangerine light theme. */
 :root {
-  --theme-image-color: #CC5500; /* Default orange for light-orange */
+  --theme-image-color: #CC4A00;
   --theme-bg-opacity: 0.15;
   /* Fallback mask positions (no JS): side-heavy, spaced; client overwrites with randomised layout */
   --bg-mask-pos-1: 11% 12%;
@@ -23,57 +26,14 @@
   --bg-mask-pos-12: 95% 52%;
 }
 
-/* Light themes */
-[data-theme="light-orange"] {
-  --theme-image-color: #CC5500;
-  --theme-bg-opacity: 0.15;
-}
-
-[data-theme="light-grey"] {
-  --theme-image-color: #616161;
-  --theme-bg-opacity: 0.12;
-}
-
-[data-theme="light-beige"] {
-  --theme-image-color: #4A5568;
-  --theme-bg-opacity: 0.15;
-}
-
-[data-theme="light-coffee"] {
-  --theme-image-color: #6D4C41;
-  --theme-bg-opacity: 0.15;
-}
-
-/* Dark themes */
-[data-theme="dark-orange"] {
-  --theme-image-color: #FFA500;
-  --theme-bg-opacity: 0.2;
-}
-
-[data-theme="dark-blue"] {
-  --theme-image-color: #63B3ED;
-  --theme-bg-opacity: 0.18;
-}
-
-[data-theme="dark-red"] {
-  --theme-image-color: #FC8181;
-  --theme-bg-opacity: 0.2;
-}
-
-[data-theme="dark-purple"] {
-  --theme-image-color: #B794F6;
-  --theme-bg-opacity: 0.2;
-}
-
 body {
   min-height: 100vh;
   font-family: "Special Elite", system-ui, monospace;
   font-weight: 400;
   font-style: normal;
-  background-color: #F7F7F7;
+  /* Background color driven by DaisyUI base-100 via bg-base-100 in layout.tsx */
   position: relative;
   overflow-x: clip;
-  /* Color is handled by text-base-content class in layout.tsx */
 }
 
 /* Prevent horizontal overflow from long unbroken strings */
@@ -81,9 +41,6 @@ html {
   overflow-x: clip;
 }
 
-html[data-theme-mode="dark"] body {
-  background-color: #1A1A1A;
-}
 
 /* Background pattern container - holds both the mask and color layer */
 body::before,

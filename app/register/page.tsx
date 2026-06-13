@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
 import { containsBadWords, getBadWordErrorMessage } from '@/utils/badWords';
-import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import {
+  DEFAULT_THEME,
+  resolveDaisyThemeId,
+  getUnifiedTheme,
+  migrateGuestThemePrefs,
+  type ThemeId,
+} from '@/lib/theme-config';
+import ThemePicker from '@/components/ThemePicker';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 import {
   DEFAULT_TEMPERATURE_UNIT,
@@ -19,8 +26,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
-  const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(DEFAULT_THEME);
   const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
   const [selectedTemperatureUnit, setSelectedTemperatureUnit] =
     useState<TemperatureUnitValue>(DEFAULT_TEMPERATURE_UNIT);
@@ -46,33 +52,30 @@ export default function RegisterPage() {
     link.href = mode === 'dark' ? '/favicon_dark.ico' : '/favicon_light.ico';
   };
 
-  const applyThemePreview = (
-    lightTheme: LightThemeId,
-    darkTheme: DarkThemeId,
-    mode: 'light' | 'dark'
-  ) => {
-    const themeId = mode === 'light' ? lightTheme : darkTheme;
-    document.documentElement.setAttribute('data-theme', themeId);
+  const applyThemePreview = (themeId: ThemeId, mode: 'light' | 'dark') => {
+    const daisyId = resolveDaisyThemeId(themeId, mode);
+    const unified = getUnifiedTheme(themeId);
+    document.documentElement.setAttribute('data-theme', daisyId);
     document.documentElement.setAttribute('data-theme-mode', mode);
     localStorage.setItem('theme-mode', mode);
-    localStorage.setItem('guest-light-theme', lightTheme);
-    localStorage.setItem('guest-dark-theme', darkTheme);
+    localStorage.setItem('guest-theme', themeId);
+    if (unified) {
+      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[mode]);
+      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[mode]));
+    }
     updateFavicon(mode);
   };
 
-  const handleSelectLightTheme = (themeId: LightThemeId) => {
-    setSelectedLightTheme(themeId);
-    applyThemePreview(themeId, selectedDarkTheme, 'light');
-  };
-
-  const handleSelectDarkTheme = (themeId: DarkThemeId) => {
-    setSelectedDarkTheme(themeId);
-    applyThemePreview(selectedLightTheme, themeId, 'dark');
+  const handleSelectTheme = (themeId: ThemeId) => {
+    setSelectedTheme(themeId);
+    const mode = getCurrentThemeMode();
+    applyThemePreview(themeId, mode);
   };
 
   useEffect(() => {
+    migrateGuestThemePrefs();
     const mode = getCurrentThemeMode();
-    applyThemePreview(selectedLightTheme, selectedDarkTheme, mode);
+    applyThemePreview(selectedTheme, mode);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- apply guest defaults once on mount
   }, []);
 
@@ -80,20 +83,17 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    // Validate email is provided
     if (!email || email.trim() === '') {
       setError('Email is required');
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    // Validate username doesn't contain bad words
     if (containsBadWords(username)) {
       setError(getBadWordErrorMessage());
       return;
@@ -112,29 +112,22 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Sign up with Supabase Auth
       const { data, error: signUpError } = await supabaseClient.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          data: {
-            username,
-          },
+          data: { username },
         },
       });
 
       if (signUpError) throw signUpError;
 
-      // Profile will be created automatically by the database trigger
-      // But we can update it with the username and theme preferences
       if (data.user) {
-        // Update profile with username and theme preferences
         const { error: profileError } = await supabaseClient
           .from('profiles')
-          .update({ 
+          .update({
             username,
-            default_light_theme: selectedLightTheme,
-            default_dark_theme: selectedDarkTheme,
+            default_theme: selectedTheme,
             default_unit: selectedUnit,
             default_temperature_unit: selectedTemperatureUnit,
             nutrition_estimation_enabled: nutritionEnabled,
@@ -162,9 +155,7 @@ export default function RegisterPage() {
       const redirectTo = `${window.location.origin}/auth/callback?next=/`;
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo,
-        },
+        options: { redirectTo },
       });
 
       if (error) throw error;
@@ -251,74 +242,12 @@ export default function RegisterPage() {
             {/* Theme Selection */}
             <div className="form-control mt-6">
               <label className="label">
-                <span className="label-text font-semibold text-lg">Choose Your Themes</span>
+                <span className="label-text font-semibold text-lg">Choose Your Theme</span>
               </label>
-              
-              {/* Light Themes */}
-              <div className="mb-4">
-                <h3 className="text-md font-semibold mb-3">Light Theme</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                  {LIGHT_THEMES.map((theme) => (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      onClick={() => handleSelectLightTheme(theme.id as LightThemeId)}
-                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
-                        selectedLightTheme === theme.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-base-300 hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
-                        <div className="w-full h-full flex">
-                          <div
-                            className="w-1/2 h-full"
-                            style={{ backgroundColor: theme.color1 }}
-                          />
-                          <div
-                            className="w-1/2 h-full"
-                            style={{ backgroundColor: theme.color2 }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-sm font-medium">{theme.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Dark Themes */}
-              <div className="mb-4">
-                <h3 className="text-md font-semibold mb-3">Dark Theme</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                  {DARK_THEMES.map((theme) => (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      onClick={() => handleSelectDarkTheme(theme.id as DarkThemeId)}
-                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
-                        selectedDarkTheme === theme.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-base-300 hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
-                        <div className="w-full h-full flex">
-                          <div
-                            className="w-1/2 h-full"
-                            style={{ backgroundColor: theme.color1 }}
-                          />
-                          <div
-                            className="w-1/2 h-full"
-                            style={{ backgroundColor: theme.color2 }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-sm font-medium">{theme.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <label className="label pt-0">
+                <span className="label-text-alt">Each swatch shows light mode (top) and dark mode (bottom)</span>
+              </label>
+              <ThemePicker selectedTheme={selectedTheme} onSelect={handleSelectTheme} />
             </div>
 
             {/* Default Unit of Measurement */}
@@ -437,4 +366,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

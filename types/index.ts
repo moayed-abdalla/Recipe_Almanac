@@ -5,7 +5,7 @@
  * This ensures type consistency and reduces duplication.
  */
 
-import type { LightThemeId, DarkThemeId } from '@/lib/theme-config';
+import type { ThemeId } from '@/lib/theme-config';
 import type { TemperatureUnitValue } from '@/lib/temperature-config';
 
 /**
@@ -16,8 +16,7 @@ export interface Profile {
   username: string;
   profile_description: string | null;
   avatar_url: string | null;
-  default_light_theme?: LightThemeId | null;
-  default_dark_theme?: DarkThemeId | null;
+  default_theme?: ThemeId | null;
   default_unit?: string | null;
   default_temperature_unit?: TemperatureUnitValue | null;
   nutrition_estimation_enabled?: boolean | null;

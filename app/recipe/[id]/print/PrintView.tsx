@@ -19,7 +19,7 @@
 import { useEffect } from 'react';
 import AlmanacBackgroundLayer from '@/components/AlmanacBackgroundLayer';
 import { readBgOpacity } from '@/lib/almanacBackground';
-import { getThemeById, type ThemeId } from '@/lib/theme-config';
+import { getThemeByDaisyId } from '@/lib/theme-config';
 import {
   formatMeasurement,
   convertUnit,
@@ -94,8 +94,8 @@ function readBrand(): Brand {
   if (typeof window === 'undefined') return fallback;
 
   const root = document.documentElement;
-  const themeId = (root.getAttribute('data-theme') || 'light-orange') as ThemeId;
-  const theme = getThemeById(themeId);
+  const themeId = root.getAttribute('data-theme') || 'tangerine-light';
+  const theme = getThemeByDaisyId(themeId);
   const styles = getComputedStyle(root);
   const imageColor =
     styles.getPropertyValue('--theme-image-color').trim() ||

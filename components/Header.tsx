@@ -26,7 +26,13 @@ import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import { DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import {
+  DEFAULT_THEME,
+  resolveDaisyThemeId,
+  getUnifiedTheme,
+  migrateGuestThemePrefs,
+  type ThemeId,
+} from '@/lib/theme-config';
 import type { Profile } from '@/types';
 
 export default function Header() {
@@ -73,36 +79,42 @@ export default function Header() {
   };
 
   /**
-   * Get the theme ID to apply based on current mode and user preferences
+   * Resolve the unified theme ID from profile or guest localStorage.
+   * Migrates old split guest-light-theme / guest-dark-theme keys on first call.
    */
-  const getThemeId = useCallback((mode: 'light' | 'dark', profileData: Profile | null): string => {
-    if (mode === 'light') {
-      const guestLightTheme = localStorage.getItem('guest-light-theme') as LightThemeId | null;
-      return profileData?.default_light_theme || guestLightTheme || DEFAULT_LIGHT_THEME;
-    }
-    const guestDarkTheme = localStorage.getItem('guest-dark-theme') as DarkThemeId | null;
-    return profileData?.default_dark_theme || guestDarkTheme || DEFAULT_DARK_THEME;
+  const getUnifiedThemeId = useCallback((profileData: Profile | null): ThemeId => {
+    const guestTheme = localStorage.getItem('guest-theme') as ThemeId | null;
+    return profileData?.default_theme || guestTheme || DEFAULT_THEME;
   }, []);
 
   /**
-   * Apply theme to document
+   * Apply theme to document and inject CSS custom properties for icon colorization.
    */
   const applyTheme = useCallback((mode: 'light' | 'dark', profileData: Profile | null) => {
-    const themeId = getThemeId(mode, profileData);
-    document.documentElement.setAttribute('data-theme', themeId);
-    // Also set data-theme-mode for CSS targeting
+    const unifiedId = getUnifiedThemeId(profileData);
+    const daisyId = resolveDaisyThemeId(unifiedId, mode);
+    const unified = getUnifiedTheme(unifiedId);
+
+    document.documentElement.setAttribute('data-theme', daisyId);
     document.documentElement.setAttribute('data-theme-mode', mode);
-  }, [getThemeId]);
+
+    if (unified) {
+      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[mode]);
+      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[mode]));
+    }
+  }, [getUnifiedThemeId]);
 
   useEffect(() => {
     themeRef.current = theme;
   }, [theme]);
 
   /**
-   * Initialize theme mode from localStorage / system (profile themes come from ProfileProvider)
+   * Initialize theme mode from localStorage / system (profile themes come from ProfileProvider).
+   * Also migrates any old guest-light-theme / guest-dark-theme keys.
    */
   useEffect(() => {
     try {
+      migrateGuestThemePrefs();
       const systemPreference = getSystemThemePreference();
       const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
       const initialThemeMode = savedThemeMode || systemPreference;
