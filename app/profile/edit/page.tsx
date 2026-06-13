@@ -5,7 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
-import { LIGHT_THEMES, DARK_THEMES, DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME, type LightThemeId, type DarkThemeId } from '@/lib/theme-config';
+import {
+  DEFAULT_THEME,
+  resolveDaisyThemeId,
+  getUnifiedTheme,
+  migrateGuestThemePrefs,
+  type ThemeId,
+} from '@/lib/theme-config';
+import ThemePicker from '@/components/ThemePicker';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 import {
   DEFAULT_TEMPERATURE_UNIT,
@@ -21,8 +28,7 @@ interface ProfileEdit extends Profile {
   username: string;
   profile_description: string | null;
   avatar_url: string | null;
-  default_light_theme?: LightThemeId | null;
-  default_dark_theme?: DarkThemeId | null;
+  default_theme?: ThemeId | null;
   default_unit?: string | null;
 }
 
@@ -42,13 +48,11 @@ export default function ProfileEditPage() {
   const [username, setUsername] = useState('');
   const [description, setDescription] = useState('');
   const [usernameError, setUsernameError] = useState<string | null>(null);
-  const [selectedLightTheme, setSelectedLightTheme] = useState<LightThemeId>(DEFAULT_LIGHT_THEME);
-  const [selectedDarkTheme, setSelectedDarkTheme] = useState<DarkThemeId>(DEFAULT_DARK_THEME);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(DEFAULT_THEME);
   const [selectedUnit, setSelectedUnit] = useState<string>(DEFAULT_UNIT);
   const [selectedTemperatureUnit, setSelectedTemperatureUnit] =
     useState<TemperatureUnitValue>(DEFAULT_TEMPERATURE_UNIT);
   const [nutritionEnabled, setNutritionEnabled] = useState<boolean>(false);
-  const [currentThemeMode, setCurrentThemeMode] = useState<'light' | 'dark'>('light');
 
   /**
    * Fetch user profile data
@@ -206,8 +210,7 @@ export default function ProfileEditPage() {
         .update({
           username: username.trim(),
           profile_description: censoredDescription || null,
-          default_light_theme: selectedLightTheme,
-          default_dark_theme: selectedDarkTheme,
+          default_theme: selectedTheme,
           default_unit: selectedUnit,
           default_temperature_unit: selectedTemperatureUnit,
           nutrition_estimation_enabled: nutritionEnabled,
@@ -223,8 +226,7 @@ export default function ProfileEditPage() {
         ...profile,
         username: username.trim(),
         profile_description: censoredDescription || null,
-        default_light_theme: selectedLightTheme,
-        default_dark_theme: selectedDarkTheme,
+        default_theme: selectedTheme,
         default_unit: selectedUnit,
         default_temperature_unit: selectedTemperatureUnit,
         nutrition_estimation_enabled: nutritionEnabled,
@@ -246,9 +248,6 @@ export default function ProfileEditPage() {
     }
   };
 
-  /**
-   * Get current theme mode from localStorage or system preference
-   */
   const getCurrentThemeMode = (): 'light' | 'dark' => {
     if (typeof window === 'undefined') return 'light';
     const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
@@ -256,27 +255,22 @@ export default function ProfileEditPage() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   };
 
-  /**
-   * Apply theme preview immediately, forcing the given mode so clicking a light
-   * theme always previews in light mode and a dark theme in dark mode —
-   * matching the behaviour on the registration page.
-   */
-  const applyThemePreview = (lightTheme: LightThemeId, darkTheme: DarkThemeId, mode?: 'light' | 'dark') => {
+  const applyThemePreview = (themeId: ThemeId, mode?: 'light' | 'dark') => {
     const resolvedMode = mode ?? getCurrentThemeMode();
-    const themeId = resolvedMode === 'light' ? lightTheme : darkTheme;
-    document.documentElement.setAttribute('data-theme', themeId);
+    const daisyId = resolveDaisyThemeId(themeId, resolvedMode);
+    const unified = getUnifiedTheme(themeId);
+    document.documentElement.setAttribute('data-theme', daisyId);
     document.documentElement.setAttribute('data-theme-mode', resolvedMode);
-    localStorage.setItem('theme-mode', resolvedMode);
+    localStorage.setItem('guest-theme', themeId);
+    if (unified) {
+      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[resolvedMode]);
+      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[resolvedMode]));
+    }
   };
 
-  const handleSelectLightTheme = (themeId: LightThemeId) => {
-    setSelectedLightTheme(themeId);
-    applyThemePreview(themeId, selectedDarkTheme, 'light');
-  };
-
-  const handleSelectDarkTheme = (themeId: DarkThemeId) => {
-    setSelectedDarkTheme(themeId);
-    applyThemePreview(selectedLightTheme, themeId, 'dark');
+  const handleSelectTheme = (themeId: ThemeId) => {
+    setSelectedTheme(themeId);
+    applyThemePreview(themeId);
   };
 
   /**
@@ -301,25 +295,21 @@ export default function ProfileEditPage() {
           return;
         }
 
-        const themeMode = getCurrentThemeMode();
-        setCurrentThemeMode(themeMode);
-        
+        migrateGuestThemePrefs();
+
         setProfile(userProfile);
         setUsername(userProfile.username);
         setDescription(userProfile.profile_description || '');
-        const lightTheme = userProfile.default_light_theme || DEFAULT_LIGHT_THEME;
-        const darkTheme = userProfile.default_dark_theme || DEFAULT_DARK_THEME;
+        const savedTheme = (userProfile.default_theme as ThemeId) || DEFAULT_THEME;
         const defaultUnit = userProfile.default_unit || DEFAULT_UNIT;
         const defaultTempUnit =
           userProfile.default_temperature_unit === 'F' ? 'F' : DEFAULT_TEMPERATURE_UNIT;
-        setSelectedLightTheme(lightTheme);
-        setSelectedDarkTheme(darkTheme);
+        setSelectedTheme(savedTheme);
         setSelectedUnit(defaultUnit);
         setSelectedTemperatureUnit(defaultTempUnit);
         setNutritionEnabled(userProfile.nutrition_estimation_enabled === true);
-        
-        // Apply user's current theme preferences
-        applyThemePreview(lightTheme, darkTheme);
+
+        applyThemePreview(savedTheme);
       } catch (err) {
         console.error('Error initializing profile page:', err);
       } finally {
@@ -529,73 +519,11 @@ export default function ProfileEditPage() {
                 <label className="label">
                   <span className="label-text font-semibold text-lg">Color Theme</span>
                 </label>
-                
-                {/* Light Themes */}
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold mb-3">Light Themes</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                    {LIGHT_THEMES.map((theme) => (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        onClick={() => handleSelectLightTheme(theme.id as LightThemeId)}
-                        className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
-                          selectedLightTheme === theme.id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-base-300 hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
-                          <div className="w-full h-full flex">
-                            <div
-                              className="w-1/2 h-full"
-                              style={{ backgroundColor: theme.color1 }}
-                            />
-                            <div
-                              className="w-1/2 h-full"
-                              style={{ backgroundColor: theme.color2 }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium">{theme.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dark Themes */}
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold mb-3">Dark Themes</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                    {DARK_THEMES.map((theme) => (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        onClick={() => handleSelectDarkTheme(theme.id as DarkThemeId)}
-                        className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all w-full ${
-                          selectedDarkTheme === theme.id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-base-300 hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-base-content/20 shadow-md">
-                          <div className="w-full h-full flex">
-                            <div
-                              className="w-1/2 h-full"
-                              style={{ backgroundColor: theme.color1 }}
-                            />
-                            <div
-                              className="w-1/2 h-full"
-                              style={{ backgroundColor: theme.color2 }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium">{theme.name}</span>
-                      </button>
-                    ))}
-                </div>
+                <label className="label pt-0">
+                  <span className="label-text-alt">Each swatch shows light mode (top) and dark mode (bottom)</span>
+                </label>
+                <ThemePicker selectedTheme={selectedTheme} onSelect={handleSelectTheme} />
               </div>
-            </div>
 
               {/* Default Unit of Measurement */}
               <div className="form-control mb-6">

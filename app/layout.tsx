@@ -92,10 +92,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light-orange" suppressHydrationWarning>
+    <html lang="en" data-theme="tangerine-light" suppressHydrationWarning>
       <head>
         <Script id="theme-boot" strategy="beforeInteractive">
-          {`(function(){try{var s=localStorage.getItem('theme-mode');var mode=s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var id=mode==='dark'?'dark-orange':'light-orange';document.documentElement.setAttribute('data-theme',id);document.documentElement.setAttribute('data-theme-mode',mode);}catch(e){}})();`}
+          {`(function(){try{
+            var mode=localStorage.getItem('theme-mode')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+            var t=localStorage.getItem('guest-theme');
+            if(!t){
+              var ol=localStorage.getItem('guest-light-theme');
+              var od=localStorage.getItem('guest-dark-theme');
+              if(ol||od){localStorage.removeItem('guest-light-theme');localStorage.removeItem('guest-dark-theme');}
+              t='tangerine';
+              localStorage.setItem('guest-theme',t);
+            }
+            document.documentElement.setAttribute('data-theme',t+'-'+mode);
+            document.documentElement.setAttribute('data-theme-mode',mode);
+          }catch(e){}})();`}
         </Script>
         <link rel="icon" href="/favicon_light.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

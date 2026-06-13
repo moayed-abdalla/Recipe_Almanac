@@ -31,7 +31,7 @@ import {
 } from '@/lib/almanacPdf';
 import { readBgOpacity } from '@/lib/almanacBackground';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import { getThemeById, type ThemeId } from '@/lib/theme-config';
+import { getThemeByDaisyId } from '@/lib/theme-config';
 import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
@@ -75,7 +75,7 @@ const GROUP_LABELS: Record<RecipeGroup, string> = {
 
 /**
  * Read the currently-active theme colours from the document.
- * Falls back to the `light-orange` theme if anything goes wrong.
+ * Falls back to the `tangerine-light` theme if anything goes wrong.
  */
 function readBrand(): AlmanacBrand {
   if (typeof window === 'undefined') {
@@ -89,9 +89,9 @@ function readBrand(): AlmanacBrand {
     };
   }
   const root = document.documentElement;
-  const themeId = (root.getAttribute('data-theme') || 'light-orange') as ThemeId;
+  const themeId = root.getAttribute('data-theme') || 'tangerine-light';
   const mode = (root.getAttribute('data-theme-mode') as 'light' | 'dark') || 'light';
-  const theme = getThemeById(themeId);
+  const theme = getThemeByDaisyId(themeId);
 
   // Prefer values straight from the live CSS so any user override is honoured.
   const styles = getComputedStyle(root);

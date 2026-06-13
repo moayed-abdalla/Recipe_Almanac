@@ -31,7 +31,7 @@ const config: Config = {
   plugins: [require('daisyui')],
   daisyui: {
     themes: [daisyThemes],
-    darkTheme: 'dark-orange', // Default dark theme
+    darkTheme: 'tangerine-dark',
     base: true,
     styled: true,
     utils: true,
