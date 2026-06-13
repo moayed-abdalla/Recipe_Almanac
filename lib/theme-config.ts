@@ -118,7 +118,7 @@ export const UNIFIED_THEMES: UnifiedThemeDefinition[] = [
         'base-content': '#CC4A00',
         'primary': '#FF6F08',
         'primary-content': '#FFFFFF',
-        'secondary': '#FF9940',
+        'secondary': '#ff6f08',
         'accent': accent.light,
         'neutral': '#808080',
       }),
@@ -129,7 +129,7 @@ export const UNIFIED_THEMES: UnifiedThemeDefinition[] = [
         'base-content': '#FF9940',
         'primary': '#FF6F08',
         'primary-content': '#1A1A1A',
-        'secondary': '#FF9940',
+        'secondary': '#ff6f08',
         'accent': accent.dark,
         'neutral': '#666666',
       }),
@@ -257,7 +257,7 @@ export const UNIFIED_THEMES: UnifiedThemeDefinition[] = [
     return {
       id, name,
       lightAnchor: la, darkAnchor: da, accent,
-      imageColor: { light: '#8B0000', dark: '#FF6B6B' },
+      imageColor: { light: '#380000', dark: '#ffabab' },
       bgOpacity: { light: 0.15, dark: 0.20 },
       light: buildVariant(id, name, 'light', la, da, {
         'base-100': '#FFF0F0',
@@ -475,7 +475,7 @@ export const UNIFIED_THEMES: UnifiedThemeDefinition[] = [
     const name = 'Watermelon';
     const la = '#00610d';
     const da = '#ff3e3e';
-    const accent = { light: '#FF69B4', dark: '#90EE90' };
+    const accent = { light: '#FF69B4', dark: '#00610d' };
     return {
       id, name,
       lightAnchor: la, darkAnchor: da, accent,
