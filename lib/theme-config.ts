@@ -103,13 +103,13 @@ export const UNIFIED_THEMES: UnifiedThemeDefinition[] = [
   (() => {
     const id: ThemeId = 'tangerine';
     const name = 'Tangerine';
-    const la = '#f3f3f3';
+    const la = '#ff6f08';
     const da = '#ff6f08';
     const accent = { light: '#87CEEB', dark: '#87CEEB' };
     return {
       id, name,
       lightAnchor: la, darkAnchor: da, accent,
-      imageColor: { light: '#CC4A00', dark: '#FF6F08' },
+      imageColor: { light: '#ff6f08', dark: '#FF6F08' },
       bgOpacity: { light: 0.15, dark: 0.20 },
       light: buildVariant(id, name, 'light', la, da, {
         'base-100': '#F7F7F7',
