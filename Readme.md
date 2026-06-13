@@ -153,27 +153,25 @@ Recipe_Almanac/
 
 ## Color Themes
 
-Users pick separate **light** and **dark** themes (stored in profile/local storage). DaisyUI theme IDs map to display names:
+Users pick a theme at registration or in profile settings later. Each theme includes both a light and a dark variant; the header toggle switches between them without changing the selected theme. The choice is stored as `default_theme` on the profile (or `guest-theme` in localStorage for guests). At runtime the app applies a composite DaisyUI ID: `{themeId}-light` or `{themeId}-dark` (ie `tangerine-light`, `cherry-dark`).
+The default theme: **Tangerine** (`tangerine`).
 
-### Light themes
+| Theme ID | Display name | Brand colors (light / dark anchor) |
+|----------|--------------|-------------------------------------|
+| `tangerine` | **Tangerine** | Light grey & orange |
+| `salt-pepper` | **Salt & Pepper** | Neutral grey |
+| `ice` | **Ice** | Navy & ice blue |
+| `coffee` | **Coffee** | light tan &  coffee brown |
+| `cherry` | **Cherry** | Soft pink & burgandy red |
+| `grape` | **Grape** | Deep purple & lavender |
+| `banana` | **Banana** | Yellow & dark brown |
+| `olive` | **Olive** | Olive green & plum |
+| `mojito` | **Mojito** | Forest green & lemon yellow |
+| `pb-j` | **PB&J** | Grape jelly purple & peanut tan |
+| `watermelon` | **Watermelon** | Green & red |
+| `avocado` | **Avocado** | Avocado green & pit brown |
 
-| Theme ID | Display name | Accent feel |
-|----------|--------------|-------------|
-| `light-orange` | **Tangarine** | Orange on white-grey (default light) |
-| `light-grey` | **Pepper** | Neutral grey palette |
-| `light-beige` | **Lobster** | Beige with blue-grey accents |
-| `light-coffee` | **Coffee** | Warm beige & brown |
-
-### Dark themes
-
-| Theme ID | Display name | Accent feel |
-|----------|--------------|-------------|
-| `dark-orange` | **Lemon** | Orange on near-black (default dark) |
-| `dark-blue` | **Ice** | Cool blue on slate |
-| `dark-red` | **Tomato** | Red accents on dark |
-| `dark-purple` | **Eggplant** | Lavender on deep purple |
-
-Kitchen background masks are tinted via CSS variables per theme (`app/globals.css`, `lib/theme-config.ts`).
+Full palettes (DaisyUI tokens, accent colors, and anchor hex codes) live in [`lib/theme-config.ts`](lib/theme-config.ts). Kitchen background masks are tinted at runtime via `--theme-image-color` and `--theme-bg-opacity`, set from that config when a theme is applied.
 
 ## Contributing
 
