@@ -180,6 +180,7 @@ CREATE TABLE IF NOT EXISTS recipes (
   image_url TEXT,
   tags TEXT[] DEFAULT '{}',
   method_steps TEXT[] DEFAULT '{}',
+  method_step_image_urls TEXT[] DEFAULT '{}',
   notes TEXT[] DEFAULT '{}',
   view_count INTEGER DEFAULT 0,
   is_public BOOLEAN DEFAULT true,

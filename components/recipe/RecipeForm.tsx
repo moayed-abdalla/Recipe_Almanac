@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
@@ -73,6 +73,16 @@ async function compressImage(file: File): Promise<Blob> {
   });
 }
 
+interface MethodStepRow {
+  id: string;
+  text: string;
+  imageUrl: string | null;
+  imagePreview: string | null;
+  pendingFile: File | null;
+}
+
+type CropTarget = 'hero' | { stepIndex: number };
+
 interface RecipeFormProps {
   recipe?: Recipe;
   ingredients?: Ingredient[];
@@ -110,7 +120,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   
   // Form state - recipe content (pre-filled if editing or importing).
   // Each row carries a stable `id` so dnd-kit can track it across reorders.
-  const [methodSteps, setMethodSteps] = useState<Array<{ id: string; text: string }>>(
+  const [methodSteps, setMethodSteps] = useState<MethodStepRow[]>(
     () => {
       const source =
         recipe?.method_steps && recipe.method_steps.length > 0
@@ -118,7 +128,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           : draft?.methodSteps && draft.methodSteps.length > 0
             ? draft.methodSteps
             : [''];
-      return source.map((text) => ({ id: newSortableId(), text }));
+      const imageUrls = recipe?.method_step_image_urls ?? [];
+      return source.map((text, i) => {
+        const imageUrl = imageUrls[i] ?? null;
+        return {
+          id: newSortableId(),
+          text,
+          imageUrl,
+          imagePreview: imageUrl,
+          pendingFile: null,
+        };
+      });
     }
   );
   const [notes, setNotes] = useState<Array<{ id: string; text: string }>>(
@@ -193,7 +213,11 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(recipe?.image_url || null);
   const [cropModalSrc, setCropModalSrc] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<CropTarget | null>(null);
   const [loadingCropSrc, setLoadingCropSrc] = useState(false);
+  const stepFileInputRef = useRef<HTMLInputElement>(null);
+  const [stepFileIndex, setStepFileIndex] = useState<number | null>(null);
+  const [loadingStepCropIndex, setLoadingStepCropIndex] = useState<number | null>(null);
 
   /**
    * Handle form submission
@@ -296,12 +320,10 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
         }
       }
 
-      // Step 3: Upload image to Supabase Storage if provided
+      // Step 3: Upload hero image to Supabase Storage if provided
       let imageUrl = isEditMode ? recipe!.image_url : null; // Keep existing image by default when editing
       if (imageFile) {
         try {
-          // Compress to JPEG ≤ 1600px / 80% quality before uploading so that
-          // stored objects stay small for both bandwidth and offline caching.
           const compressed = await compressImage(imageFile);
           const fileName = `${user.id}/${Date.now()}.jpg`;
 
@@ -313,7 +335,6 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             throw new Error(`Image upload failed: ${uploadError.message}`);
           }
 
-          // Get public URL for the uploaded image
           const { data: { publicUrl } } = supabaseClient.storage
             .from('recipe-image')
             .getPublicUrl(fileName);
@@ -323,6 +344,40 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           throw new Error(`Failed to upload image: ${uploadErr.message}`);
         }
       }
+
+      // Step 3b: Upload pending step images and build aligned arrays
+      const keptSteps = methodSteps.filter((s) => s.text.trim());
+      const stepsWithUrls: MethodStepRow[] = [];
+      for (let i = 0; i < keptSteps.length; i++) {
+        const step = keptSteps[i];
+        if (step.pendingFile) {
+          try {
+            const compressed = await compressImage(step.pendingFile);
+            const fileName = `${user.id}/step-${Date.now()}-${i}.jpg`;
+
+            const { error: uploadError } = await supabaseClient.storage
+              .from('recipe-image')
+              .upload(fileName, compressed, { contentType: 'image/jpeg' });
+
+            if (uploadError) {
+              throw new Error(`Step ${i + 1} image upload failed: ${uploadError.message}`);
+            }
+
+            const { data: { publicUrl } } = supabaseClient.storage
+              .from('recipe-image')
+              .getPublicUrl(fileName);
+
+            stepsWithUrls.push({ ...step, imageUrl: publicUrl });
+          } catch (uploadErr: any) {
+            throw new Error(`Failed to upload step ${i + 1} image: ${uploadErr.message}`);
+          }
+        } else {
+          stepsWithUrls.push(step);
+        }
+      }
+
+      const savedMethodSteps = fixSpecialCharactersInArray(stepsWithUrls.map((s) => s.text));
+      const savedStepImageUrls = stepsWithUrls.map((s) => s.imageUrl ?? null);
 
       if (isEditMode) {
         // Step 4a: Update existing recipe record
@@ -334,7 +389,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: fixSpecialCharactersInArray(methodSteps.map(s => s.text).filter(Boolean)),
+            method_steps: savedMethodSteps,
+            method_step_image_urls: savedStepImageUrls,
             notes: fixSpecialCharactersInArray(notes.map(n => n.text).filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
@@ -401,7 +457,8 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
             tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            method_steps: fixSpecialCharactersInArray(methodSteps.map(s => s.text).filter(Boolean)),
+            method_steps: savedMethodSteps,
+            method_step_image_urls: savedStepImageUrls,
             notes: fixSpecialCharactersInArray(notes.map(n => n.text).filter(Boolean)),
             is_public: isPublic,
             servings: servingsValue,
@@ -501,13 +558,57 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   };
 
   const addMethodStep = () => {
-    setMethodSteps([...methodSteps, { id: newSortableId(), text: '' }]);
+    setMethodSteps([
+      ...methodSteps,
+      { id: newSortableId(), text: '', imageUrl: null, imagePreview: null, pendingFile: null },
+    ]);
   };
 
   const updateMethodStep = (index: number, value: string) => {
     const newSteps = [...methodSteps];
     newSteps[index] = { ...newSteps[index], text: value };
     setMethodSteps(newSteps);
+  };
+
+  const updateMethodStepImage = (index: number, file: File, previewUrl: string) => {
+    const newSteps = [...methodSteps];
+    newSteps[index] = {
+      ...newSteps[index],
+      pendingFile: file,
+      imagePreview: previewUrl,
+    };
+    setMethodSteps(newSteps);
+  };
+
+  const removeMethodStepImage = (index: number) => {
+    const newSteps = [...methodSteps];
+    newSteps[index] = {
+      ...newSteps[index],
+      pendingFile: null,
+      imagePreview: null,
+      imageUrl: null,
+    };
+    setMethodSteps(newSteps);
+  };
+
+  const openStepImageCrop = async (index: number) => {
+    const step = methodSteps[index];
+    const src = step.imagePreview || step.imageUrl;
+    if (src) {
+      setLoadingStepCropIndex(index);
+      try {
+        const dataUrl = await fetchImageAsDataUrl(src);
+        setCropTarget({ stepIndex: index });
+        setCropModalSrc(dataUrl);
+      } catch (err) {
+        console.error('Failed to load step image for editing:', err);
+      } finally {
+        setLoadingStepCropIndex(null);
+      }
+    } else {
+      setStepFileIndex(index);
+      stepFileInputRef.current?.click();
+    }
   };
 
   const addNote = () => {
@@ -638,6 +739,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                     setLoadingCropSrc(true);
                     try {
                       const src = await fetchImageAsDataUrl(imagePreview || recipe?.image_url || '');
+                      setCropTarget('hero');
                       setCropModalSrc(src);
                     } catch (err) {
                       console.error('Failed to load image for editing:', err);
@@ -672,6 +774,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
               if (file) {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
+                  setCropTarget('hero');
                   setCropModalSrc(ev.target?.result as string);
                 };
                 reader.readAsDataURL(file);
@@ -694,15 +797,44 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             imageSrc={cropModalSrc}
             aspect={4 / 3}
             cropShape="rect"
-            title="Edit Recipe Image"
+            title={cropTarget === 'hero' ? 'Edit Recipe Image' : 'Edit Step Image'}
             onConfirm={(croppedFile, previewUrl) => {
-              setImageFile(croppedFile);
-              setImagePreview(previewUrl);
+              if (cropTarget === 'hero') {
+                setImageFile(croppedFile);
+                setImagePreview(previewUrl);
+              } else if (cropTarget && typeof cropTarget === 'object') {
+                updateMethodStepImage(cropTarget.stepIndex, croppedFile, previewUrl);
+              }
               setCropModalSrc(null);
+              setCropTarget(null);
             }}
-            onCancel={() => setCropModalSrc(null)}
+            onCancel={() => {
+              setCropModalSrc(null);
+              setCropTarget(null);
+            }}
           />
         )}
+
+        <input
+          ref={stepFileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-hidden="true"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file && stepFileIndex !== null) {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                setCropTarget({ stepIndex: stepFileIndex });
+                setCropModalSrc(ev.target?.result as string);
+                setStepFileIndex(null);
+              };
+              reader.readAsDataURL(file);
+            }
+            e.target.value = '';
+          }}
+        />
 
         {/* Description */}
         <div className="form-control">
@@ -880,7 +1012,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                 <button
                   type="button"
                   onClick={() => removeIngredient(index)}
-                  className="btn btn-sm btn-ghost btn-square flex-shrink-0"
+                  className="btn btn-lg btn-ghost btn-square text-3xl leading-none flex-shrink-0"
                   aria-label="Remove ingredient"
                 >
                   ×
@@ -910,7 +1042,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
             itemClassName="mb-2 flex items-start gap-2"
             gripClassName="mt-3"
             gripLabel={(index) => `Reorder step ${index + 1}`}
-            renderItem={(step, index, handle) => (
+            renderItem={(step, index, handle) => {
+              const stepImageSrc = step.imagePreview || step.imageUrl;
+              return (
             <>
               {handle}
               <div className="flex-1 min-w-0">
@@ -918,16 +1052,34 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   <label className="label">
                     <span className="label-text">Step {index + 1}</span>
                   </label>
-                  {methodSteps.length > 1 && (
+                  <div className="flex items-center gap-0.5">
                     <button
                       type="button"
-                      onClick={() => removeMethodStep(index)}
+                      onClick={() => openStepImageCrop(index)}
+                      disabled={loadingStepCropIndex === index}
                       className="btn btn-xs btn-ghost"
-                      aria-label="Remove step"
+                      aria-label={stepImageSrc ? `Edit image for step ${index + 1}` : `Add image to step ${index + 1}`}
+                      title={stepImageSrc ? 'Edit step image' : 'Add step image'}
                     >
-                      ×
+                      {loadingStepCropIndex === index ? (
+                        <span className="loading loading-spinner loading-xs" />
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      )}
                     </button>
-                  )}
+                    {methodSteps.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeMethodStep(index)}
+                        className="btn btn-md btn-ghost text-2xl leading-none"
+                        aria-label="Remove step"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <textarea
                   className="textarea textarea-bordered w-full arial-font"
@@ -935,9 +1087,27 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
                   rows={2}
                 />
+                {stepImageSrc && (
+                  <div className="relative inline-block mt-2">
+                    <img
+                      src={stepImageSrc}
+                      alt={`Step ${index + 1} preview`}
+                      className="h-20 w-28 object-cover rounded-lg border border-base-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeMethodStepImage(index)}
+                      className="absolute -top-2 -right-2 btn btn-xs btn-circle btn-error"
+                      aria-label={`Remove image from step ${index + 1}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
               </div>
             </>
-            )}
+              );
+            }}
           />
           <button
             type="button"
@@ -971,7 +1141,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                     <button
                       type="button"
                       onClick={() => removeNote(index)}
-                      className="btn btn-xs btn-ghost"
+                      className="btn btn-md btn-ghost text-2xl leading-none"
                       aria-label="Remove note"
                     >
                       ×
