@@ -37,6 +37,7 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { formatMeasurement, convertUnit, VOLUME_UNITS, hasKnownIngredientDensity } from '@/utils/unitConverter';
 import { toPositiveInt } from '@/utils/recipeTime';
 import StepTimers from '@/components/recipe/StepTimers';
+import { StepImageLightbox } from '@/components/recipe/StepImageLightbox';
 import RecipeTutorial from '@/components/tutorial/RecipeTutorial';
 
 // Below-the-fold, client-only sections are code-split so the main recipe
@@ -73,6 +74,7 @@ interface Recipe {
   image_url: string | null;
   tags: string[];
   method_steps: string[];
+  method_step_image_urls?: (string | null)[];
   notes: string[];
   view_count: number;
   is_public?: boolean;
@@ -168,6 +170,7 @@ export default function RecipePageClient({
   const user = useMemo(() => (viewerId ? { id: viewerId } : null), [viewerId]);
   const [forking, setForking] = useState(false);
   const forkConfirmRef = useRef<HTMLDialogElement>(null);
+  const [stepLightboxUrl, setStepLightboxUrl] = useState<string | null>(null);
   const [viewCount, setViewCount] = useState<number>(recipe.view_count);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   const viewTrackingRef = useRef<boolean>(false); // Ref to prevent multiple API calls
@@ -763,6 +766,7 @@ export default function RecipePageClient({
           image_url: originalRecipe.image_url,
           tags: originalRecipe.tags,
           method_steps: originalRecipe.method_steps,
+          method_step_image_urls: originalRecipe.method_step_image_urls ?? [],
           notes: originalRecipe.notes,
           is_public: true,
         })
@@ -1157,16 +1161,44 @@ export default function RecipePageClient({
       <div className="mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Method</h2>
         <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-3">
-          {displayRecipe.method_steps.map((step, index) => (
+          {displayRecipe.method_steps.map((step, index) => {
+            const stepImageUrl = recipe.method_step_image_urls?.[index] ?? null;
+            return (
             <li key={index} className="text-base sm:text-lg arial-font break-words pl-1">
-              <StepTimers
-                step={step}
-                index={index}
-                preferredTemperatureUnit={preferredTemperatureUnit}
-              />
+              <div className={`${stepImageUrl ? 'flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : ''}`}>
+                <div className="min-w-0">
+                  <StepTimers
+                    step={step}
+                    index={index}
+                    preferredTemperatureUnit={preferredTemperatureUnit}
+                  />
+                </div>
+                {stepImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setStepLightboxUrl(stepImageUrl)}
+                    className="mt-3 lg:mt-0 block w-full text-left rounded-lg overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    aria-label={`View image for step ${index + 1}`}
+                  >
+                    <img
+                      src={stepImageUrl}
+                      alt={`Step ${index + 1}`}
+                      className="rounded-lg object-cover w-full max-h-64 lg:max-h-80 hover:opacity-95 transition-opacity cursor-zoom-in"
+                    />
+                  </button>
+                )}
+              </div>
             </li>
-          ))}
+            );
+          })}
         </ol>
+        {stepLightboxUrl && (
+          <StepImageLightbox
+            imageUrl={stepLightboxUrl}
+            alt="Step image"
+            onClose={() => setStepLightboxUrl(null)}
+          />
+        )}
       </div>
 
       {/* Nutrition Section (viewer opt-in + creator opt-out) */}

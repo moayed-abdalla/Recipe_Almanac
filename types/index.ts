@@ -45,6 +45,7 @@ export interface Recipe {
   tags: string[];
   is_public: boolean;
   method_steps: string[];
+  method_step_image_urls?: (string | null)[];
   notes: string[];
   servings?: number | null;
   prep_time_minutes?: number | null;

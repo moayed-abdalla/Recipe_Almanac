@@ -63,6 +63,7 @@ export type Database = {
           image_url: string | null;
           tags: string[];
           method_steps: string[];
+          method_step_image_urls: (string | null)[];
           notes: string[];
           view_count: number;
           is_public: boolean;
@@ -79,6 +80,7 @@ export type Database = {
           image_url?: string | null;
           tags?: string[];
           method_steps?: string[];
+          method_step_image_urls?: (string | null)[];
           notes?: string[];
           view_count?: number;
           is_public?: boolean;
@@ -95,6 +97,7 @@ export type Database = {
           image_url?: string | null;
           tags?: string[];
           method_steps?: string[];
+          method_step_image_urls?: (string | null)[];
           notes?: string[];
           view_count?: number;
           is_public?: boolean;
