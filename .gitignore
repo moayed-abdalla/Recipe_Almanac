@@ -15,6 +15,9 @@
 # production
 /build
 
+# local-only files (not pushed to remote)
+/RA_git_ignore/
+
 # misc
 .DS_Store
 desktop.ini

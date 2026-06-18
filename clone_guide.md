@@ -126,10 +126,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 
 **Replace** `your_project_url_here` and `your_anon_key_here` with your actual Supabase credentials.
 
-**Example**:
+**Example** (use your own values from Supabase → Settings → API):
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiY2RlZmdoaWprbG1ub3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYxNjIzOTAyMiwiZXhwIjoxOTMxODE1MDIyfQ.abcdefghijklmnopqrstuvwxyz1234567890
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_or_publishable_key_here
 ```
 
 ### Step 3: Verify Environment Variables
