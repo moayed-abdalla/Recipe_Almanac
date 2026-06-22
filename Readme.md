@@ -194,7 +194,7 @@ To run Recipe Almanac locally or deploy your own copy, follow **[clone_guide.md]
 - **GitHub**: [https://github.com/moayed-abdalla/Recipe_Almanac](https://github.com/moayed-abdalla/Recipe_Almanac)
 - **Buy Me a Coffee**: [https://buymeacoffee.com/moayed_abdalla](https://buymeacoffee.com/moayed_abdalla)
 
----
+--
 
 **Built with ❤️ for chefs and bakers who just want great recipes without the hassle.**
 **No emails or user information will ever be shared or taken off platform**
