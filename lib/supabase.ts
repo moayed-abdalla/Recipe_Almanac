@@ -283,7 +283,13 @@ export async function createServerClient() {
  */
 export function createAdminClient() {
   validateEnvVars();
-  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error(
+      'Missing SUPABASE_SECRET_KEY. Set it in .env.local (server-only; never use NEXT_PUBLIC_).'
+    );
+  }
+  return createClient<Database>(supabaseUrl!, secretKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
