@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
-import { containsBadWords, getBadWordErrorMessage } from '@/utils/badWords';
+import {
+  validateEmail,
+  validateRegistrationPasswords,
+  validateUsername,
+  USERNAME_MIN_LENGTH,
+} from '@/lib/validation';
 import {
   DEFAULT_THEME,
   resolveDaisyThemeId,
@@ -83,29 +88,21 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    if (!email || email.trim() === '') {
-      setError('Email is required');
+    const emailResult = validateEmail(email);
+    if (!emailResult.ok) {
+      setError(emailResult.error);
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+    const usernameResult = validateUsername(username);
+    if (!usernameResult.ok) {
+      setError(usernameResult.error);
       return;
     }
 
-    if (containsBadWords(username)) {
-      setError(getBadWordErrorMessage());
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    const passwordResult = validateRegistrationPasswords(password, confirmPassword);
+    if (!passwordResult.ok) {
+      setError(passwordResult.error);
       return;
     }
 
@@ -113,10 +110,10 @@ export default function RegisterPage() {
 
     try {
       const { data, error: signUpError } = await supabaseClient.auth.signUp({
-        email: email.trim(),
+        email: emailResult.value.trimmed,
         password,
         options: {
-          data: { username },
+          data: { username: usernameResult.value.trimmed },
         },
       });
 
@@ -126,7 +123,7 @@ export default function RegisterPage() {
         const { error: profileError } = await supabaseClient
           .from('profiles')
           .update({
-            username,
+            username: usernameResult.value.trimmed,
             default_theme: selectedTheme,
             default_unit: selectedUnit,
             default_temperature_unit: selectedTemperatureUnit,
@@ -138,7 +135,7 @@ export default function RegisterPage() {
           console.error('Error updating profile:', profileError);
         }
 
-        router.push(`/register/confirm?email=${encodeURIComponent(email.trim())}`);
+        router.push(`/register/confirm?email=${encodeURIComponent(emailResult.value.trimmed)}`);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration');
@@ -190,7 +187,7 @@ export default function RegisterPage() {
                 value={username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                 required
-                minLength={3}
+                minLength={USERNAME_MIN_LENGTH}
               />
             </div>
 

@@ -21,10 +21,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabaseClient } from '@/lib/supabase-client';
-import { containsBadWords } from '@/utils/badWords';
+import {
+  REVIEW_MAX_LENGTH,
+  validateRating,
+  validateReview,
+} from '@/lib/validation';
 import { relativeTime } from '@/utils/relativeTime';
-
-const MAX_REVIEW_LENGTH = 250;
 
 interface RecipeRatingsProps {
   recipeId: string;
@@ -207,11 +209,19 @@ export default function RecipeRatings({
     if (!canRate || saving) return;
     setError(null);
     setSuccess(null);
+
+    const ratingResult = validateRating(value);
+    if (!ratingResult.ok) {
+      setError(ratingResult.error);
+      return;
+    }
+
     setSelectedRating(value);
     setSaving(true);
-    // Preserve any existing review text already saved by the user.
     const reviewToKeep = reviewText.trim().length ? reviewText.trim() : null;
-    const ok = await upsertRating(value, reviewToKeep && !containsBadWords(reviewToKeep) ? reviewToKeep : null);
+    const reviewResult = validateReview(reviewToKeep);
+    const safeReview = reviewResult.ok ? reviewResult.value.trimmed : null;
+    const ok = await upsertRating(value, safeReview);
     if (ok) {
       setHasExistingRating(true);
       await loadData(userId);
@@ -233,13 +243,14 @@ export default function RecipeRatings({
     }
 
     const trimmed = reviewText.trim();
-    if (trimmed.length > 0 && containsBadWords(trimmed)) {
-      setReviewError('Please remove inappropriate language');
+    const reviewResult = validateReview(trimmed.length ? trimmed : null);
+    if (!reviewResult.ok) {
+      setReviewError(reviewResult.error);
       return;
     }
 
     setSaving(true);
-    const ok = await upsertRating(selectedRating, trimmed.length ? trimmed : null);
+    const ok = await upsertRating(selectedRating, reviewResult.value.trimmed);
     if (ok) {
       setHasExistingRating(true);
       setSuccess('Your rating was saved.');
@@ -273,7 +284,7 @@ export default function RecipeRatings({
     setSaving(false);
   };
 
-  const remaining = MAX_REVIEW_LENGTH - reviewText.length;
+  const remaining = REVIEW_MAX_LENGTH - reviewText.length;
   const countdownClass =
     remaining <= 0 ? 'text-error' : remaining <= 25 ? 'text-warning' : 'text-base-content/50';
 
@@ -363,7 +374,7 @@ export default function RecipeRatings({
                       reviewError ? 'textarea-error' : ''
                     }`}
                     rows={3}
-                    maxLength={MAX_REVIEW_LENGTH}
+                    maxLength={REVIEW_MAX_LENGTH}
                     placeholder="Share a short review (optional)"
                     value={reviewText}
                     onChange={(e) => {
@@ -379,7 +390,7 @@ export default function RecipeRatings({
                       <span className="text-sm arial-font text-base-content/40">&nbsp;</span>
                     )}
                     <span className={`text-sm font-mono ${countdownClass}`} aria-live="polite">
-                      {reviewText.length} / {MAX_REVIEW_LENGTH}
+                      {reviewText.length} / {REVIEW_MAX_LENGTH}
                     </span>
                   </div>
                 </div>

@@ -56,6 +56,7 @@ import {
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
 import { encodeUnitOverrides } from '@/lib/printParams';
+import { validateRecipePayload } from '@/lib/validation';
 
 interface Ingredient {
   id: string;
@@ -739,6 +740,22 @@ export default function RecipePageClient({
       if (fetchError || !originalRecipe) {
         console.error('Error fetching recipe:', fetchError);
         alert('Failed to fetch recipe. Please try again.');
+        setForking(false);
+        return;
+      }
+
+      const forkIngredients = (originalRecipe.ingredients ?? []).map(
+        (ing: { name: string; display_amount: number }) => ({
+          name: ing.name,
+          amount: ing.display_amount,
+        })
+      );
+      const forkValidation = validateRecipePayload({
+        title: originalRecipe.title,
+        ingredients: forkIngredients,
+      });
+      if (!forkValidation.ok) {
+        alert(forkValidation.error);
         setForking(false);
         return;
       }

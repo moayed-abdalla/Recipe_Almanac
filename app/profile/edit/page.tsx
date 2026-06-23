@@ -20,7 +20,13 @@ import {
   type TemperatureUnitValue,
 } from '@/lib/temperature-config';
 import type { Profile } from '@/types';
-import { containsBadWords, censorBadWords, getBadWordErrorMessage } from '@/utils/badWords';
+import {
+  validateProfileDescription,
+  validateUsername,
+  PROFILE_DESCRIPTION_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+} from '@/lib/validation';
 import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
 
 interface ProfileEdit extends Profile {
@@ -178,19 +184,27 @@ export default function ProfileEditPage() {
     setUsernameError(null);
     
     try {
-      // Validate username doesn't contain bad words
-      if (containsBadWords(username)) {
-        setUsernameError(getBadWordErrorMessage());
+      const usernameResult = validateUsername(username);
+      if (!usernameResult.ok) {
+        setUsernameError(usernameResult.error);
         setSaving(false);
         return;
       }
 
+      const descriptionResult = validateProfileDescription(description);
+      if (!descriptionResult.ok) {
+        setUsernameError(descriptionResult.error);
+        setSaving(false);
+        return;
+      }
+      const censoredDescription = descriptionResult.value.censored;
+
       // Check if username is already taken (if changed)
-      if (username !== profile.username) {
+      if (usernameResult.value.trimmed !== profile.username) {
         const { data: existingProfile } = await supabaseClient
           .from('profiles')
           .select('id')
-          .eq('username', username)
+          .eq('username', usernameResult.value.trimmed)
           .neq('id', user.id)
           .single();
         
@@ -201,14 +215,11 @@ export default function ProfileEditPage() {
         }
       }
       
-      // Censor bad words in description before saving
-      const censoredDescription = censorBadWords(description.trim() || '');
-      
       // Update profile
       const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({
-          username: username.trim(),
+          username: usernameResult.value.trimmed,
           profile_description: censoredDescription || null,
           default_theme: selectedTheme,
           default_unit: selectedUnit,
@@ -224,7 +235,7 @@ export default function ProfileEditPage() {
       // Update local state (use censored description)
       setProfile({
         ...profile,
-        username: username.trim(),
+        username: usernameResult.value.trimmed,
         profile_description: censoredDescription || null,
         default_theme: selectedTheme,
         default_unit: selectedUnit,
@@ -486,8 +497,8 @@ export default function ProfileEditPage() {
                   }}
                   className={`input input-bordered ${usernameError ? 'input-error' : ''}`}
                   required
-                  minLength={3}
-                  maxLength={30}
+                  minLength={USERNAME_MIN_LENGTH}
+                  maxLength={USERNAME_MAX_LENGTH}
                 />
                 {usernameError && (
                   <label className="label">
@@ -506,7 +517,7 @@ export default function ProfileEditPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   className="textarea textarea-bordered"
                   rows={4}
-                  maxLength={500}
+                  maxLength={PROFILE_DESCRIPTION_MAX_LENGTH}
                   placeholder="Tell us about yourself..."
                 />
                 <label className="label">

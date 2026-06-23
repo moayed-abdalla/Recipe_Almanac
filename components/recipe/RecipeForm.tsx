@@ -16,6 +16,7 @@ import { SortableFormList } from '@/components/recipe/SortableFormList';
 import { newSortableId } from '@/lib/sortableId';
 import { revalidateRecipe } from '@/app/recipe/[id]/actions';
 import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
+import { validateRecipePayload } from '@/lib/validation';
 
 /**
  * Resize and compress an image file client-side using the Canvas API.
@@ -229,33 +230,25 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
     setLoading(true);
 
     try {
-      // Step 0: Parse and validate optional numeric fields (servings/timing).
-      // Empty fields are allowed (stored as null); non-empty values must be
-      // non-negative whole numbers.
-      const parseOptionalInt = (raw: string, label: string): number | null => {
-        const trimmed = raw.trim();
-        if (trimmed === '') return null;
-        const parsed = Number(trimmed);
-        if (!Number.isInteger(parsed) || parsed < 0) {
-          throw new Error(`${label} must be a whole number that is zero or greater.`);
-        }
-        return parsed;
-      };
-      const servingsValue = parseOptionalInt(servings, 'Servings');
-      const prepTimeValue = parseOptionalInt(prepTime, 'Prep time');
-      const cookTimeValue = parseOptionalInt(cookTime, 'Cook time');
-
-      // Step 0b: A recipe must have at least one valid ingredient (a name and
-      // an amount greater than zero). This mirrors the filter used below for
-      // the actual insert so we never create an ingredient-less recipe.
+      const recipeValidation = validateRecipePayload({
+        title,
+        servings,
+        prepTime,
+        cookTime,
+        ingredients,
+      });
+      if (!recipeValidation.ok) {
+        throw new Error(recipeValidation.error);
+      }
+      const {
+        trimmedTitle,
+        servings: servingsValue,
+        prepTime: prepTimeValue,
+        cookTime: cookTimeValue,
+      } = recipeValidation.value;
       const validIngredients = ingredients.filter(
         (ing) => ing.name.trim() && ing.amount > 0
       );
-      if (validIngredients.length === 0) {
-        throw new Error(
-          'Please add at least one ingredient with a name and an amount greater than zero.'
-        );
-      }
 
       // Step 1: Verify user is authenticated
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
@@ -280,7 +273,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
       }
 
       // Step 2: Generate URL-friendly slug from title
-      const recipeSlug = title
+      const recipeSlug = trimmedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
@@ -384,7 +377,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
         const { error: recipeError } = await supabaseClient
           .from('recipes')
           .update({
-            title: fixSpecialCharacters(title),
+            title: fixSpecialCharacters(trimmedTitle),
             slug,
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
@@ -416,8 +409,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
         }
 
         // Step 6a: Create new ingredient records
-        const ingredientsData = ingredients
-          .filter(ing => ing.name && ing.amount > 0)
+        const ingredientsData = validIngredients
           .map((ing, index) => {
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {
@@ -452,7 +444,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           .from('recipes')
           .insert({
             user_id: user.id,
-            title: fixSpecialCharacters(title),
+            title: fixSpecialCharacters(trimmedTitle),
             slug,
             description: description ? fixSpecialCharacters(description) : null,
             image_url: imageUrl,
@@ -478,8 +470,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
         }
 
         // Step 5b: Create ingredient records
-        const ingredientsData = ingredients
-          .filter(ing => ing.name && ing.amount > 0)
+        const ingredientsData = validIngredients
           .map((ing, index) => {
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
             return {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { fetchRecipeFromUrl, RecipeImportError } from '@/lib/recipeUrlImporter';
+import { validateRecipePayload } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +22,26 @@ export async function POST(request: NextRequest) {
     }
 
     const { sourceText, draft } = await fetchRecipeFromUrl(url);
+
+    const draftValidation = validateRecipePayload({
+      title: draft.title,
+      servings: draft.servings,
+      prepTime: draft.prepTime,
+      cookTime: draft.cookTime,
+      ingredients: draft.ingredients,
+    });
+    if (!draftValidation.ok) {
+      return NextResponse.json(
+        {
+          error: draftValidation.error,
+          sourceText,
+          draft,
+          validationWarnings: [draftValidation.error],
+        },
+        { status: 422 }
+      );
+    }
+
     return NextResponse.json({ sourceText, draft });
   } catch (error) {
     if (error instanceof RecipeImportError) {
