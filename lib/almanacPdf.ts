@@ -17,6 +17,10 @@ import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
+import {
+  formatCopyAttributionText,
+  type RecipeCopySource,
+} from '@/lib/recipeCopyAttribution';
 
 /** Full recipe payload required to render a single PDF page. */
 export interface AlmanacRecipe {
@@ -29,6 +33,7 @@ export interface AlmanacRecipe {
   notes: string[];
   ingredients: AlmanacIngredient[];
   author_username?: string | null;
+  copySource?: RecipeCopySource | null;
 }
 
 export interface AlmanacIngredient {
@@ -621,7 +626,7 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
   }
 
   // Notes
-  if (notes.length > 0) {
+  if (notes.length > 0 || recipe.copySource) {
     writeSectionHeading(ctx, 'Notes');
     notes.forEach((note) => {
       writeText(ctx, `\u2022  ${note}`, {
@@ -633,6 +638,16 @@ async function drawRecipePage(ctx: PageContext, recipe: AlmanacRecipe) {
         maxWidth: CONTENT_WIDTH - 2,
       });
     });
+    if (recipe.copySource) {
+      writeText(ctx, `\u2022  ${formatCopyAttributionText(recipe.copySource)}`, {
+        font: 'helvetica',
+        style: 'italic',
+        size: 10,
+        color: textColor,
+        x: MARGIN_X + 2,
+        maxWidth: CONTENT_WIDTH - 2,
+      });
+    }
   }
 }
 

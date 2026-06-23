@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase';
 import { getRecipeBySlug } from '@/lib/recipeServer';
 import RecipePageClient from './RecipePageClient';
 import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 import { getTotalTimeMinutes, minutesToIso8601Duration, toPositiveInt } from '@/utils/recipeTime';
 
 interface RecipeDetailPageProps {
@@ -73,10 +74,18 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const isOwner = user?.id === typedRecipe.user_id;
 
+  const copySourcePromise = typedRecipe.copied_from_recipe_id
+    ? supabase
+        .from('recipes')
+        .select('slug, title')
+        .eq('id', typedRecipe.copied_from_recipe_id)
+        .maybeSingle()
+    : Promise.resolve({ data: null });
+
   // Independent secondary reads run together instead of in a waterfall:
-  // ingredients, the viewer's preferences, their favorite status, and the
-  // recipe's rating summary.
-  const [ingredientsResult, viewerProfileResult, favoriteResult, ratingStatsResult] =
+  // ingredients, the viewer's preferences, their favorite status, the
+  // recipe's rating summary, and copy attribution source.
+  const [ingredientsResult, viewerProfileResult, favoriteResult, ratingStatsResult, copySourceResult] =
     await Promise.all([
       supabase
         .from('ingredients')
@@ -103,6 +112,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         .select('rating_count, average_rating')
         .eq('recipe_id', typedRecipe.id)
         .maybeSingle(),
+      copySourcePromise,
     ]);
 
   const ingredients = (ingredientsResult.data || []) as Ingredient[];
@@ -132,6 +142,13 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         ratingCount: Number(ratingStatsRow.rating_count) || 0,
         averageRating: Number(ratingStatsRow.average_rating) || 0,
       }
+    : null;
+
+  const copySourceRow = copySourceResult.data as
+    | { slug: string; title: string }
+    | null;
+  const copySource: RecipeCopySource | null = copySourceRow
+    ? { slug: copySourceRow.slug, title: copySourceRow.title }
     : null;
   
   // Debug logging (remove in production)
@@ -232,6 +249,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         initialRatingStats={initialRatingStats}
         nutritionEnabled={nutritionEnabled}
         preferredTemperatureUnit={preferredTemperatureUnit}
+        copySource={copySource}
       />
     </>
   );

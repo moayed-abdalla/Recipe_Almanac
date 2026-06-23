@@ -68,6 +68,7 @@ export type Database = {
           view_count: number;
           is_public: boolean;
           nutrition_visible: boolean;
+          copied_from_recipe_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -85,6 +86,7 @@ export type Database = {
           view_count?: number;
           is_public?: boolean;
           nutrition_visible?: boolean;
+          copied_from_recipe_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -102,6 +104,7 @@ export type Database = {
           view_count?: number;
           is_public?: boolean;
           nutrition_visible?: boolean;
+          copied_from_recipe_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

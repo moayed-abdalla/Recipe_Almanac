@@ -36,6 +36,7 @@ import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
+import { formatCopyAttributionText, type RecipeCopySource } from '@/lib/recipeCopyAttribution';
 
 /** Group label shown above each section in the selection list. */
 type RecipeGroup = 'public' | 'private' | 'favorites';
@@ -61,6 +62,7 @@ type RawRecipeRow = {
   tags: string[] | null;
   method_steps: string[] | null;
   notes: string[] | null;
+  copied_from_recipe_id?: string | null;
   is_public?: boolean | null;
   created_at?: string | null;
   profiles?: { username: string } | { username: string }[] | null;
@@ -113,7 +115,11 @@ function readBrand(): AlmanacBrand {
 /**
  * Normalize the Supabase row shape into our `ListRecipe` payload.
  */
-function normalizeRow(row: RawRecipeRow, group: RecipeGroup): ListRecipe {
+function normalizeRow(
+  row: RawRecipeRow,
+  group: RecipeGroup,
+  copySources: Map<string, RecipeCopySource>
+): ListRecipe {
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
   const ingredients = (row.ingredients || [])
     .slice()
@@ -136,6 +142,9 @@ function normalizeRow(row: RawRecipeRow, group: RecipeGroup): ListRecipe {
     notes: fixSpecialCharactersInArray(row.notes || []),
     ingredients,
     author_username: profile?.username ?? null,
+    copySource: row.copied_from_recipe_id
+      ? copySources.get(row.copied_from_recipe_id) ?? null
+      : null,
     group,
     createdAt: row.created_at || undefined,
   };
@@ -150,11 +159,41 @@ const FULL_RECIPE_SELECT = `
   tags,
   method_steps,
   notes,
+  copied_from_recipe_id,
   is_public,
   created_at,
   profiles:user_id ( username ),
   ingredients ( name, display_amount, unit, order_index )
 `;
+
+async function fetchCopySources(
+  rows: RawRecipeRow[]
+): Promise<Map<string, RecipeCopySource>> {
+  const ids = [
+    ...new Set(
+      rows
+        .map((row) => row.copied_from_recipe_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  if (ids.length === 0) return new Map();
+
+  const { data, error } = await supabaseClient
+    .from('recipes')
+    .select('id, slug, title')
+    .in('id', ids);
+
+  if (error) {
+    console.warn('Failed to load copy attribution sources:', error.message);
+    return new Map();
+  }
+
+  const map = new Map<string, RecipeCopySource>();
+  for (const row of data || []) {
+    map.set(row.id, { slug: row.slug, title: row.title });
+  }
+  return map;
+}
 
 /**
  * Fetch every recipe the user might want to put in their almanac:
@@ -184,9 +223,7 @@ async function fetchAlmanacRecipes(userId: string): Promise<ListRecipe[]> {
 
   const ownRows = (ownRes.data || []) as RawRecipeRow[];
   const ownIds = new Set(ownRows.map((r) => r.id));
-  const ownList: ListRecipe[] = ownRows.map((row) =>
-    normalizeRow(row, row.is_public ? 'public' : 'private')
-  );
+  let favRows: RawRecipeRow[] = [];
 
   let favList: ListRecipe[] = [];
   if (!favIdsRes.error && favIdsRes.data && favIdsRes.data.length > 0) {
@@ -203,12 +240,19 @@ async function fetchAlmanacRecipes(userId: string): Promise<ListRecipe[]> {
       if (favRes.error) {
         console.warn('Failed to load favourite recipes:', favRes.error.message);
       } else {
-        favList = (favRes.data as RawRecipeRow[] | null || []).map((row) =>
-          normalizeRow(row, 'favorites')
-        );
+        favRows = (favRes.data as RawRecipeRow[] | null) || [];
       }
     }
   }
+
+  const allRows = [...ownRows, ...favRows];
+  const copySources = await fetchCopySources(allRows);
+
+  const ownList: ListRecipe[] = ownRows.map((row) =>
+    normalizeRow(row, row.is_public ? 'public' : 'private', copySources)
+  );
+
+  favList = favRows.map((row) => normalizeRow(row, 'favorites', copySources));
 
   return [...ownList, ...favList];
 }
@@ -312,6 +356,7 @@ export default function PrepareAlmanacPage() {
         notes: r.notes,
         ingredients: r.ingredients,
         author_username: r.author_username,
+        copySource: r.copySource,
       }));
       const ownerName = profile?.username || user?.email?.split('@')[0] || '';
       await generateAlmanacPdf(ordered, brand, {
@@ -727,7 +772,7 @@ function PreviewPage({ recipe, brand }: { recipe: ListRecipe; brand: AlmanacBran
           </div>
         )}
 
-        {recipe.notes.length > 0 && (
+        {(recipe.notes.length > 0 || recipe.copySource) && (
           <div className="mb-2">
             <PreviewHeading label="Notes" brand={brand} />
             <ul className="text-xs arial-font italic space-y-0.5 opacity-90">
@@ -736,6 +781,12 @@ function PreviewPage({ recipe, brand }: { recipe: ListRecipe; brand: AlmanacBran
                   <span style={{ color: brand.primary }}>•</span> {note}
                 </li>
               ))}
+              {recipe.copySource && (
+                <li className="break-words">
+                  <span style={{ color: brand.primary }}>•</span>{' '}
+                  {formatCopyAttributionText(recipe.copySource)}
+                </li>
+              )}
             </ul>
           </div>
         )}

@@ -51,6 +51,7 @@ export interface Recipe {
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
   nutrition_visible?: boolean | null;
+  copied_from_recipe_id?: string | null;
   created_at: string;
   updated_at: string;
 }

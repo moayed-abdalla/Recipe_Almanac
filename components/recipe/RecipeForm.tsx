@@ -17,6 +17,8 @@ import { newSortableId } from '@/lib/sortableId';
 import { revalidateRecipe } from '@/app/recipe/[id]/actions';
 import ImageCropModal, { fetchImageAsDataUrl } from '@/components/ui/ImageCropModal';
 import { validateRecipePayload } from '@/lib/validation';
+import RecipeCopyAttributionNote from '@/components/recipe/RecipeCopyAttributionNote';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 
 /**
  * Resize and compress an image file client-side using the Canvas API.
@@ -91,9 +93,11 @@ interface RecipeFormProps {
   draft?: ParsedRecipeDraft;
   /** When true, the form omits its own title row (the importer renders one). */
   hideHeader?: boolean;
+  /** Source recipe for copy attribution (edit mode only). */
+  copySource?: RecipeCopySource | null;
 }
 
-export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hideHeader }: RecipeFormProps) {
+export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hideHeader, copySource = null }: RecipeFormProps) {
   const router = useRouter();
   const isEditMode = !!recipe;
   const hasDraft = !isEditMode && !!draft;
@@ -1156,6 +1160,23 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           >
             + Add Note
           </button>
+          {copySource && (
+            <div className="mt-4 mb-2 flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="label">
+                    <span className="label-text">Note {notes.length + 1}</span>
+                  </label>
+                </div>
+                <div className="textarea textarea-bordered w-full arial-font bg-base-200 opacity-90 cursor-not-allowed min-h-[3rem] flex items-center px-4 py-3 text-sm">
+                  <RecipeCopyAttributionNote source={copySource} />
+                </div>
+                <p className="text-xs opacity-60 mt-1 arial-font">
+                  This attribution note cannot be removed.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Submit */}

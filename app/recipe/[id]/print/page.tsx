@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase';
 import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
 import { decodeUnitOverrides, parseMultiplier } from '@/lib/printParams';
 import PrintView from './PrintView';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 
 // Always render on demand so privacy/RLS and auth state are evaluated fresh.
 export const dynamic = 'force-dynamic';
@@ -76,6 +77,18 @@ export default async function RecipePrintPage({ params, searchParams }: PrintPag
     .order('order_index');
   const ingredients = (rawIngredients || []) as Ingredient[];
 
+  let copySource: RecipeCopySource | null = null;
+  if (typedRecipe.copied_from_recipe_id) {
+    const { data: sourceRecipe } = await supabase
+      .from('recipes')
+      .select('slug, title')
+      .eq('id', typedRecipe.copied_from_recipe_id)
+      .maybeSingle();
+    if (sourceRecipe) {
+      copySource = { slug: sourceRecipe.slug, title: sourceRecipe.title };
+    }
+  }
+
   const multiplier = parseMultiplier(searchParams.m);
   const unitOverrides = decodeUnitOverrides(searchParams.u);
   const autoPrint = searchParams.auto === '1';
@@ -88,6 +101,7 @@ export default async function RecipePrintPage({ params, searchParams }: PrintPag
       multiplier={multiplier}
       unitOverrides={unitOverrides}
       autoPrint={autoPrint}
+      copySource={copySource}
     />
   );
 }

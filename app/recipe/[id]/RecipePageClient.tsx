@@ -57,6 +57,8 @@ import {
 } from '@/lib/fixSpecialCharacters';
 import { encodeUnitOverrides } from '@/lib/printParams';
 import { validateRecipePayload } from '@/lib/validation';
+import RecipeCopyAttributionNote from '@/components/recipe/RecipeCopyAttributionNote';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 
 interface Ingredient {
   id: string;
@@ -83,6 +85,7 @@ interface Recipe {
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
   nutrition_visible?: boolean | null;
+  copied_from_recipe_id?: string | null;
 }
 
 interface Owner {
@@ -104,6 +107,7 @@ interface RecipePageClientProps {
   nutritionEnabled: boolean;
   /** null = signed out (show all temperature conversions). */
   preferredTemperatureUnit: 'C' | 'F' | null;
+  copySource?: RecipeCopySource | null;
 }
 
 // Available unit options for conversion
@@ -122,6 +126,7 @@ export default function RecipePageClient({
   initialRatingStats,
   nutritionEnabled,
   preferredTemperatureUnit,
+  copySource = null,
 }: RecipePageClientProps) {
   const router = useRouter();
 
@@ -785,6 +790,7 @@ export default function RecipePageClient({
           method_steps: originalRecipe.method_steps,
           method_step_image_urls: originalRecipe.method_step_image_urls ?? [],
           notes: originalRecipe.notes,
+          copied_from_recipe_id: originalRecipe.id,
           is_public: true,
         })
         .select()
@@ -1230,7 +1236,7 @@ export default function RecipePageClient({
       )}
 
       {/* Notes Section */}
-      {displayRecipe.notes.length > 0 && (
+      {(displayRecipe.notes.length > 0 || copySource) && (
         <div className="mb-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 special-elite-regular">Notes</h2>
           <ol className="list-decimal list-outside ml-5 sm:ml-6 space-y-2">
@@ -1239,6 +1245,11 @@ export default function RecipePageClient({
                 {note}
               </li>
             ))}
+            {copySource && (
+              <li className="opacity-80 arial-font break-words pl-1 text-sm sm:text-base">
+                <RecipeCopyAttributionNote source={copySource} />
+              </li>
+            )}
           </ol>
         </div>
       )}
@@ -1279,8 +1290,9 @@ export default function RecipePageClient({
             <span className="font-semibold text-primary">
               {displayRecipe.title}
             </span>{' '}
-            will be added to your recipes. You can edit it freely without
-            affecting the original.
+            will be added to your recipes. A note linking back to the original
+            will be added at the end of your notes. You can edit the copy freely
+            without affecting the original.
           </p>
           <div className="modal-action mt-0 gap-3">
             <form method="dialog">

@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { RecipeForm } from '@/components/recipe/RecipeForm';
 import type { Recipe, Ingredient } from '@/types';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 
 interface RecipeEditPageProps {
   params: {
@@ -40,17 +41,35 @@ export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
     redirect(`/recipe/${params.id}`);
   }
 
-  // Fetch ingredients
-  const { data: ingredients } = await supabase
-    .from('ingredients')
-    .select('*')
-    .eq('recipe_id', typedRecipe.id)
-    .order('order_index');
+  // Fetch ingredients and copy attribution source in parallel
+  const [ingredientsResult, copySourceResult] = await Promise.all([
+    supabase
+      .from('ingredients')
+      .select('*')
+      .eq('recipe_id', typedRecipe.id)
+      .order('order_index'),
+    typedRecipe.copied_from_recipe_id
+      ? supabase
+          .from('recipes')
+          .select('slug, title')
+          .eq('id', typedRecipe.copied_from_recipe_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const ingredients = (ingredientsResult.data || []) as Ingredient[];
+  const copySourceRow = copySourceResult.data as
+    | { slug: string; title: string }
+    | null;
+  const copySource: RecipeCopySource | null = copySourceRow
+    ? { slug: copySourceRow.slug, title: copySourceRow.title }
+    : null;
 
   return (
     <RecipeForm
       recipe={typedRecipe}
-      ingredients={(ingredients || []) as Ingredient[]}
+      ingredients={ingredients}
+      copySource={copySource}
     />
   );
 }

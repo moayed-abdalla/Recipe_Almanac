@@ -29,6 +29,8 @@ import {
   fixSpecialCharacters,
   fixSpecialCharactersInArray,
 } from '@/lib/fixSpecialCharacters';
+import RecipeCopyAttributionNote from '@/components/recipe/RecipeCopyAttributionNote';
+import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
 import { toPositiveInt } from '@/utils/recipeTime';
 import type { UnitOverrides } from '@/lib/printParams';
 
@@ -61,6 +63,7 @@ interface PrintViewProps {
   multiplier: number;
   unitOverrides: UnitOverrides;
   autoPrint: boolean;
+  copySource?: RecipeCopySource | null;
 }
 
 interface Brand {
@@ -178,6 +181,7 @@ export default function PrintView({
   multiplier,
   unitOverrides,
   autoPrint,
+  copySource = null,
 }: PrintViewProps) {
   // Trigger the print dialog automatically when opened with `?auto=1`.
   useEffect(() => {
@@ -308,7 +312,7 @@ export default function PrintView({
           )}
 
           {/* Notes */}
-          {notes.length > 0 && (
+          {(notes.length > 0 || copySource) && (
             <section className="mt-7">
               <PrintHeading label="Notes" color={brand.primary} />
               <ul className="arial-font mt-2 space-y-1 text-sm opacity-90">
@@ -317,6 +321,12 @@ export default function PrintView({
                     <span style={{ color: brand.primary }}>•</span> {note}
                   </li>
                 ))}
+                {copySource && (
+                  <li className="break-words" style={{ breakInside: 'avoid' }}>
+                    <span style={{ color: brand.primary }}>•</span>{' '}
+                    <RecipeCopyAttributionNote source={copySource} variant="print" />
+                  </li>
+                )}
               </ul>
             </section>
           )}
