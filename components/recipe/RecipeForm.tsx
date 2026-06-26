@@ -221,8 +221,18 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   const [cropTarget, setCropTarget] = useState<CropTarget | null>(null);
   const [loadingCropSrc, setLoadingCropSrc] = useState(false);
   const stepFileInputRef = useRef<HTMLInputElement>(null);
+  const pendingFocusRef = useRef<string | null>(null);
   const [stepFileIndex, setStepFileIndex] = useState<number | null>(null);
   const [loadingStepCropIndex, setLoadingStepCropIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!pendingFocusRef.current) return;
+    const el = document.getElementById(pendingFocusRef.current);
+    if (el) {
+      el.focus();
+      pendingFocusRef.current = null;
+    }
+  });
 
   /**
    * Handle form submission
@@ -553,9 +563,11 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   };
 
   const addMethodStep = () => {
+    const id = newSortableId();
+    pendingFocusRef.current = `method-step-${id}`;
     setMethodSteps([
       ...methodSteps,
-      { id: newSortableId(), text: '', imageUrl: null, imagePreview: null, pendingFile: null },
+      { id, text: '', imageUrl: null, imagePreview: null, pendingFile: null },
     ]);
   };
 
@@ -607,7 +619,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   };
 
   const addNote = () => {
-    setNotes([...notes, { id: newSortableId(), text: '' }]);
+    const id = newSortableId();
+    pendingFocusRef.current = `note-${id}`;
+    setNotes([...notes, { id, text: '' }]);
   };
 
   const updateNote = (index: number, value: string) => {
@@ -617,7 +631,9 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
   };
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { id: newSortableId(), name: '', amount: 0, unit: defaultUnit }]);
+    const id = newSortableId();
+    pendingFocusRef.current = `ingredient-name-${id}`;
+    setIngredients([...ingredients, { id, name: '', amount: 0, unit: defaultUnit }]);
   };
 
   const removeIngredient = (index: number) => {
@@ -998,10 +1014,17 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
               </select>
               <input
                 type="text"
+                id={`ingredient-name-${ing.id}`}
                 className="input input-bordered input-sm flex-1 min-w-[5rem]"
                 placeholder="Ingredient name"
                 value={ing.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addIngredient();
+                  }
+                }}
               />
               {ingredients.length > 1 && (
                 <button
@@ -1077,9 +1100,16 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   </div>
                 </div>
                 <textarea
+                  id={`method-step-${step.id}`}
                   className="textarea textarea-bordered w-full arial-font"
                   value={step.text}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateMethodStep(index, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      addMethodStep();
+                    }
+                  }}
                   rows={2}
                 />
                 {stepImageSrc && (
@@ -1144,9 +1174,16 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                   )}
                 </div>
                 <textarea
+                  id={`note-${note.id}`}
                   className="textarea textarea-bordered w-full arial-font"
                   value={note.text}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateNote(index, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      addNote();
+                    }
+                  }}
                   rows={2}
                 />
               </div>
