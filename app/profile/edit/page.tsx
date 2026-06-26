@@ -7,12 +7,12 @@ import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/lib/supabase-client';
 import {
   DEFAULT_THEME,
-  resolveDaisyThemeId,
-  getUnifiedTheme,
   migrateGuestThemePrefs,
   type ThemeId,
 } from '@/lib/theme-config';
 import ThemePicker from '@/components/ThemePicker';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 import {
   DEFAULT_TEMPERATURE_UNIT,
@@ -40,6 +40,8 @@ interface ProfileEdit extends Profile {
 
 export default function ProfileEditPage() {
   const router = useRouter();
+  const { refreshProfile } = useProfileContext();
+  const { setPreviewThemeId, clearPreview } = useTheme();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [profile, setProfile] = useState<ProfileEdit | null>(null);
   const [loading, setLoading] = useState(true);
@@ -246,6 +248,9 @@ export default function ProfileEditPage() {
       // Update description state to show censored version
       setDescription(censoredDescription);
       
+      await refreshProfile();
+      clearPreview();
+      
       // Dispatch event to notify header (and other components) that profile was updated
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       
@@ -259,30 +264,14 @@ export default function ProfileEditPage() {
     }
   };
 
-  const getCurrentThemeMode = (): 'light' | 'dark' => {
-    if (typeof window === 'undefined') return 'light';
-    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
-    if (savedThemeMode) return savedThemeMode;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-
-  const applyThemePreview = (themeId: ThemeId, mode?: 'light' | 'dark') => {
-    const resolvedMode = mode ?? getCurrentThemeMode();
-    const daisyId = resolveDaisyThemeId(themeId, resolvedMode);
-    const unified = getUnifiedTheme(themeId);
-    document.documentElement.setAttribute('data-theme', daisyId);
-    document.documentElement.setAttribute('data-theme-mode', resolvedMode);
-    localStorage.setItem('guest-theme', themeId);
-    if (unified) {
-      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[resolvedMode]);
-      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[resolvedMode]));
-    }
-  };
-
   const handleSelectTheme = (themeId: ThemeId) => {
     setSelectedTheme(themeId);
-    applyThemePreview(themeId);
+    setPreviewThemeId(themeId);
   };
+
+  useEffect(() => {
+    return () => clearPreview();
+  }, [clearPreview]);
 
   /**
    * Initialize: Check auth and fetch data
@@ -320,7 +309,7 @@ export default function ProfileEditPage() {
         setSelectedTemperatureUnit(defaultTempUnit);
         setNutritionEnabled(userProfile.nutrition_estimation_enabled === true);
 
-        applyThemePreview(savedTheme);
+        setPreviewThemeId(savedTheme);
       } catch (err) {
         console.error('Error initializing profile page:', err);
       } finally {

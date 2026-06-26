@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabaseClient } from '@/lib/supabase-client';
 import { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
+import { useProfileContext } from '@/contexts/ProfileContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -14,59 +14,12 @@ interface BeforeInstallPromptEvent extends Event {
 const PWA_INSTALL_DISMISSED_KEY = 'pwa-install-dismissed';
 
 export default function Footer() {
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { user } = useProfileContext();
+  const { mode } = useTheme();
 
   // PWA install prompt state - hint only shows once the browser offers install
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installHintVisible, setInstallHintVisible] = useState(false);
-
-  useEffect(() => {
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event: string, session: Session | null) => {
-      setUser(session?.user ?? null);
-    });
-
-    // Get initial theme mode from localStorage or system preference
-    const getSystemThemePreference = (): 'light' | 'dark' => {
-      if (typeof window === 'undefined') return 'light';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    };
-    
-    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
-    const initialThemeMode = savedThemeMode || getSystemThemePreference();
-    setTheme(initialThemeMode);
-
-    // Listen for theme mode changes via data-theme-mode attribute
-    const observer = new MutationObserver(() => {
-      const currentThemeMode = document.documentElement.getAttribute('data-theme-mode') as 'light' | 'dark' | null;
-      if (currentThemeMode) {
-        setTheme(currentThemeMode);
-      }
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme-mode']
-    });
-
-    // Also listen for localStorage changes (when theme is toggled in Header)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'theme-mode' && e.newValue) {
-        setTheme(e.newValue as 'light' | 'dark');
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      subscription.unsubscribe();
-      observer.disconnect();
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
 
   /**
    * Capture the install prompt so we can offer an "install to use offline" hint,
@@ -144,7 +97,7 @@ export default function Footer() {
                 aria-label="Buy Me a Coffee"
               >
                 <div className="w-6 h-6 relative flex items-center justify-center">
-                  {theme === 'light' ? (
+                  {mode === 'light' ? (
                     <Image
                       src="/BuyMeACoffee_Light.png"
                       alt="Buy Me a Coffee"
@@ -206,4 +159,3 @@ export default function Footer() {
     </footer>
   );
 }
-

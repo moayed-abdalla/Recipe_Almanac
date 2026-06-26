@@ -14,45 +14,25 @@
  * - Theme toggle (light/dark mode)
  * 
  * This is a Client Component because it needs to:
- * - Access localStorage for theme persistence
- * - Listen to auth state changes
- * - Handle user interactions
+ * - Handle user interactions and auth actions
+ * - Toggle light/dark mode via ThemeProvider
  */
 
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabaseClient } from '@/lib/supabase-client';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import {
-  DEFAULT_THEME,
-  resolveDaisyThemeId,
-  getUnifiedTheme,
-  migrateGuestThemePrefs,
-  type ThemeId,
-} from '@/lib/theme-config';
-import type { Profile } from '@/types';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Header() {
   const { user, profile } = useProfileContext();
+  const { mode, toggleMode } = useTheme();
 
   // Online/offline state - drives the "Offline" pill
   const [isOffline, setIsOffline] = useState(false);
-
-  // Theme state - controls light/dark mode
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  /** Mirrors `theme` for callbacks that must not read a stale closure (auth, profile events). */
-  const themeRef = useRef<'light' | 'dark'>(theme);
-  /** Skip first run of applyTheme sync: init effect applies first; otherwise stale 'light' overwrites. */
-  const applyThemeSyncReadyRef = useRef(false);
-  /** Latest profile for async handlers (system theme change). */
-  const profileRef = useRef<Profile | null>(null);
-
-  useEffect(() => {
-    profileRef.current = profile;
-  }, [profile]);
 
   /**
    * Track network connectivity so we can surface an "Offline" indicator.
@@ -69,158 +49,6 @@ export default function Header() {
   }, []);
 
   const supabase = supabaseClient;
-
-  /**
-   * Detect system theme preference
-   */
-  const getSystemThemePreference = (): 'light' | 'dark' => {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-
-  /**
-   * Resolve the unified theme ID from profile or guest localStorage.
-   * Migrates old split guest-light-theme / guest-dark-theme keys on first call.
-   */
-  const getUnifiedThemeId = useCallback((profileData: Profile | null): ThemeId => {
-    const guestTheme = localStorage.getItem('guest-theme') as ThemeId | null;
-    return profileData?.default_theme || guestTheme || DEFAULT_THEME;
-  }, []);
-
-  /**
-   * Apply theme to document and inject CSS custom properties for icon colorization.
-   */
-  const applyTheme = useCallback((mode: 'light' | 'dark', profileData: Profile | null) => {
-    const unifiedId = getUnifiedThemeId(profileData);
-    const daisyId = resolveDaisyThemeId(unifiedId, mode);
-    const unified = getUnifiedTheme(unifiedId);
-
-    document.documentElement.setAttribute('data-theme', daisyId);
-    document.documentElement.setAttribute('data-theme-mode', mode);
-
-    if (unified) {
-      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[mode]);
-      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[mode]));
-    }
-  }, [getUnifiedThemeId]);
-
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
-
-  /**
-   * Initialize theme mode from localStorage / system (profile themes come from ProfileProvider).
-   * Also migrates any old guest-light-theme / guest-dark-theme keys.
-   */
-  useEffect(() => {
-    try {
-      migrateGuestThemePrefs();
-      const systemPreference = getSystemThemePreference();
-      const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
-      const initialThemeMode = savedThemeMode || systemPreference;
-
-      themeRef.current = initialThemeMode;
-      setTheme(initialThemeMode);
-      applyTheme(initialThemeMode, null);
-    } catch (error) {
-      console.error('Error initializing header:', error);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time theme boot; profile applied in sync effect
-  }, []);
-
-  /**
-   * Keep header toggle in sync when theme mode changes elsewhere (e.g. register page preview)
-   */
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const currentThemeMode = document.documentElement.getAttribute('data-theme-mode') as 'light' | 'dark' | null;
-      if (currentThemeMode && currentThemeMode !== themeRef.current) {
-        themeRef.current = currentThemeMode;
-        setTheme(currentThemeMode);
-      }
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme-mode'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  /**
-   * System color-scheme changes (only when user has not pinned light/dark in localStorage)
-   */
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      const savedThemeMode = localStorage.getItem('theme-mode');
-      if (!savedThemeMode) {
-        const newMode = e.matches ? 'dark' : 'light';
-        themeRef.current = newMode;
-        setTheme(newMode);
-        applyTheme(newMode, profileRef.current);
-      }
-    };
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, [applyTheme]);
-
-  /**
-   * Update favicon based on current theme mode
-   */
-  const updateFavicon = (currentThemeMode: 'light' | 'dark') => {
-    try {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = currentThemeMode === 'dark' ? '/favicon_dark.ico' : '/favicon_light.ico';
-    } catch (error) {
-      console.error('Error updating favicon:', error);
-    }
-  };
-
-  /**
-   * Update favicon when theme mode changes
-   */
-  useEffect(() => {
-    updateFavicon(theme);
-  }, [theme]);
-
-  /**
-   * Apply saved profile color themes when profile loads or updates.
-   * Does not depend on `theme`: mode changes from the header toggle or from
-   * register/edit preview already set `data-theme` on the document — re-applying
-   * here on every mode change would overwrite unsaved preview selections with
-   * the user's saved defaults.
-   */
-  useEffect(() => {
-    if (!applyThemeSyncReadyRef.current) {
-      applyThemeSyncReadyRef.current = true;
-      return;
-    }
-    applyTheme(themeRef.current, profile);
-  }, [profile, applyTheme]);
-
-  /**
-   * Toggle between light and dark theme mode
-   * Saves preference to localStorage for persistence
-   */
-  const toggleTheme = () => {
-    try {
-      const newThemeMode = theme === 'light' ? 'dark' : 'light';
-      themeRef.current = newThemeMode;
-      setTheme(newThemeMode);
-      localStorage.setItem('theme-mode', newThemeMode);
-      applyTheme(newThemeMode, profile);
-      updateFavicon(newThemeMode);
-    } catch (error) {
-      console.error('Error toggling theme:', error);
-    }
-  };
 
   return (
     <header className="site-header navbar bg-base-100 shadow-lg border-b border-base-300 sticky top-0 z-50 min-h-14 h-auto py-1 px-3 sm:px-4">
@@ -295,11 +123,11 @@ export default function Header() {
           </Link>
           {/* Theme Toggle */}
           <button
-            onClick={toggleTheme}
+            onClick={toggleMode}
             className="btn btn-ghost btn-circle"
             aria-label="Toggle theme"
           >
-            {theme === 'light' ? (
+            {mode === 'light' ? (
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
               </svg>

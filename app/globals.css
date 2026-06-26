@@ -6,7 +6,7 @@
 
 /* Theme color variables for image colorization.
    --theme-image-color and --theme-bg-opacity are injected at runtime
-   by applyTheme() in Header.tsx from the unified theme config.
+   by applyAppTheme() in lib/theme-config.ts (via ThemeProvider).
    The defaults below match the Tangerine light theme. */
 :root {
   --theme-image-color: #CC4A00;

@@ -96,14 +96,18 @@ export default function RootLayout({
       <head>
         <Script id="theme-boot" strategy="beforeInteractive">
           {`(function(){try{
+            var VALID={'tangerine':1,'salt-pepper':1,'ice':1,'coffee':1,'cherry':1,'grape':1,'banana':1,'olive':1,'mojito':1,'pb-j':1,'watermelon':1,'avocado':1};
+            function validId(id){return id&&VALID[id];}
             var mode=localStorage.getItem('theme-mode')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-            var t=localStorage.getItem('guest-theme');
-            if(!t){
+            if(mode!=='light'&&mode!=='dark')mode='light';
+            var t=sessionStorage.getItem('theme-preview-id');
+            if(!validId(t))t=localStorage.getItem('guest-theme');
+            if(!validId(t)){
               var ol=localStorage.getItem('guest-light-theme');
               var od=localStorage.getItem('guest-dark-theme');
               if(ol||od){localStorage.removeItem('guest-light-theme');localStorage.removeItem('guest-dark-theme');}
-              t='tangerine';
-              localStorage.setItem('guest-theme',t);
+              t=validId(localStorage.getItem('guest-theme'))?localStorage.getItem('guest-theme'):'tangerine';
+              if(!localStorage.getItem('guest-theme'))localStorage.setItem('guest-theme',t);
             }
             document.documentElement.setAttribute('data-theme',t+'-'+mode);
             document.documentElement.setAttribute('data-theme-mode',mode);

@@ -12,12 +12,12 @@ import {
 } from '@/lib/validation';
 import {
   DEFAULT_THEME,
-  resolveDaisyThemeId,
-  getUnifiedTheme,
+  readGuestThemeId,
   migrateGuestThemePrefs,
   type ThemeId,
 } from '@/lib/theme-config';
 import ThemePicker from '@/components/ThemePicker';
+import { useTheme } from '@/contexts/ThemeContext';
 import { DEFAULT_UNIT, type UnitValue } from '@/lib/unit-config';
 import {
   DEFAULT_TEMPERATURE_UNIT,
@@ -27,11 +27,14 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { setPreviewThemeId, clearPreview, applyTheme } = useTheme();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(DEFAULT_THEME);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(
+    () => readGuestThemeId() ?? DEFAULT_THEME
+  );
   const [selectedUnit, setSelectedUnit] = useState<UnitValue>(DEFAULT_UNIT);
   const [selectedTemperatureUnit, setSelectedTemperatureUnit] =
     useState<TemperatureUnitValue>(DEFAULT_TEMPERATURE_UNIT);
@@ -40,47 +43,18 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const getCurrentThemeMode = (): 'light' | 'dark' => {
-    if (typeof window === 'undefined') return 'light';
-    const savedThemeMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | null;
-    if (savedThemeMode) return savedThemeMode;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-
-  const updateFavicon = (mode: 'light' | 'dark') => {
-    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = mode === 'dark' ? '/favicon_dark.ico' : '/favicon_light.ico';
-  };
-
-  const applyThemePreview = (themeId: ThemeId, mode: 'light' | 'dark') => {
-    const daisyId = resolveDaisyThemeId(themeId, mode);
-    const unified = getUnifiedTheme(themeId);
-    document.documentElement.setAttribute('data-theme', daisyId);
-    document.documentElement.setAttribute('data-theme-mode', mode);
-    localStorage.setItem('theme-mode', mode);
-    localStorage.setItem('guest-theme', themeId);
-    if (unified) {
-      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[mode]);
-      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[mode]));
-    }
-    updateFavicon(mode);
-  };
-
   const handleSelectTheme = (themeId: ThemeId) => {
     setSelectedTheme(themeId);
-    const mode = getCurrentThemeMode();
-    applyThemePreview(themeId, mode);
+    setPreviewThemeId(themeId);
+    applyTheme({ persistGuestTheme: themeId });
   };
 
   useEffect(() => {
     migrateGuestThemePrefs();
-    const mode = getCurrentThemeMode();
-    applyThemePreview(selectedTheme, mode);
+    const initialTheme = readGuestThemeId() ?? DEFAULT_THEME;
+    setPreviewThemeId(initialTheme);
+    applyTheme({ persistGuestTheme: initialTheme });
+    return () => clearPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- apply guest defaults once on mount
   }, []);
 

@@ -576,9 +576,139 @@ export function getUnifiedTheme(id: ThemeId): UnifiedThemeDefinition | undefined
   return UNIFIED_THEMES.find(t => t.id === id);
 }
 
+/** sessionStorage key for live theme preview on register / edit-profile pages */
+export const THEME_PREVIEW_STORAGE_KEY = 'theme-preview-id';
+
+const THEME_ID_SET = new Set<string>(UNIFIED_THEMES.map((t) => t.id));
+
+/** Validate a string from localStorage / sessionStorage as a ThemeId. */
+export function isThemeId(value: string | null | undefined): value is ThemeId {
+  return typeof value === 'string' && THEME_ID_SET.has(value);
+}
+
+/** Read guest-theme from localStorage when valid. */
+export function readGuestThemeId(): ThemeId | null {
+  try {
+    const guest = localStorage.getItem('guest-theme');
+    return isThemeId(guest) ? guest : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Read session preview override when valid. */
+export function getThemePreviewId(): ThemeId | null {
+  try {
+    const preview = sessionStorage.getItem(THEME_PREVIEW_STORAGE_KEY);
+    return isThemeId(preview) ? preview : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setThemePreviewId(id: ThemeId | null): void {
+  try {
+    if (id) {
+      sessionStorage.setItem(THEME_PREVIEW_STORAGE_KEY, id);
+    } else {
+      sessionStorage.removeItem(THEME_PREVIEW_STORAGE_KEY);
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+export function clearThemePreview(): void {
+  setThemePreviewId(null);
+}
+
+type ThemeProfile = { default_theme?: ThemeId | null } | null | undefined;
+
+/**
+ * Resolve the active unified theme ID.
+ * Priority: session preview > profile default > guest localStorage > DEFAULT_THEME.
+ */
+export function resolveAppThemeId(profile?: ThemeProfile): ThemeId {
+  const preview = getThemePreviewId();
+  if (preview) return preview;
+
+  if (profile?.default_theme && isThemeId(profile.default_theme)) {
+    return profile.default_theme;
+  }
+
+  const guest = readGuestThemeId();
+  if (guest) return guest;
+
+  return DEFAULT_THEME;
+}
+
+export function getSystemThemeMode(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export function getStoredThemeMode(): 'light' | 'dark' | null {
+  try {
+    const saved = localStorage.getItem('theme-mode');
+    return saved === 'light' || saved === 'dark' ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+export function resolveThemeMode(): 'light' | 'dark' {
+  return getStoredThemeMode() ?? getSystemThemeMode();
+}
+
+export interface ApplyAppThemeOptions {
+  mode: 'light' | 'dark';
+  profile?: ThemeProfile;
+  /** When true, persist mode to localStorage (header toggle). */
+  persistMode?: boolean;
+  /** When set, also persist guest-theme (register flow). */
+  persistGuestTheme?: ThemeId;
+}
+
+/**
+ * Single DOM writer for DaisyUI theme + runtime CSS custom properties.
+ */
+export function applyAppTheme({
+  mode,
+  profile,
+  persistMode = false,
+  persistGuestTheme,
+}: ApplyAppThemeOptions): ThemeId {
+  const unifiedId = resolveAppThemeId(profile);
+  const daisyId = resolveDaisyThemeId(unifiedId, mode);
+  const unified = getUnifiedTheme(unifiedId);
+
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', daisyId);
+    document.documentElement.setAttribute('data-theme-mode', mode);
+
+    if (unified) {
+      document.documentElement.style.setProperty('--theme-image-color', unified.imageColor[mode]);
+      document.documentElement.style.setProperty('--theme-bg-opacity', String(unified.bgOpacity[mode]));
+    }
+  }
+
+  try {
+    if (persistMode) {
+      localStorage.setItem('theme-mode', mode);
+    }
+    if (persistGuestTheme) {
+      localStorage.setItem('guest-theme', persistGuestTheme);
+    }
+  } catch {
+    // localStorage unavailable
+  }
+
+  return unifiedId;
+}
+
 /**
  * Migrate old guest localStorage keys to the new single 'guest-theme' key.
- * Always returns 'tangerine' (the reset default) and clears old keys.
+ * Does not clobber an existing valid guest-theme.
  */
 export function migrateGuestThemePrefs(): ThemeId {
   try {
@@ -588,10 +718,12 @@ export function migrateGuestThemePrefs(): ThemeId {
     if (hasOldKeys) {
       localStorage.removeItem('guest-light-theme');
       localStorage.removeItem('guest-dark-theme');
-      localStorage.setItem('guest-theme', 'tangerine');
+      if (!readGuestThemeId()) {
+        localStorage.setItem('guest-theme', DEFAULT_THEME);
+      }
     }
   } catch {
     // localStorage unavailable (SSR or private browsing)
   }
-  return 'tangerine';
+  return readGuestThemeId() ?? DEFAULT_THEME;
 }
