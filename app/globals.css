@@ -406,7 +406,7 @@ i, em, .italic {
   }
 
   /* Force themed colours/backgrounds (title, headings, kitchen-icon layer) to
-     render — `print-color-adjust` is not inherited, so apply to descendants. */
+     render - `print-color-adjust` is not inherited, so apply to descendants. */
   .print-page,
   .print-page * {
     -webkit-print-color-adjust: exact !important;
