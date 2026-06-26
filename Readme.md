@@ -100,8 +100,7 @@ One of Recipe Almanac's standout features is intelligent unit conversion:
 Recipe_Almanac/
 ├── app/                              # Next.js App Router
 │   ├── api/
-│   │   ├── debug-auth/               # Auth debugging route
-│   │   └── recipes/                  # Recipes API + view counter
+│   │   └── recipes/[id]/view/        # View-count increment endpoint
 │   ├── auth/callback/                # Supabase OAuth callback
 │   ├── almanac/                      # Signed-in user's saved recipes
 │   ├── feedback/                     # User feedback

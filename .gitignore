@@ -27,7 +27,6 @@ desktop.ini
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-debug-console-script.js
 
 # local env files
 .env*.local
@@ -53,5 +52,3 @@ next-env.d.ts
 /client/.vite
 /client/dist
 /server/uploads
-
-desktop.ini

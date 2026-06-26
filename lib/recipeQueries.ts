@@ -6,7 +6,7 @@
  * (method_steps, notes, method_step_image_urls).
  */
 
-/** Grids, feed, search, favorites — HomePage, profile grids, recipeService, /api/recipes */
+/** Grids, feed, search, favorites — HomePage, profile grids, recipeService */
 export const RECIPE_CARD_SELECT = `
   id,
   slug,
