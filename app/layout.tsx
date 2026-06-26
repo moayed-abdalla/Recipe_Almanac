@@ -12,7 +12,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Recipe Almanac — Free Digital Recipe Book',
+    default: 'Recipe Almanac - Free Digital Recipe Book',
     template: '%s | Recipe Almanac',
   },
   description:
