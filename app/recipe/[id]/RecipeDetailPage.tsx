@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase';
 import { getRecipeBySlug } from '@/lib/recipeServer';
+import { INGREDIENT_SELECT } from '@/lib/recipeQueries';
 import RecipePageClient from './RecipePageClient';
 import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
 import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
@@ -89,7 +90,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     await Promise.all([
       supabase
         .from('ingredients')
-        .select('*')
+        .select(INGREDIENT_SELECT)
         .eq('recipe_id', typedRecipe.id)
         .order('order_index'),
       user

@@ -1,4 +1,6 @@
 import { createServerClient } from '@/lib/supabase';
+import { getRecipeBySlug } from '@/lib/recipeServer';
+import { INGREDIENT_SELECT } from '@/lib/recipeQueries';
 import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
 import { decodeUnitOverrides, parseMultiplier } from '@/lib/printParams';
 import PrintView from './PrintView';
@@ -29,26 +31,12 @@ function PrintError({ message }: { message: string }) {
 }
 
 export default async function RecipePrintPage({ params, searchParams }: PrintPageProps) {
-  const supabase = await createServerClient();
+  const typedRecipe = await getRecipeBySlug(params.id);
 
-  // Fetch recipe by slug (same pattern as the main recipe detail page).
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .select(`
-      *,
-      profiles:user_id (
-        username,
-        avatar_url
-      )
-    `)
-    .eq('slug', params.id)
-    .single();
-
-  if (error || !recipe) {
+  if (!typedRecipe) {
     return <PrintError message="Recipe not found" />;
   }
 
-  const typedRecipe = recipe as RecipeWithProfile;
   const owner: Profile | null = Array.isArray(typedRecipe.profiles)
     ? typedRecipe.profiles[0] || null
     : typedRecipe.profiles;
@@ -57,7 +45,8 @@ export default async function RecipePrintPage({ params, searchParams }: PrintPag
     return <PrintError message="Recipe owner information is incomplete" />;
   }
 
-  // Respect privacy: private recipes are only printable by their owner.
+  const supabase = await createServerClient();
+
   if (!typedRecipe.is_public) {
     const {
       data: { user },
@@ -69,10 +58,9 @@ export default async function RecipePrintPage({ params, searchParams }: PrintPag
     }
   }
 
-  // Fetch ingredients in display order.
   const { data: rawIngredients } = await supabase
     .from('ingredients')
-    .select('*')
+    .select(INGREDIENT_SELECT)
     .eq('recipe_id', typedRecipe.id)
     .order('order_index');
   const ingredients = (rawIngredients || []) as Ingredient[];
@@ -95,7 +83,7 @@ export default async function RecipePrintPage({ params, searchParams }: PrintPag
 
   return (
     <PrintView
-      recipe={typedRecipe}
+      recipe={typedRecipe as RecipeWithProfile}
       ingredients={ingredients}
       ownerUsername={owner.username}
       multiplier={multiplier}

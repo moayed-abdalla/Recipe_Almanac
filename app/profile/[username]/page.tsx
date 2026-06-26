@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { createServerClient } from '@/lib/supabase';
+import { getProfileByUsername } from '@/lib/profileServer';
+import { RECIPE_CARD_SELECT } from '@/lib/recipeQueries';
 import { notFound } from 'next/navigation';
 import { normalizeRecipes } from '@/utils/recipeNormalizer';
 import type {
@@ -19,16 +21,9 @@ interface ProfilePageProps {
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recipealmanac.xyz';
-  const supabase = await createServerClient();
   const decodedUsername = decodeURIComponent(params.username);
 
-  const { data: rawProfile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', decodedUsername)
-    .single();
-
-  const profile = rawProfile as Profile | null;
+  const profile = await getProfileByUsername(decodedUsername);
 
   if (!profile) {
     return { title: 'Profile Not Found' };
@@ -91,18 +86,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const decodedUsername = decodeURIComponent(params.username);
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', decodedUsername)
-    .single();
+  const typedProfile = await getProfileByUsername(decodedUsername);
 
-  if (profileError || !profile) {
-    console.error('Profile fetch error:', profileError);
+  if (!typedProfile) {
     notFound();
   }
-
-  const typedProfile = profile as Profile;
 
   // Resolve the viewing user (if any) so we can decide whether to show the
   // Follow button and whether they already follow this profile.
@@ -119,20 +107,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   ] = await Promise.all([
     supabase
       .from('recipes')
-      .select(`
-      id,
-      slug,
-      title,
-      image_url,
-      description,
-      view_count,
-      favorite_count:saved_recipes(count),
-      tags,
-      is_public,
-      profiles:user_id (
-        username
-      )
-    `)
+      .select(RECIPE_CARD_SELECT)
       .eq('user_id', typedProfile.id)
       .eq('is_public', true)
       .order('created_at', { ascending: false }),
@@ -206,20 +181,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
       const { data: favoriteRecipesData, error: favoriteRecipesError } = await supabase
         .from('recipes')
-        .select(`
-          id,
-          slug,
-          title,
-          image_url,
-          description,
-          view_count,
-          favorite_count:saved_recipes(count),
-          tags,
-          is_public,
-          profiles:user_id (
-            username
-          )
-        `)
+        .select(RECIPE_CARD_SELECT)
         .in('id', recipeIds)
         .eq('is_public', true)
         .order('created_at', { ascending: false });

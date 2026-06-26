@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
+import { RECIPE_CARD_SELECT } from '@/lib/recipeQueries';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,15 +12,9 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('recipes')
-      .select(`
-        *,
-        profiles:user_id (
-          username,
-          avatar_url
-        )
-      `)
+      .select(RECIPE_CARD_SELECT)
       .eq('is_public', true)
-      .order('created_at', { ascending: false }) // COMMENTED OUT: Changed from view_count to created_at
+      .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     // If search term provided, use text search

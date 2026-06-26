@@ -11,6 +11,7 @@ import {
 } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/lib/supabase-client';
+import { PROFILE_SELECT } from '@/lib/recipeQueries';
 import type { Profile } from '@/types';
 
 type ProfileContextValue = {
@@ -39,7 +40,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const fetchProfileRow = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabaseClient
       .from('profiles')
-      .select('*')
+      .select(PROFILE_SELECT)
       .eq('id', userId)
       .single();
 

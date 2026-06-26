@@ -13,6 +13,7 @@
  */
 
 import { createServerClient } from '@/lib/supabase';
+import { RECIPE_CARD_SELECT } from '@/lib/recipeQueries';
 import HomePageClient from '@/components/HomePageClient';
 
 interface Recipe {
@@ -69,26 +70,7 @@ export default async function HomePage() {
 
     const { data: recipes, error } = await supabase
       .from('recipes')
-      .select(`
-        id,
-        slug,
-        title,
-        image_url,
-        description,
-        view_count,
-        favorite_count:saved_recipes(count),
-        recipe_rating_stats (
-          rating_count,
-          average_rating
-        ),
-        created_at,
-        tags,
-        prep_time_minutes,
-        cook_time_minutes,
-        profiles:user_id (
-          username
-        )
-      `)
+      .select(RECIPE_CARD_SELECT)
       .eq('is_public', true)
       .order('view_count', { ascending: false });
 

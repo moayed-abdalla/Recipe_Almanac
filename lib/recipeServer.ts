@@ -8,6 +8,7 @@
 
 import { cache } from 'react';
 import { createServerClient } from '@/lib/supabase';
+import { RECIPE_FULL_SELECT } from '@/lib/recipeQueries';
 import type { RecipeWithProfile } from '@/types';
 
 export const getRecipeBySlug = cache(
@@ -15,15 +16,7 @@ export const getRecipeBySlug = cache(
     const supabase = await createServerClient();
     const { data, error } = await supabase
       .from('recipes')
-      .select(
-        `
-        *,
-        profiles:user_id (
-          username,
-          avatar_url
-        )
-      `
-      )
+      .select(RECIPE_FULL_SELECT)
       .eq('slug', slug)
       .single();
 

@@ -6,57 +6,12 @@
  */
 
 import { supabaseClient } from '@/lib/supabase-client';
+import {
+  RECIPE_CARD_SELECT,
+  RECIPE_CARD_SELECT_WITH_USER,
+} from '@/lib/recipeQueries';
 import { normalizeRecipes } from '@/utils/recipeNormalizer';
 import type { NormalizedRecipe, RecipeWithProfile } from '@/types';
-
-/**
- * Base recipe select query fields
- */
-const RECIPE_SELECT_FIELDS = `
-  id,
-  slug,
-  title,
-  image_url,
-  description,
-  view_count,
-  favorite_count:saved_recipes(count),
-  recipe_rating_stats (
-    rating_count,
-    average_rating
-  ),
-  tags,
-  is_public,
-  servings,
-  prep_time_minutes,
-  cook_time_minutes,
-  profiles:user_id (
-    username
-  )
-`;
-
-/** Same as RECIPE_SELECT_FIELDS but includes user_id (needed by feed filters). */
-const FEED_SELECT_FIELDS = `
-  id,
-  user_id,
-  slug,
-  title,
-  image_url,
-  description,
-  view_count,
-  favorite_count:saved_recipes(count),
-  recipe_rating_stats (
-    rating_count,
-    average_rating
-  ),
-  tags,
-  is_public,
-  servings,
-  prep_time_minutes,
-  cook_time_minutes,
-  profiles:user_id (
-    username
-  )
-`;
 
 const FEED_LIMIT = 50;
 
@@ -95,7 +50,7 @@ async function fetchFavoriteRecipesLegacy(userId: string): Promise<NormalizedRec
   const recipeIds = savedData.map((item: { recipe_id: string }) => item.recipe_id);
   const { data, error } = await supabaseClient
     .from('recipes')
-    .select(RECIPE_SELECT_FIELDS)
+    .select(RECIPE_CARD_SELECT)
     .in('id', recipeIds)
     .order('created_at', { ascending: false });
 
@@ -161,7 +116,7 @@ export async function fetchPublicRecipes(userId: string): Promise<NormalizedReci
   try {
     const { data, error } = await supabaseClient
       .from('recipes')
-      .select(RECIPE_SELECT_FIELDS)
+      .select(RECIPE_CARD_SELECT)
       .eq('user_id', userId)
       .eq('is_public', true)
       .order('created_at', { ascending: false });
@@ -189,7 +144,7 @@ export async function fetchPrivateRecipes(userId: string): Promise<NormalizedRec
   try {
     const { data, error } = await supabaseClient
       .from('recipes')
-      .select(RECIPE_SELECT_FIELDS)
+      .select(RECIPE_CARD_SELECT)
       .eq('user_id', userId)
       .eq('is_public', false)
       .order('created_at', { ascending: false });
@@ -217,7 +172,7 @@ export async function fetchAllPublicRecipes(limit: number = 50): Promise<Normali
   try {
     const { data, error } = await supabaseClient
       .from('recipes')
-      .select(RECIPE_SELECT_FIELDS)
+      .select(RECIPE_CARD_SELECT)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -262,7 +217,7 @@ export async function fetchFollowingFeed(userId: string): Promise<NormalizedReci
 
   const { data, error } = await supabaseClient
     .from('recipes')
-    .select(FEED_SELECT_FIELDS)
+    .select(RECIPE_CARD_SELECT_WITH_USER)
     .in('user_id', followeeIds)
     .eq('is_public', true)
     .order('created_at', { ascending: false })
@@ -332,7 +287,7 @@ export async function fetchTagFeed(
 
   const { data, error } = await supabaseClient
     .from('recipes')
-    .select(FEED_SELECT_FIELDS)
+    .select(RECIPE_CARD_SELECT_WITH_USER)
     .overlaps('tags', tags)
     .eq('is_public', true)
     .neq('user_id', excludeUserId)
@@ -355,7 +310,7 @@ export async function fetchTagFeed(
 export async function fetchRandomFeed(excludeUserId: string): Promise<NormalizedRecipe[]> {
   const { data, error } = await supabaseClient
     .from('recipes')
-    .select(FEED_SELECT_FIELDS)
+    .select(RECIPE_CARD_SELECT_WITH_USER)
     .eq('is_public', true)
     .neq('user_id', excludeUserId)
     .order('created_at', { ascending: false })

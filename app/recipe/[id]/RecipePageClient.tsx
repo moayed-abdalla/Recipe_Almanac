@@ -735,28 +735,12 @@ export default function RecipePageClient({
         return;
       }
 
-      // Fetch the original recipe with all its data
-      const { data: originalRecipe, error: fetchError } = await supabaseClient
-        .from('recipes')
-        .select('*, ingredients(*)')
-        .eq('id', recipe.id)
-        .single();
-
-      if (fetchError || !originalRecipe) {
-        console.error('Error fetching recipe:', fetchError);
-        alert('Failed to fetch recipe. Please try again.');
-        setForking(false);
-        return;
-      }
-
-      const forkIngredients = (originalRecipe.ingredients ?? []).map(
-        (ing: { name: string; display_amount: number }) => ({
-          name: ing.name,
-          amount: ing.display_amount,
-        })
-      );
+      const forkIngredients = ingredients.map((ing) => ({
+        name: ing.name,
+        amount: ing.display_amount,
+      }));
       const forkValidation = validateRecipePayload({
-        title: originalRecipe.title,
+        title: recipe.title,
         ingredients: forkIngredients,
       });
       if (!forkValidation.ok) {
@@ -765,32 +749,29 @@ export default function RecipePageClient({
         return;
       }
 
-      // Generate slug for forked recipe: username-recipe-title-forked-timestamp
-      // Convert username to lowercase first, then replace non-alphanumeric characters
       const usernameSlug = profile.username
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '_')
-        .replace(/(^_|_$)/g, ''); // Remove leading/trailing underscores
-      const recipeTitleSlug = originalRecipe.title
+        .replace(/(^_|_$)/g, '');
+      const recipeTitleSlug = recipe.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
       const forkedSlug = `${usernameSlug}-${recipeTitleSlug}-Copied-${Date.now()}`;
 
-      // Create a new recipe based on the original
       const { data: newRecipe, error: createError } = await supabaseClient
         .from('recipes')
         .insert({
           user_id: user.id,
-          title: `${originalRecipe.title} (Copied)`,
+          title: `${recipe.title} (Copied)`,
           slug: forkedSlug,
-          description: originalRecipe.description,
-          image_url: originalRecipe.image_url,
-          tags: originalRecipe.tags,
-          method_steps: originalRecipe.method_steps,
-          method_step_image_urls: originalRecipe.method_step_image_urls ?? [],
-          notes: originalRecipe.notes,
-          copied_from_recipe_id: originalRecipe.id,
+          description: recipe.description,
+          image_url: recipe.image_url,
+          tags: recipe.tags,
+          method_steps: recipe.method_steps,
+          method_step_image_urls: recipe.method_step_image_urls ?? [],
+          notes: recipe.notes,
+          copied_from_recipe_id: recipe.id,
           is_public: true,
         })
         .select()
@@ -803,9 +784,8 @@ export default function RecipePageClient({
         return;
       }
 
-      // Copy all ingredients to the new recipe
-      if (originalRecipe.ingredients && originalRecipe.ingredients.length > 0) {
-        const ingredientsData = originalRecipe.ingredients.map((ing: { name: string; amount_grams: number; unit: string; display_amount: number; order_index: number }) => ({
+      if (ingredients.length > 0) {
+        const ingredientsData = ingredients.map((ing) => ({
           recipe_id: newRecipe.id,
           name: ing.name,
           amount_grams: ing.amount_grams,
