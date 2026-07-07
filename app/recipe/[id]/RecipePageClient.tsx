@@ -359,6 +359,17 @@ export default function RecipePageClient({
   // Key: ingredient ID, Value: { originalIsVolume: boolean, currentIsVolume: boolean }
   const [unitWarnings, setUnitWarnings] = useState<Record<string, { originalIsVolume: boolean; currentIsVolume: boolean }>>({});
 
+  // Most recently selected unit when user converts an ingredient (session-only)
+  const [lastChangedUnit, setLastChangedUnit] = useState<string | null>(null);
+
+  const hasUnitOverrides = useMemo(
+    () =>
+      displayIngredients.some(
+        (ing) => (ingredientUnits[ing.id] ?? ing.unit) !== ing.unit
+      ),
+    [displayIngredients, ingredientUnits]
+  );
+
   /**
    * Initialize ingredient units and warnings
    */
@@ -380,6 +391,7 @@ export default function RecipePageClient({
     
     setIngredientUnits(initialUnits);
     setUnitWarnings(initialWarnings);
+    setLastChangedUnit(null);
   }, [ingredients]);
 
   /**
@@ -481,18 +493,12 @@ export default function RecipePageClient({
     const ingredient = ingredients.find(ing => ing.id === ingredientId);
     if (!ingredient) return;
 
-    const currentUnit = ingredientUnits[ingredientId] || ingredient.unit;
     const originalIsVolume = VOLUME_UNITS[ingredient.unit.toLowerCase()] !== undefined;
-    const currentIsVolume = VOLUME_UNITS[currentUnit.toLowerCase()] !== undefined;
     const newIsVolume = VOLUME_UNITS[newUnit.toLowerCase()] !== undefined;
+    const nextUnits = { ...ingredientUnits, [ingredientId]: newUnit };
 
-    // Update unit
-    setIngredientUnits(prev => ({
-      ...prev,
-      [ingredientId]: newUnit,
-    }));
+    setIngredientUnits(nextUnits);
 
-    // Update warning state if switching between volume and weight
     setUnitWarnings(prev => ({
       ...prev,
       [ingredientId]: {
@@ -500,6 +506,17 @@ export default function RecipePageClient({
         currentIsVolume: newIsVolume,
       },
     }));
+
+    if (newUnit !== ingredient.unit) {
+      setLastChangedUnit(newUnit);
+    } else {
+      const stillHasOverrides = ingredients.some(
+        (ing) => (nextUnits[ing.id] ?? ing.unit) !== ing.unit
+      );
+      if (!stillHasOverrides) {
+        setLastChangedUnit(null);
+      }
+    }
   };
 
   /**
@@ -632,6 +649,28 @@ export default function RecipePageClient({
       }
       return UNIT_OPTIONS.weight;
     }
+  };
+
+  const applyUnitToAll = () => {
+    if (!lastChangedUnit) return;
+
+    const nextUnits: Record<string, string> = { ...ingredientUnits };
+    const nextWarnings: Record<string, { originalIsVolume: boolean; currentIsVolume: boolean }> = {
+      ...unitWarnings,
+    };
+
+    displayIngredients.forEach((ingredient) => {
+      const available = getAvailableUnits(ingredient);
+      if (!available.includes(lastChangedUnit)) return;
+
+      nextUnits[ingredient.id] = lastChangedUnit;
+      const originalIsVolume = VOLUME_UNITS[ingredient.unit.toLowerCase()] !== undefined;
+      const newIsVolume = VOLUME_UNITS[lastChangedUnit.toLowerCase()] !== undefined;
+      nextWarnings[ingredient.id] = { originalIsVolume, currentIsVolume: newIsVolume };
+    });
+
+    setIngredientUnits(nextUnits);
+    setUnitWarnings(nextWarnings);
   };
 
   /**
@@ -1104,6 +1143,15 @@ export default function RecipePageClient({
             )}
           </div>
         </div>
+        {hasUnitOverrides && lastChangedUnit && (
+          <button
+            type="button"
+            onClick={applyUnitToAll}
+            className="btn btn-sm btn-outline mb-3 arial-font"
+          >
+            Apply to all
+          </button>
+        )}
         <ul className="space-y-3">
           {displayIngredients.map((ingredient, ingredientIndex) => {
             const { amount, unit, showWarning } = getDisplayAmount(ingredient);
