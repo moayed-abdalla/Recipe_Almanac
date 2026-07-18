@@ -956,11 +956,41 @@ export default function RecipePageClient({
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <circle
+                    cx="12"
+                    cy="18"
+                    r="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                  <circle
+                    cx="18"
+                    cy="6"
+                    r="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 12v3"
                   />
                 </svg>
               )}
