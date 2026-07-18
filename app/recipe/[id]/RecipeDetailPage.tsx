@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase';
 import { getRecipeBySlug } from '@/lib/recipeServer';
 import { INGREDIENT_SELECT } from '@/lib/recipeQueries';
+import { fetchRecipeRemixTree } from '@/lib/recipeRemixTree';
 import RecipePageClient from './RecipePageClient';
 import type { Profile, RecipeWithProfile, Ingredient } from '@/types';
 import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
@@ -85,8 +86,8 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   // Independent secondary reads run together instead of in a waterfall:
   // ingredients, the viewer's preferences, their favorite status, the
-  // recipe's rating summary, and copy attribution source.
-  const [ingredientsResult, viewerProfileResult, favoriteResult, ratingStatsResult, copySourceResult] =
+  // recipe's rating summary, copy attribution source, and remix lineage.
+  const [ingredientsResult, viewerProfileResult, favoriteResult, ratingStatsResult, copySourceResult, remixTreeNodes] =
     await Promise.all([
       supabase
         .from('ingredients')
@@ -114,6 +115,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         .eq('recipe_id', typedRecipe.id)
         .maybeSingle(),
       copySourcePromise,
+      fetchRecipeRemixTree(supabase, typedRecipe.id),
     ]);
 
   const ingredients = (ingredientsResult.data || []) as Ingredient[];
@@ -251,6 +253,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         nutritionEnabled={nutritionEnabled}
         preferredTemperatureUnit={preferredTemperatureUnit}
         copySource={copySource}
+        remixTreeNodes={remixTreeNodes}
       />
     </>
   );

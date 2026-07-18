@@ -57,6 +57,20 @@ export interface Recipe {
 }
 
 /**
+ * Node in a remix / fork lineage tree (from get_recipe_remix_tree RPC).
+ */
+export interface RecipeRemixTreeNode {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string | null;
+  username: string;
+  copied_from_recipe_id: string | null;
+  is_current: boolean;
+  is_truncated: boolean;
+}
+
+/**
  * Recipe with profile data (as returned from Supabase joins)
  */
 export interface RecipeWithProfile extends Recipe {

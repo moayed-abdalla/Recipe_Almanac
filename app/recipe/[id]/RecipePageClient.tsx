@@ -50,6 +50,10 @@ const NutritionPanel = dynamic(() => import('@/components/recipe/NutritionPanel'
   ssr: false,
   loading: () => <div className="skeleton mb-8 h-32 w-full rounded-lg" />,
 });
+const RecipeRemixTree = dynamic(() => import('@/components/recipe/RecipeRemixTree'), {
+  ssr: false,
+  loading: () => <div className="skeleton mb-8 h-[360px] w-full rounded-lg" />,
+});
 import { RecipeTimerContext } from '@/components/recipe/timerContext';
 import {
   fixSpecialCharacters,
@@ -59,6 +63,7 @@ import { encodeUnitOverrides } from '@/lib/printParams';
 import { validateRecipePayload } from '@/lib/validation';
 import RecipeCopyAttributionNote from '@/components/recipe/RecipeCopyAttributionNote';
 import type { RecipeCopySource } from '@/lib/recipeCopyAttribution';
+import type { RecipeRemixTreeNode } from '@/types';
 
 interface Ingredient {
   id: string;
@@ -108,6 +113,8 @@ interface RecipePageClientProps {
   /** null = signed out (show all temperature conversions). */
   preferredTemperatureUnit: 'C' | 'F' | null;
   copySource?: RecipeCopySource | null;
+  /** Full remix lineage from get_recipe_remix_tree; hide UI when ≤1 node. */
+  remixTreeNodes?: RecipeRemixTreeNode[];
 }
 
 // Available unit options for conversion
@@ -127,6 +134,7 @@ export default function RecipePageClient({
   nutritionEnabled,
   preferredTemperatureUnit,
   copySource = null,
+  remixTreeNodes = [],
 }: RecipePageClientProps) {
   const router = useRouter();
 
@@ -1318,6 +1326,8 @@ export default function RecipePageClient({
           </ol>
         </div>
       )}
+
+      {remixTreeNodes.length > 1 && <RecipeRemixTree nodes={remixTreeNodes} />}
 
       {/* Ratings & Reviews Section */}
       <RecipeRatings

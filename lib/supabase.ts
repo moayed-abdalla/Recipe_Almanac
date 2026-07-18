@@ -301,6 +301,19 @@ export type Database = {
           rank: number;
         }>;
       };
+      get_recipe_remix_tree: {
+        Args: { p_recipe_id: string };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          title: string;
+          image_url: string | null;
+          username: string;
+          copied_from_recipe_id: string | null;
+          is_current: boolean;
+          is_truncated: boolean;
+        }>;
+      };
     };
   };
 };
