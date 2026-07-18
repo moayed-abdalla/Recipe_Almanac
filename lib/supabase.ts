@@ -185,6 +185,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      recipe_views: {
+        Row: {
+          id: string;
+          recipe_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          recipe_id: string;
+          viewed_at?: string;
+        };
+        Update: {
+          id?: string;
+          recipe_id?: string;
+          viewed_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -244,6 +262,41 @@ export type Database = {
           cook_time_minutes: number | null;
           tags: string[];
           username: string;
+          score: number;
+          rank: number;
+        }>;
+      };
+      get_rising_recipes: {
+        Args: { p_period?: string; p_limit?: number };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          title: string;
+          image_url: string | null;
+          description: string | null;
+          view_count: number;
+          favorite_count: number;
+          rating_count: number;
+          average_rating: number;
+          prep_time_minutes: number | null;
+          cook_time_minutes: number | null;
+          tags: string[];
+          username: string;
+          score: number;
+          rank: number;
+        }>;
+      };
+      get_rising_creators: {
+        Args: { p_period?: string; p_limit?: number };
+        Returns: Array<{
+          user_id: string;
+          username: string;
+          avatar_url: string | null;
+          recipe_count: number;
+          view_count: number;
+          favorite_count: number;
+          rating_count: number;
+          average_rating: number;
           score: number;
           rank: number;
         }>;
