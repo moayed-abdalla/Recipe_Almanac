@@ -94,10 +94,10 @@ export default function RecipeCard({
                 </span>
               </>
             )}
-            <span className="text-xs sm:text-sm opacity-60">•</span>
-            <span className="text-xs sm:text-sm opacity-60">{viewCount.toLocaleString()} views</span>
-            <span className="text-xs sm:text-sm opacity-60">•</span>
-            <span className="text-xs sm:text-sm opacity-60">{favoriteCount.toLocaleString()} favorites</span>
+            <span className="hidden sm:inline text-xs sm:text-sm opacity-60">•</span>
+            <span className="hidden sm:inline text-xs sm:text-sm opacity-60">{viewCount.toLocaleString()} views</span>
+            <span className="hidden sm:inline text-xs sm:text-sm opacity-60">•</span>
+            <span className="hidden sm:inline text-xs sm:text-sm opacity-60">{favoriteCount.toLocaleString()} favorites</span>
             {showTotalTime && (
               <>
                 <span className="text-xs sm:text-sm opacity-60">•</span>

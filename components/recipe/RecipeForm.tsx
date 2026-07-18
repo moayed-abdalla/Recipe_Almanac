@@ -971,71 +971,77 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           <SortableFormList
             items={ingredients}
             onReorder={setIngredients}
-            itemClassName="flex flex-row flex-wrap items-center gap-2 mb-2 group w-full min-w-0"
+            itemClassName="flex flex-row flex-wrap items-center gap-2 mb-3 group w-full min-w-0"
             gripLabel={(index) => `Reorder ingredient ${index + 1}`}
             renderItem={(ing, index, handle) => {
               const isOtherUnit = ing.unit === 'other';
               return (
             <>
               {handle}
-              <input
-                type="number"
-                step="0.25"
-                className="input input-bordered input-sm w-[4.25rem] flex-shrink-0"
-                placeholder="Amt"
-                value={ing.amount || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
-              />
-              <select
-                className={`select select-bordered select-sm flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'w-[5.25rem]'}`}
-                value={ing.unit}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
-                aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
-              >
-                <optgroup label="Weight - Metric">
-                  <option value="g">g (grams)</option>
-                  <option value="kg">kg (kilograms)</option>
-                </optgroup>
-                <optgroup label="Weight - Imperial">
-                  <option value="oz">oz (ounces)</option>
-                  <option value="lb">lb (pounds)</option>
-                </optgroup>
-                <optgroup label="Volume">
-                  <option value="cups">cups</option>
-                  <option value="tbsp">tbsp (tablespoon)</option>
-                  <option value="tsp">tsp (teaspoon)</option>
-                  <option value="ml">ml (milliliters)</option>
-                  <option value="fl oz">fl oz (fluid ounces)</option>
-                  <option value="l">l (liters)</option>
-                </optgroup>
-                <optgroup label="Other">
-                  <option value="other">Other</option>
-                </optgroup>
-              </select>
-              <input
-                type="text"
-                id={`ingredient-name-${ing.id}`}
-                className="input input-bordered input-sm flex-1 min-w-[5rem]"
-                placeholder="Ingredient name"
-                value={ing.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addIngredient();
-                  }
-                }}
-              />
-              {ingredients.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(index)}
-                  className="btn btn-lg btn-ghost btn-square text-3xl leading-none flex-shrink-0"
-                  aria-label="Remove ingredient"
-                >
-                  ×
-                </button>
-              )}
+              <div className="flex flex-1 flex-col gap-2 min-w-0 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex items-center gap-2 w-full sm:w-auto sm:contents">
+                  <input
+                    type="number"
+                    step="0.25"
+                    className="input input-bordered input-sm w-[4.25rem] flex-shrink-0"
+                    placeholder="Amt"
+                    value={ing.amount || ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'amount', parseFloat(e.target.value) || 0)}
+                  />
+                  <select
+                    className={`select select-bordered select-sm flex-shrink-0 ${isOtherUnit ? 'w-10 min-w-[2.5rem] text-transparent' : 'w-[5.25rem] flex-1 sm:flex-none'}`}
+                    value={ing.unit}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateIngredient(index, 'unit', e.target.value)}
+                    aria-label={isOtherUnit ? 'Unit of measure: other' : 'Unit of measure'}
+                  >
+                    <optgroup label="Weight - Metric">
+                      <option value="g">g (grams)</option>
+                      <option value="kg">kg (kilograms)</option>
+                    </optgroup>
+                    <optgroup label="Weight - Imperial">
+                      <option value="oz">oz (ounces)</option>
+                      <option value="lb">lb (pounds)</option>
+                    </optgroup>
+                    <optgroup label="Volume">
+                      <option value="cups">cups</option>
+                      <option value="tbsp">tbsp (tablespoon)</option>
+                      <option value="tsp">tsp (teaspoon)</option>
+                      <option value="ml">ml (milliliters)</option>
+                      <option value="fl oz">fl oz (fluid ounces)</option>
+                      <option value="l">l (liters)</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option value="other">Other</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 w-full min-w-0 sm:contents">
+                  <input
+                    type="text"
+                    id={`ingredient-name-${ing.id}`}
+                    className="input input-bordered input-sm flex-1 min-w-0 sm:min-w-[5rem]"
+                    placeholder="Ingredient name"
+                    value={ing.name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateIngredient(index, 'name', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addIngredient();
+                      }
+                    }}
+                  />
+                  {ingredients.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      className="btn btn-sm btn-ghost btn-square text-xl leading-none flex-shrink-0"
+                      aria-label="Remove ingredient"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
             </>
               );
             }}
@@ -1075,7 +1081,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                       type="button"
                       onClick={() => openStepImageCrop(index)}
                       disabled={loadingStepCropIndex === index}
-                      className="btn btn-xs btn-ghost"
+                      className="btn btn-sm btn-ghost"
                       aria-label={stepImageSrc ? `Edit image for step ${index + 1}` : `Add image to step ${index + 1}`}
                       title={stepImageSrc ? 'Edit step image' : 'Add step image'}
                     >
@@ -1091,7 +1097,7 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
                       <button
                         type="button"
                         onClick={() => removeMethodStep(index)}
-                        className="btn btn-md btn-ghost text-2xl leading-none"
+                        className="btn btn-sm btn-ghost btn-square text-xl leading-none"
                         aria-label="Remove step"
                       >
                         ×

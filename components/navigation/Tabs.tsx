@@ -41,7 +41,7 @@ export default function Tabs({ tabs, activeTab, onTabChange, className = '' }: T
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            className={`tab whitespace-nowrap text-sm sm:text-base ${activeTab === tab.id ? 'tab-active' : ''}`}
+            className={`tab whitespace-nowrap text-sm sm:text-base min-h-10 px-3 sm:px-4 ${activeTab === tab.id ? 'tab-active' : ''}`}
             onClick={() => !tab.disabled && onTabChange(tab.id)}
             disabled={tab.disabled}
             title={tab.title ?? tab.label}

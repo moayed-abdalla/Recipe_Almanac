@@ -45,7 +45,7 @@ interface SortableFormListProps<T extends { id: string }> {
 }
 
 const GRIP_BASE =
-  'cursor-grab active:cursor-grabbing touch-none select-none text-base-content/50 hover:text-base-content flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  'cursor-grab active:cursor-grabbing touch-none select-none text-base-content/50 hover:text-base-content flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center min-h-10 min-w-10 text-lg';
 
 const measuring = {
   droppable: { strategy: MeasuringStrategy.Always },

@@ -288,9 +288,9 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
 
   if (phase === 'running' || phase === 'paused') {
     return (
-      <span className="inline-flex items-center gap-1 align-middle mx-1">
+      <span className="timer-controls flex w-full sm:w-auto sm:inline-flex flex-wrap items-center gap-2 align-middle mx-0 sm:mx-1 mt-2 sm:mt-0">
         <span
-          className={`badge badge-sm badge-primary font-mono ${
+          className={`badge badge-md badge-primary font-mono ${
             phase === 'running' && !reduceMotion ? 'animate-pulse' : ''
           }`}
         >
@@ -299,7 +299,7 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
         {phase === 'running' ? (
           <button
             type="button"
-            className="btn btn-xs btn-ghost"
+            className="btn btn-sm btn-ghost"
             onClick={pause}
             aria-label="Pause timer"
           >
@@ -308,7 +308,7 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
         ) : (
           <button
             type="button"
-            className="btn btn-xs btn-primary"
+            className="btn btn-sm btn-primary"
             onClick={() => startCountdown(remaining)}
             aria-label="Resume timer"
           >
@@ -317,7 +317,7 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
         )}
         <button
           type="button"
-          className="btn btn-xs btn-ghost"
+          className="btn btn-sm btn-ghost"
           onClick={reset}
           aria-label="Reset timer"
         >
@@ -331,7 +331,7 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
     return (
       <button
         type="button"
-        className="btn btn-xs btn-success align-middle mx-1"
+        className="btn btn-sm btn-success align-middle mx-0 sm:mx-1 mt-2 sm:mt-0 block sm:inline-flex"
         onClick={() => startCountdown(baseSeconds)}
         aria-label="Restart timer"
       >
@@ -341,10 +341,10 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
   }
 
   return (
-    <span className="inline-flex items-center gap-1 align-middle mx-1">
+    <span className="inline-flex items-center gap-1.5 align-middle mx-1">
       {hasRange && (
         <select
-          className="select select-xs select-bordered"
+          className="select select-sm select-bordered"
           value={chosenAmount}
           onChange={(e) => setChosenAmount(parseFloat(e.target.value))}
           aria-label="Choose timer duration"
@@ -355,7 +355,7 @@ function InlineTimer({ match, timerId }: { match: TimeMatch; timerId: string }) 
       )}
       <button
         type="button"
-        className="btn btn-xs btn-primary"
+        className="btn btn-sm btn-primary"
         onClick={() => startCountdown(baseSeconds)}
         aria-label={`Start ${unitLabel(match.unit, chosenAmount)} timer`}
       >

@@ -140,13 +140,14 @@ export default function TutorialOverlay({ steps, onFinish }: TutorialOverlayProp
 
   let cardStyle: React.CSSProperties;
   if (rect) {
+    const cardWidth = Math.min(CARD_WIDTH, Math.max(0, viewportW - 28));
     const spaceBelow = viewportH - (rect.top + rect.height);
     const placeBelow = spaceBelow > 220 || spaceBelow >= rect.top;
     const top = placeBelow
       ? rect.top + rect.height + PADDING + CARD_GAP
       : Math.max(CARD_GAP, rect.top - PADDING - CARD_GAP);
-    let left = rect.left + rect.width / 2 - CARD_WIDTH / 2;
-    left = Math.max(CARD_GAP, Math.min(left, viewportW - CARD_WIDTH - CARD_GAP));
+    let left = rect.left + rect.width / 2 - cardWidth / 2;
+    left = Math.max(CARD_GAP, Math.min(left, viewportW - cardWidth - CARD_GAP));
     cardStyle = placeBelow
       ? { top, left }
       : { top: 'auto', bottom: viewportH - top, left };

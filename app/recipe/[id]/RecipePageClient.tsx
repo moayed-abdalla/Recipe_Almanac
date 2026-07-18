@@ -1122,33 +1122,46 @@ export default function RecipePageClient({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-4">
           <h2 className="text-xl sm:text-2xl font-bold special-elite-regular">Ingredients</h2>
           {/* Multiplier Controls */}
-          <div className="flex flex-wrap items-center gap-2" data-tour="multiplier">
-            <span className="text-sm opacity-70 arial-font mr-2 w-full sm:w-auto">Scale:</span>
-            <button
-              onClick={() => handleMultiplierClick(0.5)}
-              className={`btn btn-sm ${multiplier === 0.5 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
-            >
-              0.5x
-            </button>
-            <button
-              onClick={() => handleMultiplierClick(1)}
-              className={`btn btn-sm ${multiplier === 1 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
-            >
-              1x
-            </button>
-            <button
-              onClick={() => handleMultiplierClick(2)}
-              className={`btn btn-sm ${multiplier === 2 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
-            >
-              2x
-            </button>
-            {showCustomInput ? (
-              <div className="flex items-center gap-2 flex-wrap">
+          <div className="w-full sm:w-auto" data-tour="multiplier">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm opacity-70 arial-font shrink-0">Scale</span>
+              <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Recipe scale">
+                <button
+                  onClick={() => handleMultiplierClick(0.5)}
+                  className={`btn btn-sm ${multiplier === 0.5 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+                >
+                  0.5x
+                </button>
+                <button
+                  onClick={() => handleMultiplierClick(1)}
+                  className={`btn btn-sm ${multiplier === 1 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+                >
+                  1x
+                </button>
+                <button
+                  onClick={() => handleMultiplierClick(2)}
+                  className={`btn btn-sm ${multiplier === 2 && !showCustomInput ? 'btn-primary' : 'btn-outline'}`}
+                >
+                  2x
+                </button>
+                {!showCustomInput && (
+                  <button
+                    onClick={handleCustomInputToggle}
+                    className="btn btn-sm btn-outline flex-shrink-0"
+                    title="Enter custom multiplier"
+                  >
+                    Custom
+                  </button>
+                )}
+              </div>
+            </div>
+            {showCustomInput && (
+              <div className="flex items-center gap-2 mt-2 w-full">
                 <input
                   type="number"
                   step="0.1"
                   min="0.1"
-                  className="input input-bordered input-sm w-28 arial-font flex-shrink-0"
+                  className="input input-bordered input-sm flex-1 min-w-0 arial-font"
                   placeholder="Custom"
                   value={customMultiplier}
                   onChange={(e) => handleCustomMultiplierChange(e.target.value)}
@@ -1162,14 +1175,6 @@ export default function RecipePageClient({
                   ×
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={handleCustomInputToggle}
-                className={`btn btn-sm ${showCustomInput ? 'btn-primary' : 'btn-outline'} flex-shrink-0`}
-                title="Enter custom multiplier"
-              >
-                Custom
-              </button>
             )}
           </div>
         </div>
@@ -1194,27 +1199,29 @@ export default function RecipePageClient({
               : formatMeasurement(amount, unit);
 
             return (
-              <li key={ingredient.id} className="flex flex-row items-center gap-2 min-w-0">
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => toggleIngredient(ingredient.id)}
-                  className="checkbox checkbox-sm flex-shrink-0"
-                />
-                <span className={`${isChecked ? 'line-through opacity-50' : ''} arial-font break-words flex-1 min-w-0 text-sm sm:text-base`}>
-                  {displayText} {ingredient.name}
-                  {showWarning && (
-                    <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
-                      *
-                    </span>
-                  )}
-                </span>
+              <li key={ingredient.id} className="flex flex-row flex-wrap items-start gap-2 min-w-0">
+                <label className="flex flex-1 items-start gap-3 min-w-0 cursor-pointer py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleIngredient(ingredient.id)}
+                    className="checkbox checkbox-md flex-shrink-0 mt-0.5"
+                  />
+                  <span className={`${isChecked ? 'line-through opacity-50' : ''} arial-font break-words flex-1 min-w-0 text-sm sm:text-base`}>
+                    {displayText} {ingredient.name}
+                    {showWarning && (
+                      <span className="text-warning ml-1" title="Converted between volume and weight - may not be exact">
+                        *
+                      </span>
+                    )}
+                  </span>
+                </label>
                 {!hideUnit && (
                   <select
                     value={currentUnit}
                     onChange={(e) => changeIngredientUnit(ingredient.id, e.target.value)}
                     data-tour={ingredientIndex === 0 ? 'units' : undefined}
-                    className="select select-bordered select-sm w-auto min-w-[4.25rem] max-w-[5.5rem] arial-font flex-shrink-0"
+                    className="select select-bordered select-sm w-full sm:w-auto min-w-[4.25rem] sm:max-w-[5.5rem] arial-font flex-shrink-0 basis-full sm:basis-auto ml-9 sm:ml-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {availableUnits.map((unitOption) => (

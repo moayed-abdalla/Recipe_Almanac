@@ -153,7 +153,8 @@ export default function AlmanacPage() {
             + Add Recipe
           </Link>
           <Link href="/prepare_almanac" className="btn btn-outline btn-primary w-full sm:w-auto">
-            Download Your Recipe Book
+            <span className="sm:hidden">Download PDF book</span>
+            <span className="hidden sm:inline">Download Your Recipe Book</span>
           </Link>
         </div>
       </div>

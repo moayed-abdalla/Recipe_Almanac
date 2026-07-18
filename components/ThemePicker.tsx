@@ -20,7 +20,7 @@ interface ThemePickerProps {
  */
 export default function ThemePicker({ selectedTheme, onSelect }: ThemePickerProps) {
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
       {UNIFIED_THEMES.map((theme) => {
         const isSelected = selectedTheme === theme.id;
         return (

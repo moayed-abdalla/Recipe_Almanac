@@ -110,10 +110,10 @@ export default function ImageCropModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-base-100 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
+      <div className="bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90dvh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-base-300">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-base-300 shrink-0">
           <h2 className="text-lg font-bold">{title}</h2>
           <button
             type="button"
@@ -125,56 +125,58 @@ export default function ImageCropModal({
           </button>
         </div>
 
-        {/* Crop area */}
-        <div className="relative w-full bg-black" style={{ height: '340px' }}>
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspect}
-            cropShape={cropShape}
-            showGrid={cropShape === 'rect'}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-            style={{
-              containerStyle: { borderRadius: 0 },
-            }}
-          />
-        </div>
-
-        {/* Zoom slider */}
-        <div className="px-5 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <span className="text-sm opacity-60 w-6 text-center select-none">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-              </svg>
-            </span>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.01}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="range range-primary range-sm flex-1"
-              aria-label="Zoom"
+        <div className="overflow-y-auto flex-1 min-h-0">
+          {/* Crop area — clamp height to short viewports */}
+          <div className="relative w-full bg-black h-[min(340px,40dvh)]">
+            <Cropper
+              image={imageSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspect}
+              cropShape={cropShape}
+              showGrid={cropShape === 'rect'}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+              style={{
+                containerStyle: { borderRadius: 0 },
+              }}
             />
-            <span className="text-sm opacity-60 w-6 text-center select-none">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 8v6M8 11h6" />
-              </svg>
-            </span>
           </div>
-          <p className="text-xs opacity-50 text-center mt-1">
-            Drag to pan · Scroll or use slider to zoom
-          </p>
+
+          {/* Zoom slider */}
+          <div className="px-5 pt-4 pb-2">
+            <div className="flex items-center gap-3">
+              <span className="text-sm opacity-60 w-6 text-center select-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
+              </span>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="range range-primary range-sm flex-1"
+                aria-label="Zoom"
+              />
+              <span className="text-sm opacity-60 w-6 text-center select-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 8v6M8 11h6" />
+                </svg>
+              </span>
+            </div>
+            <p className="text-xs opacity-50 text-center mt-1">
+              Drag to pan · Scroll or use slider to zoom
+            </p>
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 px-5 pb-5 pt-2">
+        <div className="flex gap-3 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 shrink-0 border-t border-base-300">
           <button
             type="button"
             onClick={onCancel}

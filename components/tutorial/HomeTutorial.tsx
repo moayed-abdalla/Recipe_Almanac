@@ -5,6 +5,31 @@ import { supabaseClient } from '@/lib/supabase-client';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import TutorialOverlay, { type TutorialStep } from './TutorialOverlay';
 
+function isMobileNav() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+}
+
+/** Open the mobile hamburger drawer so tour targets inside it are measurable. */
+function openMobileNavIfNeeded() {
+  if (!isMobileNav()) return;
+  const btn = document.querySelector(
+    '[data-tour="nav-menu-button"]'
+  ) as HTMLButtonElement | null;
+  if (btn && btn.getAttribute('aria-expanded') !== 'true') {
+    btn.click();
+  }
+}
+
+function closeMobileNavIfOpen() {
+  if (!isMobileNav()) return;
+  const btn = document.querySelector(
+    '[data-tour="nav-menu-button"]'
+  ) as HTMLButtonElement | null;
+  if (btn && btn.getAttribute('aria-expanded') === 'true') {
+    btn.click();
+  }
+}
+
 /**
  * One-time guided tour shown on the home page to logged-in users who have not
  * seen it. Dismissal/completion is persisted per-user via
@@ -24,6 +49,7 @@ export default function HomeTutorial() {
 
   const handleFinish = useCallback(async () => {
     setDismissed(true);
+    closeMobileNavIfOpen();
     if (!user || savingRef.current) return;
     savingRef.current = true;
     try {
@@ -42,9 +68,12 @@ export default function HomeTutorial() {
       {
         selectors: ['[data-tour="profile"]', '[data-tour="profile-menu"]'],
         title: 'Your menu lives here',
-        body: 'Tap your photo to open your menu — your profile, almanac, and creating or importing recipes.',
+        body: 'Open the menu to reach your profile, almanac, and creating or importing recipes.',
         onEnter: () => {
-          (document.querySelector('[data-tour="profile"]') as HTMLElement | null)?.focus();
+          openMobileNavIfNeeded();
+          if (!isMobileNav()) {
+            (document.querySelector('[data-tour="profile"]') as HTMLElement | null)?.focus();
+          }
         },
       },
       {
@@ -52,18 +81,27 @@ export default function HomeTutorial() {
         title: 'Leaderboard',
         body: 'See the best-performing recipes the community loves.',
         onEnter: () => {
-          (document.activeElement as HTMLElement | null)?.blur();
+          openMobileNavIfNeeded();
+          if (!isMobileNav()) {
+            (document.activeElement as HTMLElement | null)?.blur();
+          }
         },
       },
       {
         selectors: ['[data-tour="feed"]'],
         title: 'Your feed',
         body: 'Recipes tailored to your favourites and reviews show up here.',
+        onEnter: () => {
+          openMobileNavIfNeeded();
+        },
       },
       {
         selectors: ['[data-tour="search"]'],
         title: 'Find something to cook',
         body: 'Search for any recipe and enjoy!',
+        onEnter: () => {
+          closeMobileNavIfOpen();
+        },
       },
     ],
     []

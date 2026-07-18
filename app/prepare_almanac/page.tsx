@@ -7,7 +7,7 @@
  *
  * Layout:
  *  - lg+ : two-column grid — selection list on the left, preview on the right
- *  - <lg : single column — list on top, preview below
+ *  - <lg : tabbed "Pick" / "Preview" panes (avoids stacking two tall panels)
  *
  * Theme colours are sampled from the document at render time so the preview
  * (and PDF) always match the user's current colour theme.
@@ -266,6 +266,7 @@ export default function PrepareAlmanacPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [mobilePane, setMobilePane] = useState<'pick' | 'preview'>('pick');
   const [brand, setBrand] = useState<AlmanacBrand>(() => ({
     primary: '#CC5500',
     background: '#F7F7F7',
@@ -433,9 +434,32 @@ export default function PrepareAlmanacPage() {
         </Link>
       </div>
 
+      {/* Mobile pane switcher */}
+      <div className="tabs tabs-boxed w-full mb-4 lg:hidden">
+        <button
+          type="button"
+          className={`tab flex-1 ${mobilePane === 'pick' ? 'tab-active' : ''}`}
+          onClick={() => setMobilePane('pick')}
+        >
+          Pick ({selectedCount}/{total})
+        </button>
+        <button
+          type="button"
+          className={`tab flex-1 ${mobilePane === 'preview' ? 'tab-active' : ''}`}
+          onClick={() => setMobilePane('preview')}
+        >
+          Preview
+          {selectedCount > 0 ? ` (${selectedCount})` : ''}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* SELECTION LIST */}
-        <section className="bg-base-100/70 backdrop-blur-sm border border-base-300 rounded-lg p-3 sm:p-4 flex flex-col min-h-[400px] lg:max-h-[calc(100vh-220px)]">
+        <section
+          className={`bg-base-100/70 backdrop-blur-sm border border-base-300 rounded-lg p-3 sm:p-4 flex flex-col min-h-[280px] lg:min-h-[400px] lg:max-h-[calc(100dvh-220px)] ${
+            mobilePane === 'pick' ? '' : 'hidden lg:flex'
+          }`}
+        >
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-lg sm:text-xl font-bold special-elite-regular">
               Your Recipes
@@ -443,20 +467,20 @@ export default function PrepareAlmanacPage() {
                 ({selectedCount}/{total} selected)
               </span>
             </h2>
-            <div className="flex flex-wrap gap-1">
-              <button onClick={selectAll} className="btn btn-xs btn-outline" type="button">
+            <div className="flex flex-wrap gap-1.5">
+              <button onClick={selectAll} className="btn btn-sm btn-outline" type="button">
                 Select all
               </button>
-              <button onClick={selectOwnOnly} className="btn btn-xs btn-outline" type="button">
+              <button onClick={selectOwnOnly} className="btn btn-sm btn-outline" type="button">
                 Mine only
               </button>
-              <button onClick={clearAll} className="btn btn-xs btn-ghost" type="button">
+              <button onClick={clearAll} className="btn btn-sm btn-ghost" type="button">
                 Clear
               </button>
             </div>
           </div>
 
-          <div className="overflow-y-auto pr-1 flex-1 space-y-5">
+          <div className="overflow-y-auto pr-1 flex-1 space-y-5 max-h-[55dvh] lg:max-h-none">
             {(['public', 'private', 'favorites'] as RecipeGroup[]).map((group) => {
               const list = grouped[group];
               if (list.length === 0) return null;
@@ -519,10 +543,23 @@ export default function PrepareAlmanacPage() {
               );
             })}
           </div>
+
+          {/* Mobile: jump to preview after picking */}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm mt-3 lg:hidden w-full"
+            onClick={() => setMobilePane('preview')}
+          >
+            Preview cookbook
+          </button>
         </section>
 
         {/* PREVIEW */}
-        <section className="flex flex-col min-h-[400px] lg:max-h-[calc(100vh-220px)]">
+        <section
+          className={`flex flex-col min-h-[280px] lg:min-h-[400px] lg:max-h-[calc(100dvh-220px)] ${
+            mobilePane === 'preview' ? '' : 'hidden lg:flex'
+          }`}
+        >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg sm:text-xl font-bold special-elite-regular">
               Almanac Preview
@@ -535,15 +572,20 @@ export default function PrepareAlmanacPage() {
           </div>
 
           <div
-            className="flex-1 overflow-y-auto rounded-lg border border-base-300 p-3 sm:p-4 space-y-4"
+            className="flex-1 overflow-y-auto rounded-lg border border-base-300 p-3 sm:p-4 space-y-4 max-h-[55dvh] lg:max-h-none"
             style={{
               backgroundColor:
                 brand.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.04)',
             }}
           >
             {selectedCount === 0 ? (
-              <div className="h-full min-h-[300px] flex items-center justify-center opacity-60 text-sm arial-font text-center px-4">
-                Tick a recipe on the left to see it appear in your cookbook preview.
+              <div className="h-full min-h-[200px] lg:min-h-[300px] flex items-center justify-center opacity-60 text-sm arial-font text-center px-4">
+                <span className="lg:hidden">
+                  Switch to Pick and tick recipes to preview your cookbook.
+                </span>
+                <span className="hidden lg:inline">
+                  Tick a recipe on the left to see it appear in your cookbook preview.
+                </span>
               </div>
             ) : (
               <>

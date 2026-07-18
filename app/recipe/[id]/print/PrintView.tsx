@@ -211,7 +211,7 @@ export default function PrintView({
   if (cookMinutes != null) metaParts.push(`Cook ${cookMinutes} min`);
 
   return (
-    <div className="print-page relative mx-auto w-full max-w-[820px] px-6 py-8 sm:px-10 sm:py-10">
+    <div className="print-page relative mx-auto w-full max-w-[820px] px-3 py-6 sm:px-10 sm:py-10">
       <div
         className="relative overflow-hidden rounded-lg"
         style={{
@@ -228,7 +228,7 @@ export default function PrintView({
           aria-hidden
         />
 
-        <div className="relative z-10 px-7 py-8 sm:px-10 sm:py-10">
+        <div className="relative z-10 px-4 py-6 sm:px-10 sm:py-10">
           {/* Title + author */}
           <h1
             className="special-elite-regular break-words text-3xl sm:text-4xl font-bold leading-tight"

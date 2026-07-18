@@ -60,7 +60,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="footer bg-base-100 p-6 sm:p-10 text-base-content border-t border-base-300">
+    <footer className="footer bg-base-100 p-6 sm:p-10 text-base-content border-t border-base-300 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="container mx-auto px-2 sm:px-4">
         <div className="footer-content flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-4">
@@ -121,23 +121,23 @@ export default function Footer() {
         </div>
         
         {installHintVisible && (
-          <div className="mt-4 flex justify-center">
-            <div className="alert bg-base-200 border border-base-300 max-w-md flex-row items-center gap-3 py-2">
-              <span className="text-xs sm:text-sm text-base-content">
+          <div className="mt-4 flex justify-center px-2">
+            <div className="alert bg-base-200 border border-base-300 max-w-md flex flex-col sm:flex-row items-stretch sm:items-center gap-3 py-3">
+              <span className="text-sm text-base-content text-center sm:text-left">
                 App is installable — install to use offline.
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={handleInstallClick}
-                  className="btn btn-primary btn-xs sm:btn-sm"
+                  className="btn btn-primary btn-sm flex-1 sm:flex-none"
                 >
                   Install
                 </button>
                 <button
                   type="button"
                   onClick={handleDismissInstall}
-                  className="btn btn-ghost btn-xs sm:btn-sm"
+                  className="btn btn-ghost btn-sm flex-1 sm:flex-none"
                   aria-label="Dismiss install hint"
                 >
                   Dismiss

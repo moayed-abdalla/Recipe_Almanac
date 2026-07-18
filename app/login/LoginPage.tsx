@@ -38,9 +38,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-8">
       <div className="max-w-md mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8">Log In</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8">Log In</h1>
         
         <form onSubmit={handleLogin} className="card bg-base-200 shadow-xl">
           <div className="card-body">

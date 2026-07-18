@@ -40,7 +40,7 @@ function MacroGrid({ values, heading }: { values: Nutrition; heading: string }) 
   return (
     <div>
       <h3 className="text-sm font-semibold mb-2">{heading}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
         {MACRO_CELLS.map((cell) => (
           <div
             key={cell.key}
@@ -90,12 +90,13 @@ export default function NutritionPanel({ ingredients, servings }: NutritionPanel
           aria-expanded={open}
           className="flex w-full items-center justify-between gap-3 p-4 text-left"
         >
-          <span className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-bold special-elite-regular">
-              Nutrition (approximate)
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="text-xl sm:text-2xl font-bold special-elite-regular min-w-0">
+              <span className="sm:hidden">Nutrition</span>
+              <span className="hidden sm:inline">Nutrition (approximate)</span>
             </span>
             <span
-              className="text-base-content/50 cursor-help"
+              className="text-base-content/50 cursor-help shrink-0"
               title="Estimated from ingredients. Actual values vary."
               aria-label="Estimated from ingredients. Actual values vary."
             >
