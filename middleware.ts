@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from '@/lib/admin-auth';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -7,6 +8,22 @@ export async function middleware(request: NextRequest) {
       headers: request.headers,
     },
   });
+
+  const { pathname } = request.nextUrl;
+
+  // Admin protected routes: require signed admin session cookie
+  const isAdminProtected =
+    pathname.startsWith('/admin/') && pathname !== '/admin';
+  if (isAdminProtected) {
+    const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const session = await verifyAdminSessionToken(token);
+    if (!session) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/admin';
+      loginUrl.search = '';
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,4 +89,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-
