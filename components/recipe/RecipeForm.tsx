@@ -412,17 +412,19 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
           throw new Error(`Failed to update recipe: ${recipeError.message}`);
         }
 
-        // Step 5a: Delete existing ingredients
-        const { error: deleteError } = await supabaseClient
+        // Step 5a/6a: Replace ingredients by inserting the new set first, then
+        // removing the old rows. Delete-all-then-insert trips the DB trigger
+        // `ensure_recipe_has_valid_ingredients`, which rejects a recipe with
+        // zero valid ingredients — even momentarily between two API calls.
+        const { data: existingIngredients, error: existingError } = await supabaseClient
           .from('ingredients')
-          .delete()
+          .select('id')
           .eq('recipe_id', recipe!.id);
 
-        if (deleteError) {
-          throw new Error(`Failed to delete existing ingredients: ${deleteError.message}`);
+        if (existingError) {
+          throw new Error(`Failed to load existing ingredients: ${existingError.message}`);
         }
 
-        // Step 6a: Create new ingredient records
         const ingredientsData = validIngredients
           .map((ing, index) => {
             const amountGrams = convertToGrams(ing.amount, ing.unit, ing.name);
@@ -443,6 +445,18 @@ export function RecipeForm({ recipe, ingredients: initialIngredients, draft, hid
 
           if (ingredientsError) {
             throw new Error(`Failed to save ingredients: ${ingredientsError.message}`);
+          }
+        }
+
+        const existingIds = (existingIngredients ?? []).map((ing) => ing.id);
+        if (existingIds.length > 0) {
+          const { error: deleteError } = await supabaseClient
+            .from('ingredients')
+            .delete()
+            .in('id', existingIds);
+
+          if (deleteError) {
+            throw new Error(`Failed to replace existing ingredients: ${deleteError.message}`);
           }
         }
 
