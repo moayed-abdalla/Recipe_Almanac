@@ -19,8 +19,8 @@ import RemixTreeNode, {
   type RemixTreeNodeData,
 } from '@/components/recipe/RemixTreeNode';
 
-const NODE_WIDTH = 168;
-const NODE_HEIGHT = 132;
+const NODE_WIDTH = 160;
+const NODE_HEIGHT = 64;
 const nodeTypes: NodeTypes = { remix: RemixTreeNode };
 
 function layoutTree(
@@ -31,10 +31,10 @@ function layoutTree(
   g.setDefaultEdgeLabel(() => ({}));
   g.setGraph({
     rankdir: 'TB',
-    nodesep: 40,
-    ranksep: 64,
-    marginx: 24,
-    marginy: 24,
+    nodesep: 28,
+    ranksep: 48,
+    marginx: 16,
+    marginy: 16,
   });
 
   for (const node of nodes) {
@@ -87,7 +87,6 @@ export default function RecipeRemixTree({ nodes: treeNodes }: RecipeRemixTreePro
       data: {
         slug: n.slug,
         title: n.title,
-        image_url: n.image_url,
         username: n.username,
         is_current: n.is_current,
         onNavigate,
@@ -110,8 +109,8 @@ export default function RecipeRemixTree({ nodes: treeNodes }: RecipeRemixTreePro
         style: { stroke: 'hsl(var(--p) / 0.55)', strokeWidth: 1.5 },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 16,
-          height: 16,
+          width: 12,
+          height: 12,
           color: 'hsl(var(--p) / 0.7)',
         },
       }));
@@ -131,15 +130,15 @@ export default function RecipeRemixTree({ nodes: treeNodes }: RecipeRemixTreePro
       </h2>
       <p className="text-sm text-base-content/70 mb-3 arial-font">
         Versions copied from this recipe&apos;s lineage. Pan and zoom to explore;
-        click a card to open it.
+        click a name to open it.
       </p>
-      <div className="h-[360px] sm:h-[400px] w-full rounded-lg border border-base-300 bg-base-200/40 overflow-hidden">
+      <div className="h-[280px] sm:h-[320px] w-full rounded-lg border border-base-300 bg-base-200/40 overflow-hidden">
         <ReactFlow
           nodes={flowNodes}
           edges={flowEdges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
+          fitViewOptions={{ padding: 0.25 }}
           minZoom={0.35}
           maxZoom={1.75}
           nodesDraggable={false}
@@ -150,7 +149,10 @@ export default function RecipeRemixTree({ nodes: treeNodes }: RecipeRemixTreePro
           proOptions={{ hideAttribution: true }}
         >
           <Background gap={18} size={1} color="hsl(var(--bc) / 0.08)" />
-          <Controls showInteractive={false} className="!bg-base-100 !border-base-300 !shadow-sm" />
+          <Controls
+            showInteractive={false}
+            className="!scale-75 !origin-bottom-left !bg-base-100 !border-base-300 !shadow-sm"
+          />
         </ReactFlow>
       </div>
       {isTruncated && (
